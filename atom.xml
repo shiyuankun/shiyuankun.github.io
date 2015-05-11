@@ -41,8 +41,8 @@
     <link href="http://yoursite.com/2015/05/11/first-blog/"/>
     <id>http://yoursite.com/2015/05/11/first-blog/</id>
     <published>2015-05-11T07:22:16.000Z</published>
-    <updated>2015-05-11T08:29:40.000Z</updated>
-    <content type="html"><![CDATA[<h2 id="这是第一篇笔记_markdown-mode学习笔记">这是第一篇笔记 markdown-mode学习笔记</h2><p>用来测试markdown的效果<br>emacs中如果要配置markdown-mode<br>如果是emacs-24可以使用  </p>
+    <updated>2015-05-11T08:32:52.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="这是第一篇笔记_markdown-mode学习笔记">这是第一篇笔记 markdown-mode学习笔记</h2><p>用来测试markdown效果<br>emacs中如果要配置markdown-mode<br>如果是emacs-24可以使用  </p>
 <pre><code><span class="constant">M</span>-x <span class="keyword">package</span>-install
 markdown-<span class="literal">mode</span>
 </code></pre><p>来安装<br>debian/emacs-23也可以</p>
@@ -67,8 +67,8 @@ markdown-<span class="literal">mode</span>
 <p>[^1]: foot note</p>
 ]]></content>
     <summary type="html">
-    <![CDATA[<h2 id="这是第一篇笔记_markdown-mode学习笔记">这是第一篇笔记 markdown-mode学习笔记</h2><p>用来测试markdown的效果<br>emacs中如果要配置markdown-mode<br>如果是emacs-24可以使用  </p>
-<pr]]>
+    <![CDATA[<h2 id="这是第一篇笔记_markdown-mode学习笔记">这是第一篇笔记 markdown-mode学习笔记</h2><p>用来测试markdown效果<br>emacs中如果要配置markdown-mode<br>如果是emacs-24可以使用  </p>
+<pre]]>
     </summary>
     
       <category term="blog" scheme="http://yoursite.com/tags/blog/"/>
