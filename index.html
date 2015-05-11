@@ -150,7 +150,7 @@ hexo <span class="keyword">server</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="ci9joojg50004biv4ts6hyhlx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="ci9jziphr0002awv44x7xodqy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/github/">github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
@@ -197,7 +197,7 @@ hexo <span class="keyword">server</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="ci9joojg7000abiv44krr0q7y" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="ci9jziphx0009awv42jcx451m" class="article-share-link">Share</a>
       
       
     </footer>
@@ -256,7 +256,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="ci9joojf50000biv45w6mmbie" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="ci9jziphy000aawv4ygsj8xqo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li></ul>
@@ -268,6 +268,327 @@ markdown-<span class="literal">mode</span>
 
 
   
+    <article id="post-4488876" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/08/4488876/" class="article-date">
+  <time datetime="2015-05-08T13:17:00.000Z" itemprop="datePublished">2015-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>之前试着玩玩docker有一阵子了，今天算是头一回正式在docker里部署网络服务。</p>
+<p>本来想和lxc差不多的东西那自然是手到擒来，没想到还是改了很多。</p>
+<p>第一个遇到的问题是，远程连到docker宿主机干活的时候突然断网了。一下傻掉了，以前都是连内网，从来不断的。这次连了一个反向隧道，居然断了，傻眼了。</p>
+<p>再连回去，发现docker ps里还有进程，好办，docker attach这个进程，就又进去了。</p>
+<p>如果没有找到进程，就只要docker commit存一下，然后再docker run拉起来继续<br>
+        
+          <p class="article-more-link">
+            <a href="/2015/05/08/4488876/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/05/08/4488876/" data-id="ci9jzipi0000cawv4zgy3v419" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-4439945" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/19/4439945/" class="article-date">
+  <time datetime="2015-04-19T13:09:00.000Z" itemprop="datePublished">2015-04-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/19/4439945/">初学python里的yield send next</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>今天看书的时候突然看到这个想起来一直没有怎么使用过send和next试了一下</p>
+<p>发现了一个诡异的问题</p>
+<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_primes</span><span class="params">(start)</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="number">1</span> :</span><br><span class="line">        <span class="keyword">if</span> is_prime(start) :</span><br><span class="line">            start = <span class="keyword">yield</span> start</span><br><span class="line">        start += <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">is_prime</span><span class="params">(number)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> number &gt; <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">if</span> number == <span class="number">2</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">        <span class="keyword">if</span> number % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">        <span class="keyword">for</span> current <span class="keyword">in</span> range(<span class="number">3</span>, int(math.sqrt(number) + <span class="number">1</span>), <span class="number">2</span>):</span><br><span class="line">            <span class="keyword">if</span> number % current == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span> :</span></span><br><span class="line">    genet = get_primes(<span class="number">100</span>)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> genet : </span><br><span class="line">        send(i)</span><br><span class="line">        <span class="keyword">print</span> i</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span> :</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>告诉我start的值为None</p>
+<p>然后跑去翻资料，发现自己理解错误的地方，send和next其实有一个类似的功能，就是拿一个yield的值，不同的是send是传一个进去，而next传一个None</p>
+<p>所以第一次跑的时候，start=100不是质数，直接过，101是质数，get_primes执行到yield停住，等带main的循环执行next，101拿出来，再用send传101进get_primes，start赋值为101，然后start加1为102，发现不是质数再加1。yield停住。而这时候main里的循环又执行到了next（倒数第一步是send），所以next传递进去的是None，这时候start就被赋值为None了。<br>
+        
+          <p class="article-more-link">
+            <a href="/2015/04/19/4439945/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/04/19/4439945/" data-id="ci9jzipi1000dawv4799yt1xt" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-4415746" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/10/4415746/" class="article-date">
+  <time datetime="2015-04-10T13:46:00.000Z" itemprop="datePublished">2015-04-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/10/4415746/">opencl初体验</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>总结一下，opencl的步骤差不多是这些</p>
+<p>先要获取平台的id clGetPlatformIDs(nPlatforms, platform_id, &amp;num_of_platforms)</p>
+<p>然后获取设备id clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_GPU, 1, %device_id &amp;num_of_devices)</p>
+<p>////这里要注意的是，如果有多个设备（如cpu和gpu）platform_id必须使用数组形式传入</p>
+<p>然后是创建上下文clCreateContext（properties, 1, &amp;device_id, NULL, NULL, &amp;err)<br>
+        
+          <p class="article-more-link">
+            <a href="/2015/04/10/4415746/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/04/10/4415746/" data-id="ci9jzipi2000eawv4j6t7tzop" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-4390056" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/03/4390056/" class="article-date">
+  <time datetime="2015-04-03T06:50:00.000Z" itemprop="datePublished">2015-04-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/03/4390056/">cuda计算的分块</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>gpu的架构分为streaming multiprocessors</p>
+<p>每个streaming&nbsp;multiprocessors（SM）又能分步骤执行很多threads，单个SM内部能同时执行的threads叫做warp。一个warp能同时操作16个单精度浮点数/8个双精度（tesla），或者32个单精度浮点数/16个双精度浮点数（feimi）。</p>
+<p>单个SM内部有local&nbsp;memory和16kb大小的share&nbsp;memory，后者是在做计算的时候要尽量利用好的东西。</p>
+<p>&nbsp;</p>
+<p>根据gpu的架构，做cuda计算的时候基本上是这么一个流程<br>
+        
+          <p class="article-more-link">
+            <a href="/2015/04/03/4390056/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/04/03/4390056/" data-id="ci9jzipi4000fawv4sbt56921" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-4253426" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/01/27/4253426/" class="article-date">
+  <time datetime="2015-01-27T08:56:00.000Z" itemprop="datePublished">2015-01-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/01/27/4253426/">尽信书不如无书</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近在看dive into python，看到介绍了另外一种字典类UserDict，挖好玩，试试看。请鄙视我这个不读书星人，之前都是用到什么stackoverflow上搜什么&hellip;&hellip;</p>
+<p>开始使用到代码里去。发现在某个地方报了个错</p>
+<p>for&nbsp; i in a:</p>
+<p>blablabla</p>
+<p>KeyError: 0<br>
+        
+          <p class="article-more-link">
+            <a href="/2015/01/27/4253426/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/01/27/4253426/" data-id="ci9jzipi6000gawv40xcxv74k" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-4212796" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/01/09/4212796/" class="article-date">
+  <time datetime="2015-01-09T03:03:00.000Z" itemprop="datePublished">2015-01-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/01/09/4212796/">docker on centos</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>docker最好在centos7上安装，centos6.5上似乎麻烦不少</p>
+<p>这里直接在centos7上安装，要提前装一下epel的repo</p>
+<p>yum install docker&nbsp;安装就行</p>
+<p>chkconfig docker on</p>
+<p>service docker start<br>
+        
+          <p class="article-more-link">
+            <a href="/2015/01/09/4212796/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/01/09/4212796/" data-id="ci9jzipi9000hawv4s1pmud4v" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-4211267" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/01/08/4211267/" class="article-date">
+  <time datetime="2015-01-08T08:17:00.000Z" itemprop="datePublished">2015-01-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/01/08/4211267/">lxc on centos</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>终于把lxc的网络配通了，也不知道对不对，记一下</p>
+<p>一开始都是雷同的地方</p>
+<p>yum install libcgroup lxc lxc-templates</p>
+<p>安装lxc&nbsp;cgroup</p>
+<p>然后记得<br>
+        
+          <p class="article-more-link">
+            <a href="/2015/01/08/4211267/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/01/08/4211267/" data-id="ci9jzipid000iawv43ux2pum5" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+  
+    <nav id="page-nav">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+    </nav>
   
 </section>
         
@@ -297,7 +618,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">3</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -318,6 +639,14 @@ markdown-<span class="literal">mode</span>
         
           <li>
             <a href="/2015/05/11/first-blog/">first blog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/19/4439945/">初学python里的yield send next</a>
           </li>
         
       </ul>

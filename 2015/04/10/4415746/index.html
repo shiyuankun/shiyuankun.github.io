@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>opencl初体验 | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="总结一下，opencl的步骤差不多是这些
+先要获取平台的id clGetPlatformIDs(nPlatforms, platform_id, &amp;amp;num_of_platforms)
+然后获取设备id clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_GPU, 1, %device_id &amp;amp;num_of_devices)
+////这里要注意">
+<meta property="og:type" content="article">
+<meta property="og:title" content="opencl初体验">
+<meta property="og:url" content="http://yoursite.com/2015/04/10/4415746/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="总结一下，opencl的步骤差不多是这些
+先要获取平台的id clGetPlatformIDs(nPlatforms, platform_id, &amp;amp;num_of_platforms)
+然后获取设备id clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_GPU, 1, %device_id &amp;amp;num_of_devices)
+////这里要注意">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="opencl初体验">
+<meta name="twitter:description" content="总结一下，opencl的步骤差不多是这些
+先要获取平台的id clGetPlatformIDs(nPlatforms, platform_id, &amp;amp;num_of_platforms)
+然后获取设备id clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_GPU, 1, %device_id &amp;amp;num_of_devices)
+////这里要注意">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+  
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-4415746" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/10/4415746/" class="article-date">
+  <time datetime="2015-04-10T13:46:00.000Z" itemprop="datePublished">2015-04-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      opencl初体验
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>总结一下，opencl的步骤差不多是这些</p>
+<p>先要获取平台的id clGetPlatformIDs(nPlatforms, platform_id, &amp;num_of_platforms)</p>
+<p>然后获取设备id clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_GPU, 1, %device_id &amp;num_of_devices)</p>
+<p>////这里要注意的是，如果有多个设备（如cpu和gpu）platform_id必须使用数组形式传入</p>
+<p>然后是创建上下文clCreateContext（properties, 1, &amp;device_id, NULL, NULL, &amp;err)<br><a id="more"></a></p>
+<p>创建命令队列clCreateCommandQueue(context, device_id, 0, &amp;err)</p>
+<p>创建设备缓存clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * DATA_SIZE, NULL, NULL);</p>
+<p>复制数据clEnqueueWriteBuffer(command_queue, input, CL_TRUE, 0, sizeof(float)*DATA_SIZE, inputData, 0, NULL, NULL)</p>
+<p>然后是根据源代码产生program代码 clCreateProgramWithSource(context, 1, (const char **)&amp;ProgramSource, NULL, &amp;err)</p>
+<p>然后编译program clBuildProgram(program, 0, NULL, NULL, NULL, NULL)</p>
+<p>最后产生kernel clCreateKernel(program, “test”, &amp;err);</p>
+<p>设定kernel的参数 clSetKernelArg(kernel, 0, sizeof(cl_mem), &amp;input)</p>
+<p>将kernel推入命令队列 clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &amp;global, NULL, 0, NULL, NULL)</p>
+<p>完成计算clFinish(command_queue)</p>
+<p>读取设备缓存clEnqueueReadBuffer(command_queue, input, CL_TRUE, 0, sizeof(float) * DATA_SIZE, inputData, 0, NULL, NULL)</p>
+<p>最后是清理工作</p>
+<p>clReleaseMemObject(input)</p>
+<p>clReleaseProgram(program)</p>
+<p>clReleaseKernel(kernel)</p>
+<p>clReleaseCommandQueue(command_queue)</p>
+<p>clReleaseContext(context)</p>
+<p>大致是这个流程，详细每个命令的参数怎么设定还要看文档</p>
+<p><a href="https://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/" target="_blank" rel="external">https://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/</a></p>
+<p>出了任何报错最好还是查一下头文件，很有帮助</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/04/10/4415746/" data-id="ci9jzipi2000eawv4j6t7tzop" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/04/19/4439945/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          初学python里的yield send next
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/04/03/4390056/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cuda计算的分块</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/11/hexoblog/">hexoblog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/first-blog/">first blog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/19/4439945/">初学python里的yield send next</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

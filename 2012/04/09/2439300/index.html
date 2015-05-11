@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>xcat网络无盘启动 | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="首先，先到$osname目录下找genimage
+/opt/xcat/share/xcat/netboot/$osname
+-i 网卡，如eth1-n 网络驱动，如e1000-o 系统名，如rhel5.7-p 组名，这里是compute
+./genimage -i eth1 -n e1000 -o rhel5.7 -p compute以后，生成image文件
+随后到/install/netboot">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xcat网络无盘启动">
+<meta property="og:url" content="http://yoursite.com/2012/04/09/2439300/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="首先，先到$osname目录下找genimage
+/opt/xcat/share/xcat/netboot/$osname
+-i 网卡，如eth1-n 网络驱动，如e1000-o 系统名，如rhel5.7-p 组名，这里是compute
+./genimage -i eth1 -n e1000 -o rhel5.7 -p compute以后，生成image文件
+随后到/install/netboot">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="xcat网络无盘启动">
+<meta name="twitter:description" content="首先，先到$osname目录下找genimage
+/opt/xcat/share/xcat/netboot/$osname
+-i 网卡，如eth1-n 网络驱动，如e1000-o 系统名，如rhel5.7-p 组名，这里是compute
+./genimage -i eth1 -n e1000 -o rhel5.7 -p compute以后，生成image文件
+随后到/install/netboot">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+  
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-2439300" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/04/09/2439300/" class="article-date">
+  <time datetime="2012-04-09T09:33:00.000Z" itemprop="datePublished">2012-04-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      xcat网络无盘启动
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>首先，先到$osname目录下找genimage</p>
+<p>/opt/xcat/share/xcat/netboot/$osname</p>
+<p>-i 网卡，如eth1<br>-n 网络驱动，如e1000<br>-o 系统名，如rhel5.7<br>-p 组名，这里是compute</p>
+<p>./genimage -i eth1 -n e1000 -o rhel5.7 -p compute以后，生成image文件</p>
+<p>随后到/install/netboot/rhel5.7/x86_64/compute/rootimg/etc目录下修改fstab<br><a id="more"></a></p>
+<p>加上compute_x86_64 / tmpfs rw 0 1<br>并且把/挂载点删除。</p>
+<p>然后用</p>
+<p>packimage -o rhel5.7 -p compute -a x86_64，打包所选系统</p>
+<p>然后用nodeset命令将节点设置为网络启动</p>
+<p>nodeset node04 netboot</p>
+<p>去检查/tftpboot/pxelinux.cfg/node04的话，会发现内容已经被更改了。</p>
+<h1 id="netboot_rhel5-7-x86_64-compute">netboot rhel5.7-x86_64-compute</h1><p>DEFAULT xCAT<br>LABEL xCAT<br>&nbsp;KERNEL xcat/netboot/rhel5.7/x86_64/compute/kernel<br>&nbsp;APPEND initrd=xcat/netboot/rhel5.7/x86_64/compute/initrd-stateless.gz imgurl=<a href="http://192.168.1.1//install/netboot/rhel5.7/x86_64/compute/rootimg.gz" target="_blank" rel="external">http://192.168.1.1//install/netboot/rhel5.7/x86_64/compute/rootimg.gz</a> XCAT=192.168.1.1:3001 ifname=eth1:00:0c:29:b1:93:c6 netdev=eth1<br>&nbsp; IPAPPEND 2</p>
+<p>重启，就通过网络无盘启动了</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2012/04/09/2439300/" data-id="ci9jzipju0015awv48dbmsvqm" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2012/04/10/2440667/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          xcat网络无盘启动——添加自定义安装包
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2012/04/07/2436061/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">google云的数据库</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/11/hexoblog/">hexoblog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/first-blog/">first blog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/19/4439945/">初学python里的yield send next</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

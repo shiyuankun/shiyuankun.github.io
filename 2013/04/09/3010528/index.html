@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>xCAT 2.7.6 dns解析 | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="之前一直遇到这个问题
+12345678910111213141516171819[root@mgmt3 ~]host node01;; connection timed out; trying next origin;; connection timed out; no servers could be reached[root@mgmt3 ~]nslookup node01;; connecti">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xCAT 2.7.6 dns解析">
+<meta property="og:url" content="http://yoursite.com/2013/04/09/3010528/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="之前一直遇到这个问题
+12345678910111213141516171819[root@mgmt3 ~]host node01;; connection timed out; trying next origin;; connection timed out; no servers could be reached[root@mgmt3 ~]nslookup node01;; connecti">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="xCAT 2.7.6 dns解析">
+<meta name="twitter:description" content="之前一直遇到这个问题
+12345678910111213141516171819[root@mgmt3 ~]host node01;; connection timed out; trying next origin;; connection timed out; no servers could be reached[root@mgmt3 ~]nslookup node01;; connecti">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+  
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-3010528" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/04/09/3010528/" class="article-date">
+  <time datetime="2013-04-09T09:20:00.000Z" itemprop="datePublished">2013-04-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      xCAT 2.7.6 dns解析
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>之前一直遇到这个问题</p>
+<div class="cnblogs_code"><br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr_selector">[root@mgmt3 ~]</span><span class="tag">host</span> <span class="tag">node01</span></span><br><span class="line"></span><br><span class="line">;; <span class="tag">connection</span> <span class="tag">timed</span> <span class="tag">out</span>; <span class="tag">trying</span> <span class="tag">next</span> <span class="tag">origin</span></span><br><span class="line"></span><br><span class="line">;; <span class="tag">connection</span> <span class="tag">timed</span> <span class="tag">out</span>; <span class="tag">no</span> <span class="tag">servers</span> <span class="tag">could</span> <span class="tag">be</span> <span class="tag">reached</span></span><br><span class="line"></span><br><span class="line"><span class="attr_selector">[root@mgmt3 ~]</span><span class="tag">nslookup</span> <span class="tag">node01</span></span><br><span class="line"></span><br><span class="line">;; <span class="tag">connection</span> <span class="tag">timed</span> <span class="tag">out</span>; <span class="tag">trying</span> <span class="tag">next</span> <span class="tag">origin</span></span><br><span class="line"></span><br><span class="line"><span class="attr_selector">[root@mgmt3 ~]</span><span class="tag">dig</span> <span class="at_rule">@<span class="keyword">192.168.10.254</span> node01</span><br><span class="line"></span><br><span class="line"></span>; &lt;&lt;&gt;&gt; <span class="tag">DiG</span> 9<span class="class">.8</span><span class="class">.2rc1-RedHat-9</span><span class="class">.8</span><span class="class">.2-0</span><span class="class">.10</span><span class="class">.rc1</span><span class="class">.el6</span> &lt;&lt;&gt;&gt; <span class="at_rule">@<span class="keyword">192.168.10.254</span> node01</span><br><span class="line"></span><br><span class="line"></span>; (1 <span class="tag">server</span> <span class="tag">found</span>)</span><br><span class="line"></span><br><span class="line">;; <span class="tag">global</span> <span class="rule"><span class="attribute">options</span>:<span class="value"> +cmd</span><br><span class="line"></span><br><span class="line"></span></span>;; <span class="tag">connection</span> <span class="tag">timed</span> <span class="tag">out</span>; <span class="tag">no</span> <span class="tag">servers</span> <span class="tag">could</span> <span class="tag">be</span> <span class="tag">reached</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>还有就是在makedns时候，会在Getting reverse zones, this may take several minutes in scaling cluster. Updating DNS records, this may take several minutes in scaling cluster.停留很久。</p>
+<p>最后cat /var/named/db.cluster.com</p>
+<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@mgmt3 ~]# <span class="keyword">cat</span> /<span class="keyword">var</span>/named/<span class="keyword">db</span>.<span class="keyword">cluster</span>.com</span><br><span class="line"><span class="label">$TTL</span> 86400</span><br><span class="line">@<span class="keyword">IN</span> SOA  mgmt3.<span class="keyword">cluster</span>.com. root.mgmt3.<span class="keyword">cluster</span>.com. (2013040901 10800 3600 604800  86400 )</span><br><span class="line"><span class="keyword">IN</span> NS      mgmt3.<span class="keyword">cluster</span>.com.</span><br><span class="line">mgmt3                   A       192.168.10.254</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>之前一直遇到这个问题，发现这个问题已经在2.8中被修复了</p>
+<p><a href="http://sourceforge.net/p/xcat/bugs/3202/" target="_blank" rel="external">http://sourceforge.net/p/xcat/bugs/3202/</a><br><a id="more"></a></p>
+<p>当然如果也可以尝试用makedns -n来重新产生dns文件</p>
+<p>然后在Scaling cluster那里很快就过了，并且db.cluster.com中也有信息了</p>
+<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@mgmt3 ~]# <span class="keyword">cat</span> /<span class="keyword">var</span>/named/<span class="keyword">db</span>.<span class="keyword">cluster</span>.com</span><br><span class="line"><span class="label">$ORIGIN</span> .</span><br><span class="line"><span class="label">$TTL</span> 86400      ; 1 <span class="literal">day</span></span><br><span class="line"><span class="keyword">cluster</span>.com             <span class="keyword">IN</span> SOA  mgmt3.<span class="keyword">cluster</span>.com. root.mgmt3.<span class="keyword">cluster</span>.com. (</span><br><span class="line">                                2013040901 ; serial</span><br><span class="line">                                10800      ; refresh (3 hours)</span><br><span class="line">                                3600       ; retry (1 hour)</span><br><span class="line">                                604800     ; expire (1 week)</span><br><span class="line">                                86400      ; minimum (1 day)</span><br><span class="line">                                )</span><br><span class="line">                        NS      mgmt3.<span class="keyword">cluster</span>.com.</span><br><span class="line"><span class="label">$ORIGIN</span> <span class="keyword">cluster</span>.com.</span><br><span class="line">ionode01                A       192.168.10.11</span><br><span class="line">ionode02                A       192.168.10.12</span><br><span class="line">mgmt3                   A       192.168.10.254</span><br><span class="line">node01                  A       192.168.10.1</span><br><span class="line">node02                  A       192.168.10.2</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>&nbsp;</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/04/09/3010528/" data-id="ci9jzipje000yawv4bzuq03rm" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2013/04/10/3011839/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          gpfs安装细节
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2012/06/06/2538546/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">android源代码下载</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/11/hexoblog/">hexoblog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/first-blog/">first blog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/19/4439945/">初学python里的yield send next</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

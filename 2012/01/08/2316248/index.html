@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>sina微博的动态载入 | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近写的爬虫就是为了抓取sina微薄的内容，结果发现11月份以后微薄改版了，改版之后一页并不是一次性现实的，而是分三次显示。第一次访问获取的内容只有1/3，其余的内容分两次，通过新浪自己的STK库中的lazy_load来完成动态加载的。本来以为很难解决，抓了一下包以后发现其实挺简单。
+1body=&amp;#123;&apos;__rnd&apos;:访问这一页面的时间，以秒表示的13位整数&apos;_k&apos;:本次登录第一次访问此微薄">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sina微博的动态载入">
+<meta property="og:url" content="http://yoursite.com/2012/01/08/2316248/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="最近写的爬虫就是为了抓取sina微薄的内容，结果发现11月份以后微薄改版了，改版之后一页并不是一次性现实的，而是分三次显示。第一次访问获取的内容只有1/3，其余的内容分两次，通过新浪自己的STK库中的lazy_load来完成动态加载的。本来以为很难解决，抓了一下包以后发现其实挺简单。
+1body=&amp;#123;&apos;__rnd&apos;:访问这一页面的时间，以秒表示的13位整数&apos;_k&apos;:本次登录第一次访问此微薄">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="sina微博的动态载入">
+<meta name="twitter:description" content="最近写的爬虫就是为了抓取sina微薄的内容，结果发现11月份以后微薄改版了，改版之后一页并不是一次性现实的，而是分三次显示。第一次访问获取的内容只有1/3，其余的内容分两次，通过新浪自己的STK库中的lazy_load来完成动态加载的。本来以为很难解决，抓了一下包以后发现其实挺简单。
+1body=&amp;#123;&apos;__rnd&apos;:访问这一页面的时间，以秒表示的13位整数&apos;_k&apos;:本次登录第一次访问此微薄">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+  
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-2316248" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/01/08/2316248/" class="article-date">
+  <time datetime="2012-01-07T17:45:00.000Z" itemprop="datePublished">2012-01-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      sina微博的动态载入
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近写的爬虫就是为了抓取sina微薄的内容，结果发现11月份以后微薄改版了，改版之后一页并不是一次性现实的，而是分三次显示。第一次访问获取的内容只有1/3，其余的内容分两次，通过新浪自己的STK库中的lazy_load来完成动态加载的。本来以为很难解决，抓了一下包以后发现其实挺简单。</p>
+<div class="cnblogs_code"><br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">body=&#123;<span class="string">'__rnd'</span>:访问这一页面的时间，以秒表示的<span class="number">13</span>位整数<span class="string">'_k'</span>:本次登录第一次访问此微薄的时间，<span class="number">16</span>位整数<span class="string">'_t'</span>:<span class="number">0</span><span class="string">'count'</span>:第二次和第二次访问时都是<span class="number">15</span>，第一次访问时是<span class="number">50</span><span class="string">'end_id'</span>:最新的这一项微博的<span class="keyword">mid</span><span class="string">'max_id'</span>:已经访问到的，也就是lazyload上面的这一项最旧的微博的<span class="keyword">mid</span><span class="string">'page'</span>:要访问的页码<span class="string">'pagebar'</span>:第二次是<span class="number">0</span>，第三次是<span class="number">1</span>，第一次没有这项<span class="string">'pre_page'</span>:第二次和第三次都是本页页码，第一次访问是上页页码<span class="string">'uid'</span>:博主的uid&#125;url=<span class="string">'http://weibo.com/aj/mblog/mbloglist?'</span>+urllib.urlencode(body)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>其中，第一次访问该博主主页是不需要这些参数的，从访问第二页开始需要。</p>
+<p>end_id和_k在接连浏览同一博主的不同页面时，都是不需要更新的</p>
+<p>评论的加载也是类似思路。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2012/01/08/2316248/" data-id="ci9jzipkd001cawv4v2gacxfr" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2012/01/10/2318175/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          lustre快速安装
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2012/01/04/2312532/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">html内嵌javascript中unicode的处理</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/11/hexoblog/">hexoblog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/first-blog/">first blog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/19/4439945/">初学python里的yield send next</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

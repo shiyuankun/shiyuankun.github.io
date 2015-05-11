@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>gpfs安装细节 | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="GPFS on Redhat:
+安装Redhat 6 服务器，一共五台，头节点，子节点两台，io节点两台
+
+node01
+node02
+ionode01
+ionode02
+mgmt3
+
+磁盘配置
+/gpfsdisk/nsdfile (GPFSDISK)这是虚拟机上的文件，用来模拟磁盘，物理机上可以用真实磁盘代替/dev/sda (OS disk)
+123456[root@mgmt3 gpfs341">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gpfs安装细节">
+<meta property="og:url" content="http://yoursite.com/2013/04/10/3011839/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="GPFS on Redhat:
+安装Redhat 6 服务器，一共五台，头节点，子节点两台，io节点两台
+
+node01
+node02
+ionode01
+ionode02
+mgmt3
+
+磁盘配置
+/gpfsdisk/nsdfile (GPFSDISK)这是虚拟机上的文件，用来模拟磁盘，物理机上可以用真实磁盘代替/dev/sda (OS disk)
+123456[root@mgmt3 gpfs341">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="gpfs安装细节">
+<meta name="twitter:description" content="GPFS on Redhat:
+安装Redhat 6 服务器，一共五台，头节点，子节点两台，io节点两台
+
+node01
+node02
+ionode01
+ionode02
+mgmt3
+
+磁盘配置
+/gpfsdisk/nsdfile (GPFSDISK)这是虚拟机上的文件，用来模拟磁盘，物理机上可以用真实磁盘代替/dev/sda (OS disk)
+123456[root@mgmt3 gpfs341">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+  
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-3011839" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/04/10/3011839/" class="article-date">
+  <time datetime="2013-04-10T02:35:00.000Z" itemprop="datePublished">2013-04-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      gpfs安装细节
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>GPFS on Redhat:</p>
+<p>安装Redhat 6 服务器，一共五台，头节点，子节点两台，io节点两台</p>
+<ul>
+<li>node01</li>
+<li>node02</li>
+<li>ionode01</li>
+<li>ionode02</li>
+<li>mgmt3</li>
+</ul>
+<p>磁盘配置</p>
+<p>/gpfsdisk/nsdfile (GPFSDISK)这是虚拟机上的文件，用来模拟磁盘，物理机上可以用真实磁盘代替<br>/dev/sda (OS disk)</p>
+<div class="cnblogs_code"><br><figure class="highlight puppet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[<span class="literal">root</span>@mgmt3 gpfs3416_x86_64]<span class="comment"># ls -lhtr</span></span><br><span class="line">total <span class="number">11</span>M</span><br><span class="line">-rw-r--r-- <span class="number">1</span> <span class="literal">root</span> <span class="literal">root</span>  <span class="number">92</span>K <span class="constant">Sep</span> <span class="number">18</span> <span class="number">23</span>:<span class="number">12</span> gpfs.msg.en_US-<span class="number">3.4</span>.<span class="number">0</span>-<span class="number">16</span>.noarch.rpm</span><br><span class="line">-rw-r--r-- <span class="number">1</span> <span class="literal">root</span> <span class="literal">root</span> <span class="number">478</span>K <span class="constant">Sep</span> <span class="number">18</span> <span class="number">23</span>:<span class="number">12</span> gpfs.gpl-<span class="number">3.4</span>.<span class="number">0</span>-<span class="number">16</span>.noarch.rpm</span><br><span class="line">-rw-r--r-- <span class="number">1</span> <span class="literal">root</span> <span class="literal">root</span> <span class="number">200</span>K <span class="constant">Sep</span> <span class="number">18</span> <span class="number">23</span>:<span class="number">12</span> gpfs.docs-<span class="number">3.4</span>.<span class="number">0</span>-<span class="number">16</span>.noarch.rpm</span><br><span class="line">-rw-r--r-- <span class="number">1</span> <span class="literal">root</span> <span class="literal">root</span> <span class="number">9.6</span>M <span class="constant">Sep</span> <span class="number">18</span> <span class="number">23</span>:<span class="number">12</span> gpfs.base-<span class="number">3.4</span>.<span class="number">0</span>-<span class="number">16</span>.x86_64.rpm</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>在管理节点上安装编译需要的包</p>
+<div class="cnblogs_code"><br><figure class="highlight brainfuck"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">yum</span> <span class="literal">-</span><span class="comment">y</span> <span class="comment">install</span> <span class="comment">compat</span><span class="literal">-</span><span class="comment">libstdc</span><span class="literal">+</span><span class="literal">+</span><span class="literal">-</span><span class="comment">33</span><span class="string">.</span><span class="comment">x86_64</span> <span class="comment">kernel</span><span class="literal">-</span><span class="comment">headers</span> <span class="comment">kernel</span><span class="literal">-</span><span class="comment">devel</span> <span class="comment">gcc</span> <span class="comment">make</span> <span class="comment">gcc</span><span class="literal">-</span><span class="comment">c</span><span class="literal">+</span><span class="literal">+</span> <span class="comment">rpm</span><span class="literal">-</span><span class="comment">build</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>安装gpfs的所有包</p>
+<div class="cnblogs_code"><br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">rpm</span> -ivh /root/gpfs3416_x86_64/gpfs<span class="regexp">*.rpm</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>编译gpfs的内核层文件，并打包成rpm格式</p>
+<div class="cnblogs_code"><br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cd</span> /usr/lpp/mmfs/src</span><br><span class="line"><span class="keyword">make</span> clean</span><br><span class="line"><span class="keyword">make</span> Autoconfig</span><br><span class="line"><span class="keyword">make</span> World</span><br><span class="line"><span class="keyword">make</span> InstallImages</span><br><span class="line"><span class="keyword">make</span> rpm</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>安装编译好的rpm包<br><a id="more"></a></p>
+<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpm -<span class="tag">i</span> /root/rpmbuild/RPMS/x86_64/gpfs<span class="class">.gplbin-2</span>.<span class="number">6.32</span>-<span class="number">279</span><span class="class">.el6</span><span class="class">.x86_64-3</span>.<span class="number">4.0</span>-<span class="number">16</span><span class="class">.x86_64</span><span class="class">.rpm</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>更改环境变量</p>
+<div class="cnblogs_code"><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/profile</span><br><span class="line"></span><br><span class="line"><span class="comment"># Path manipulation</span></span><br><span class="line"><span class="keyword">if</span> [ <span class="string">"<span class="variable">$EUID</span>"</span> = <span class="string">"0"</span> ]; <span class="keyword">then</span></span><br><span class="line">        pathmunge /sbin</span><br><span class="line">        pathmunge /usr/sbin</span><br><span class="line">        pathmunge /usr/<span class="built_in">local</span>/sbin</span><br><span class="line">        pathmunge /usr/lpp/mmfs/bin<span class="comment">#加入这行</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>将gpfs文件拷贝到其他服务器上以备安装</p>
+<p>gpfs.base-3.4.0-16.x86_64.rpm (必须) gpfs.gplbin-2.6.32-279.el6.x86_64-3.4.0-16.x86_64.rpm(必须) gpfs.docs-3.4.0-16.noarch.rpm gpfs.msg.en_US-3.4.0-16.noarch.rpm</p>
+<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pscp gpfs<span class="class">.base-3</span>.<span class="number">4.0</span>-<span class="number">16</span><span class="class">.x86_64</span><span class="class">.rpm</span> gpfs<span class="class">.docs-3</span>.<span class="number">4.0</span>-<span class="number">16</span><span class="class">.noarch</span><span class="class">.rpm</span> gpfs<span class="class">.gplbin-2</span>.<span class="number">6.32</span>-<span class="number">279</span><span class="class">.el6</span><span class="class">.x86_64-3</span>.<span class="number">4.0</span>-<span class="number">16</span><span class="class">.x86_64</span><span class="class">.rpm</span> gpfs<span class="class">.msg</span><span class="class">.en_US-3</span>.<span class="number">4.0</span>-<span class="number">16</span><span class="class">.noarch</span><span class="class">.rpm</span> all:~/</span><br><span class="line"></span><br><span class="line">psh all yum -y install compat-libstdc++-<span class="number">33</span><span class="class">.x86_64</span> ksh</span><br><span class="line"></span><br><span class="line">psh all rpm -ivh gpfs<span class="class">.gplbin-2</span>.<span class="number">6.32</span>-<span class="number">279</span><span class="class">.el6</span><span class="class">.x86_64-3</span>.<span class="number">4.0</span>-<span class="number">16</span><span class="class">.x86_64</span><span class="class">.rpm</span> gpfs<span class="class">.base-3</span>.<span class="number">4.0</span>-<span class="number">16</span><span class="class">.x86_64</span><span class="class">.rpm</span> gpfs<span class="class">.msg</span><span class="class">.en_US-3</span>.<span class="number">4.0</span>-<span class="number">16</span><span class="class">.noarch</span><span class="class">.rpm</span> gpfs<span class="class">.docs-3</span>.<span class="number">4.0</span>-<span class="number">16</span><span class="class">.noarch</span><span class="class">.rpm</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>安装gpfs cluster</p>
+<div class="cnblogs_code"><br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="annotation">@ionode</span>01 ~]# mmcrcluster -N <span class="string">ionode01:</span>manager-quorum,<span class="string">ionode02:</span>manager-quorum -p ionode01 -s ionode02 -r <span class="regexp">/usr/</span>bin<span class="regexp">/ssh -R /</span>usr<span class="regexp">/bin/</span>scp -C ibmgpfs</span><br><span class="line"><span class="string">Warning:</span> Permanently added <span class="string">'ionode01.cluster.com,192.168.10.11'</span> (RSA) to the list of known hosts.</span><br><span class="line">Wed Apr <span class="number">10</span> <span class="number">17</span>:<span class="number">57</span>:<span class="number">45</span> CST <span class="number">2013</span>: <span class="string">mmcrcluster:</span> Processing node ionode01.cluster.com</span><br><span class="line">Wed Apr <span class="number">10</span> <span class="number">17</span>:<span class="number">57</span>:<span class="number">45</span> CST <span class="number">2013</span>: <span class="string">mmcrcluster:</span> Processing node ionode02.cluster.com</span><br><span class="line"><span class="string">mmcrcluster:</span> Command successfully completed</span><br><span class="line"><span class="string">mmcrcluster:</span> <span class="string">Warning:</span> Not all nodes have proper GPFS license designations.</span><br><span class="line">    Use the mmchlicense command to designate licenses <span class="keyword">as</span> needed.</span><br><span class="line"><span class="string">mmcrcluster:</span> Propagating the cluster configuration data to all</span><br><span class="line">  affected nodes.  This is an asynchronous process.</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>检查一下</p>
+<div class="cnblogs_code"><br><figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[root@centos-1 ~]# mmlscluster</span><br><span class="line"></span><br><span class="line">===============================================================================</span><br><span class="line">| Warning:                                                                    |</span><br><span class="line">|   This cluster contains nodes that do not have a proper GPFS license        |</span><br><span class="line">|   designation.  This violates the terms of the GPFS licensing agreement.    |</span><br><span class="line">|   Use the mmchlicense command and assign the appropriate GPFS licenses      |</span><br><span class="line">|   to each of the nodes in the cluster.  For more information about GPFS     |</span><br><span class="line">|   license designation, see the Concepts, Planning, and Installation Guide.  |</span><br><span class="line">===============================================================================</span><br><span class="line"></span><br><span class="line"><span class="header">GPFS cluster information</span><br><span class="line">========================</span></span><br><span class="line"><span class="code">  GPFS cluster name:         ibmgpfs.ionode01</span></span><br><span class="line"><span class="code">  GPFS cluster id:           13882356895093578599</span></span><br><span class="line"><span class="code">  GPFS UID domain:           ibmgpfs.ionode01</span></span><br><span class="line"><span class="code">  Remote shell command:      /usr/bin/ssh</span></span><br><span class="line"><span class="code">  Remote file copy command:  /usr/bin/scp</span></span><br><span class="line"></span><br><span class="line"><span class="header">GPFS cluster configuration servers:</span><br><span class="line">-----------------------------------</span></span><br><span class="line"><span class="code">  Primary server:    ionode01</span></span><br><span class="line"><span class="code">  Secondary server:  ionode02</span></span><br><span class="line"></span><br><span class="line"><span class="header"> Node  Daemon node name            IP address       Admin node name             Designation</span><br><span class="line">-----------------------------------------------------------------------------------------------</span></span><br><span class="line"><span class="code">   1   ionode01                    192.168.10.11    ionode01                    quorum-manager</span></span><br><span class="line"><span class="code">   2   ionode02                    192.168.10.12    ionode02                    quorum-manager</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>将客户端添加到gpfs cluster中</p>
+<div class="cnblogs_code"><br><figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">[root@ionode01 ~]# mmaddnode -N mgmt3,node01,node02</span><br><span class="line">Wed Apr 10 18:02:26 CST 2013: mmaddnode: Processing node mgmt3.cluster.com</span><br><span class="line">Wed Apr 10 18:02:36 CST 2013: mmaddnode: Processing node node01.cluster.com</span><br><span class="line">Wed Apr 10 18:02:37 CST 2013: mmaddnode: Processing node node02.cluster.com</span><br><span class="line">mmaddnode: Command successfully completed</span><br><span class="line">mmaddnode: Warning: Not all nodes have proper GPFS license designations.</span><br><span class="line"><span class="code">    Use the mmchlicense command to designate licenses as needed.</span></span><br><span class="line">mmaddnode: Propagating the cluster configuration data to all</span><br><span class="line"><span class="code">  affected nodes.  This is an asynchronous process.</span></span><br><span class="line">[root@ionode01 ~]# mmlscluster</span><br><span class="line"></span><br><span class="line">===============================================================================</span><br><span class="line">| Warning:                                                                    |</span><br><span class="line">|   This cluster contains nodes that do not have a proper GPFS license        |</span><br><span class="line">|   designation.  This violates the terms of the GPFS licensing agreement.    |</span><br><span class="line">|   Use the mmchlicense command and assign the appropriate GPFS licenses      |</span><br><span class="line">|   to each of the nodes in the cluster.  For more information about GPFS     |</span><br><span class="line">|   license designation, see the Concepts, Planning, and Installation Guide.  |</span><br><span class="line">===============================================================================</span><br><span class="line"></span><br><span class="line"><span class="header">GPFS cluster information</span><br><span class="line">========================</span></span><br><span class="line"><span class="code">  GPFS cluster name:         ibmgpfs.cluster.com</span></span><br><span class="line"><span class="code">  GPFS cluster id:           13882356895096059800</span></span><br><span class="line"><span class="code">  GPFS UID domain:           ibmgpfs.cluster.com</span></span><br><span class="line"><span class="code">  Remote shell command:      /usr/bin/ssh</span></span><br><span class="line"><span class="code">  Remote file copy command:  /usr/bin/scp</span></span><br><span class="line"></span><br><span class="line"><span class="header">GPFS cluster configuration servers:</span><br><span class="line">-----------------------------------</span></span><br><span class="line"><span class="code">  Primary server:    ionode01.cluster.com</span></span><br><span class="line"><span class="code">  Secondary server:  ionode02.cluster.com</span></span><br><span class="line"></span><br><span class="line"><span class="header"> Node  Daemon node name            IP address       Admin node name             Designation</span><br><span class="line">-----------------------------------------------------------------------------------------------</span></span><br><span class="line"><span class="code">   1   ionode01.cluster.com        192.168.10.11    ionode01.cluster.com        quorum-manager</span></span><br><span class="line"><span class="code">   2   ionode02.cluster.com        192.168.10.12    ionode02.cluster.com        quorum-manager</span></span><br><span class="line"><span class="code">   3   mgmt3.cluster.com           192.168.10.254   mgmt3.cluster.com</span></span><br><span class="line"><span class="code">   4   node01.cluster.com          192.168.10.1     node01.cluster.com</span></span><br><span class="line"><span class="code">   5   node02.cluster.com          192.168.10.2     node02.cluster.com</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>安装license，其实就是一张纸。。。。</p>
+<div class="cnblogs_code"><br><figure class="highlight vhdl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@ionode01 ~]# mmchlicense server <span class="comment">--accept -N ionode01</span></span><br><span class="line">The following nodes will be designated as possessing GPFS server licenses:</span><br><span class="line">        ionode01.cluster.com</span><br><span class="line">mmchlicense: Command successfully completed</span><br><span class="line">mmchlicense: Warning: <span class="keyword">Not</span> <span class="keyword">all</span> nodes have proper GPFS license designations.</span><br><span class="line">    <span class="keyword">Use</span> the mmchlicense command <span class="keyword">to</span> designate licenses as needed.</span><br><span class="line">mmchlicense: Propagating the cluster <span class="keyword">configuration</span> data <span class="keyword">to</span> <span class="keyword">all</span></span><br><span class="line">  affected nodes.  This <span class="keyword">is</span> an asynchronous <span class="keyword">process</span>.</span><br><span class="line">mmchlicense server <span class="comment">--accept -N ionode02</span></span><br><span class="line">[root@ionode01 ~]# mmchlicense client <span class="comment">--accept -N node01</span></span><br><span class="line">[root@ionode01 ~]# mmchlicense client <span class="comment">--accept -N node02</span></span><br><span class="line">[root@ionode01 ~]# mmchlicense client <span class="comment">--accept -N mgmt3</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>启动gpfs cluster</p>
+<div class="cnblogs_code"><br><figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@ionode01 ~]# mmstartup -a</span><br><span class="line">Wed Apr 10 18:05:03 CST 2013: mmstartup: Starting GPFS ...</span><br><span class="line">[root@ionode01 ~]# mmgetstate -a</span><br><span class="line"></span><br><span class="line"><span class="header"> Node number  Node name        GPFS state</span><br><span class="line">------------------------------------------</span></span><br><span class="line"><span class="code">       1      ionode01         active</span></span><br><span class="line"><span class="code">       2      ionode02         active</span></span><br><span class="line"><span class="code">       3      mgmt3            active</span></span><br><span class="line"><span class="code">       4      node01           active</span></span><br><span class="line"><span class="code">       5      node02           active</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>配置nsd文件，注意每行末尾不要留空格</p>
+<div class="cnblogs_code"><br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi <span class="regexp">/home/</span>nsds</span><br><span class="line"><span class="regexp">/gpfsdisk/</span><span class="string">nsdfile:</span><span class="string">ionode01:</span>:<span class="string">dataAndMetadata:</span>:<span class="string">nsd1:</span></span><br><span class="line"><span class="regexp">/gpfsdisk/</span><span class="string">nsdfile:</span><span class="string">ionode02:</span>:<span class="string">dataAndMetadata:</span>:<span class="string">nsd2:</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>创建nsd</p>
+<div class="cnblogs_code"><br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="annotation">@ionode</span>01 ~]# mmcrnsd -F <span class="regexp">/root/</span>nsds -v yes</span><br><span class="line"><span class="string">mmcrnsd:</span> Processing disk <span class="regexp">/gpfsdisk/</span>nsdfile</span><br><span class="line"><span class="string">mmcrnsd:</span> Processing disk <span class="regexp">/gpfsdisk/</span>nsdfile</span><br><span class="line"><span class="string">mmcrnsd:</span> Propagating the cluster configuration data to all</span><br><span class="line">  affected nodes.  This is an asynchronous process.</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>创建文件系统</p>
+<div class="cnblogs_code"><br><figure class="highlight vhdl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@ionode01 ~]# mmcrfs gpfs1 -F nsds -B <span class="number">128</span>k -T /gpfs</span><br><span class="line"></span><br><span class="line">The following disks <span class="keyword">of</span> gpfs1 will be formatted <span class="keyword">on</span> node ionode01:</span><br><span class="line">    nsd1: size <span class="number">2000000</span> KB</span><br><span class="line">    nsd2: size <span class="number">2000000</span> KB</span><br><span class="line">Formatting <span class="keyword">file</span> system ...</span><br><span class="line">Disks up <span class="keyword">to</span> size <span class="number">25</span> GB can be added <span class="keyword">to</span> storage pool <span class="attribute">'system</span>'.</span><br><span class="line">Creating Inode <span class="keyword">File</span></span><br><span class="line">Creating Allocation Maps</span><br><span class="line">Creating Log Files</span><br><span class="line">Clearing Inode Allocation <span class="keyword">Map</span></span><br><span class="line">Clearing <span class="keyword">Block</span> Allocation <span class="keyword">Map</span></span><br><span class="line">Formatting Allocation <span class="keyword">Map</span> <span class="keyword">for</span> storage pool <span class="attribute">'system</span>'</span><br><span class="line">Completed creation <span class="keyword">of</span> <span class="keyword">file</span> system /dev/gpfs1.</span><br><span class="line">mmcrfs: Propagating the cluster <span class="keyword">configuration</span> data <span class="keyword">to</span> <span class="keyword">all</span></span><br><span class="line">  affected nodes.  This <span class="keyword">is</span> an asynchronous <span class="keyword">process</span>.</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>挂载文件系统</p>
+<div class="cnblogs_code"><br><figure class="highlight puppet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[<span class="literal">root</span>@ionode01 ~]<span class="comment"># mmmount /gpfs -a</span></span><br><span class="line"><span class="constant">Wed</span> <span class="constant">Apr</span> <span class="number">10</span> <span class="number">18</span>:<span class="number">17</span>:<span class="number">05</span> <span class="constant">C</span>ST <span class="number">2013</span>: mmmount: <span class="constant">Mounting</span> <span class="keyword">file</span> systems ...</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>&nbsp;</p>
+<p>最后赞一下ibm的gpfs，性能好不说，绝对良心产品，装过的人都懂。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/04/10/3011839/" data-id="ci9jzipjb000xawv4uoyuqb36" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2013/04/10/3012214/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          lsf安装
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2013/04/09/3010528/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">xCAT 2.7.6 dns解析</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/11/hexoblog/">hexoblog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/first-blog/">first blog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/19/4439945/">初学python里的yield send next</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="python">
+<meta property="og:type" content="website">
+<meta property="og:title" content="彼格海德的笔记空间">
+<meta property="og:url" content="http://yoursite.com/page/2/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="python">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="彼格海德的笔记空间">
+<meta name="twitter:description" content="python">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+  
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-3958082" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/09/05/3958082/" class="article-date">
+  <time datetime="2014-09-05T06:51:00.000Z" itemprop="datePublished">2014-09-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/09/05/3958082/">spark on centos6.5 安装</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>第一步在centos 6.5上安装java&nbsp;运行环境</p>
+<p><a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html">http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html</a></p>
+<p>第二步安装hadoop，去</p>
+<p><a href="http://hadoop.apache.org/上下一个">http://hadoop.apache.org/上下一个</a></p>
+<p><a href="http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz">http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz</a><br>
+        
+          <p class="article-more-link">
+            <a href="/2014/09/05/3958082/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2014/09/05/3958082/" data-id="ci9jzipif000jawv4xnh7jq5s" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-3804254" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/06/23/3804254/" class="article-date">
+  <time datetime="2014-06-23T08:21:00.000Z" itemprop="datePublished">2014-06-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/06/23/3804254/">矩阵对角化</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>numerical&nbsp;recipe&nbsp;里一共讲了两种实数对称矩阵的对角化，</p>
+<p>jacobi法</p>
+<p>tred2生成上三角阵以后用tqli对角化</p>
+<p>前者稳定但慢易并行，后者较快但疑似不稳定，串行。</p>
+<p>花了一下午，一点点调试终于知道了第二种方法不稳定的原因在哪里<br>
+        
+          <p class="article-more-link">
+            <a href="/2014/06/23/3804254/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2014/06/23/3804254/" data-id="ci9jzipih000kawv4z5sdnv3f" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-3466917" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/12/10/3466917/" class="article-date">
+  <time datetime="2013-12-10T01:51:00.000Z" itemprop="datePublished">2013-12-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/12/10/3466917/">redhat 6上nis配置</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>redhat 6上nis有点改动。在这里记一下</p>
+<p>新装系统以后，首先要</p>
+<p>yum install ypserv</p>
+<p>安装ypserv的包</p>
+<p>然后是设置<br>
+        
+          <p class="article-more-link">
+            <a href="/2013/12/10/3466917/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/12/10/3466917/" data-id="ci9jzipij000lawv45qi2r9hg" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-3420705" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/11/13/3420705/" class="article-date">
+  <time datetime="2013-11-13T01:28:00.000Z" itemprop="datePublished">2013-11-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/11/13/3420705/">如何查看cache信息</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>很多时候查不到本机cpu的cache信息。而了解这些信息，对于调优很有帮助</p>
+<p>查看1级缓存cache大小</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span><span class="keyword">size</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看能访问这个1级缓存的cpu编号</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>shared_cpu_list</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看1级缓存cache line的大小</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>coherency_line_size</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看1级缓存cache set的数目<br>
+        
+          <p class="article-more-link">
+            <a href="/2013/11/13/3420705/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/11/13/3420705/" data-id="ci9jzipik000mawv4o5c21h36" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-3413801" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/11/08/3413801/" class="article-date">
+  <time datetime="2013-11-08T02:32:00.000Z" itemprop="datePublished">2013-11-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/11/08/3413801/">oprofile 安装使用</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>ubuntu上要编译安装oprofile。现在版本（0.9.9）的oprofile的编译需要binutil-dev libpopt-dev</p>
+<p><span style="font-size: medium;"><span lang="en-US">apt-get install binutil-dev</span></span> <span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">libpopt-dev</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">然后./configure make make install</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">安装完以后</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">1.执行<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —init</span></span></span>启动加载oprofile模块</span></span></span><br>
+        
+          <p class="article-more-link">
+            <a href="/2013/11/08/3413801/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/11/08/3413801/" data-id="ci9jzipil000nawv49rs1c9m8" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-3391235" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/10/27/3391235/" class="article-date">
+  <time datetime="2013-10-27T13:16:00.000Z" itemprop="datePublished">2013-10-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/10/27/3391235/">gromacs, quake III和vrsqrtps</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>看标题大家可能觉得三个词汇风马牛不相及，第一个是解蛋白质分子动力学的软件，第二个是上三代宅男最爱雷神之锤，第三个则是一个存在于IntelSSE及AVX中的一个指令，他的作用是快速求平方根的倒数。</p>
+<p>起因是这样子的。某天闲着没事，跑去benchmarksgame.alioth.debian.org上看到了万年被压在fortran身体下蹂躏的c++居然翻身了。最不可思议的是，在fortran长项上的多体运算nbody居然被c++拉了一大截性能下来（2倍,5千万步，fortran用时19秒，C++用时9.59秒）。本着fortran居然能被c++搞倒根本是不可能的事情的信念，我开始出发了。</p>
+<p>好在他们提供了nbody的f90代码。装好ifort就开始优化，初一眼看过去就好多问题，&ldquo;怪不得那么慢&rdquo;，看来现在fortran培训太少了以至于部分不合格码农直接拿java代码改改就过来用了。内存不对齐，行列优先搞混，没有写成向量化，这类错误比比皆是。改了改，差不多跑快了10秒，感觉差不多了，把c++的代码拉下来一编译，瞬间崩溃，在本机上只跑了6秒！</p>
+<p>接下去是苦逼的两天，我绞尽脑汁改代码，向量化，发现部分代码无法向量化，然后手工指定，变更慢了&hellip;&hellip;终于，在现实面前，终于低下头，想想是不是c++里用了什么新技术导致比fortran快呢？或许人家也有新的算法呢？（可喜可贺）</p>
+<p>跑去看c++的代码部分。就发现他将多体问题中常见的求出距离求倒数r^(-1)=(1/sqrt(x<em>x+y</em>y+z*z))的那一步用了很简明的方法写了一下<br>
+        
+          <p class="article-more-link">
+            <a href="/2013/10/27/3391235/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/10/27/3391235/" data-id="ci9jzipiq000oawv49jrokj64" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-3342893" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/09/27/3342893/" class="article-date">
+  <time datetime="2013-09-27T07:56:00.000Z" itemprop="datePublished">2013-09-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/09/27/3342893/">haskell中的cps</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>cps全称叫continuation passing style，简要来讲就是告诉函数下一步做什么的递归方式，由于普通递归有栈溢出的问题，而cps都是尾递归(tail recursion)，尾递归则是没有栈溢出问题的，所以haskell推荐都用cps的方式去编写代码。</p>
+<p>当然，相对于普通递归方式，cps也有着非常不便于理解的问题。</p>
+<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> n* fact(n-<span class="number">1</span>)</span><br><span class="line"><span class="keyword">print</span> fact(<span class="number">400</span>)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这是一段递归求阶乘的python代码。用cps改写就是</p>
+<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact_cps</span><span class="params">(n,ret)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        ret(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        fact_cps(n-<span class="number">1</span>, <span class="keyword">lambda</span> x:ret(n*x))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ret2</span><span class="params">(x)</span>:</span></span><br><span class="line">    <span class="keyword">print</span> x</span><br><span class="line">fact_cps(<span class="number">400</span>,ret2)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这里要注意的是，我们在传参数的时候多了一个ret，而这个ret其实是一个函数，函数的作用就是传入一个值并打印他。在实际运行过程中，其实是这样子的</p>
+<p>以fact_cps(3,ret2)求3的阶乘为例，第一步我们是执行fact_cps(3,ret2)，到第五行的地方，我们执行的是fact_cps(2, lambda x:ret2(3*x))，这里的ret即最外层的ret2<br>
+        
+          <p class="article-more-link">
+            <a href="/2013/09/27/3342893/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/09/27/3342893/" data-id="ci9jzipit000pawv4w71s89cp" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-3335786" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/09/23/3335786/" class="article-date">
+  <time datetime="2013-09-23T14:13:00.000Z" itemprop="datePublished">2013-09-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/09/23/3335786/">haskell中的monad</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>monad本意是单子。在haskell中，第一个接触的基本都是IO action，通过把IO动作包装起来我们能很方便的与现实世界进行数据交换。但其实monad的用途不止如此，monad还能讲一系列操作进行序列化，而这一点在通常编程中是非常需要的。而在haskell中，类似的事情则是通过递归来完成了平时需要序列化的工作。但其实haskell中也有能进行顺序操作的方法，那就是monad。一个类似于monad的定义基本是这个样子的。</p>
+<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Computation c where</span><br><span class="line">    success :: <span class="tag">a</span> -&gt; c <span class="tag">a</span></span><br><span class="line">    failure :: String -&gt; c <span class="tag">a</span></span><br><span class="line">    augment :: c <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; c b) -&gt; c <span class="tag">b</span></span><br><span class="line">    combine :: c <span class="tag">a</span> -&gt; c <span class="tag">a</span> -&gt; c a</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>第一个success即是讲一个动作包裹成computation类型，代表一次顺利的操作，第二个failure代表一个失败的操作，取一个字符串返回一个c包裹的a，第三个augment取两个参数，一个是之前的操作，另一个是一个能将a变成c包裹的b的函数，并返回一个c包裹的b。这其实就是将操作序列化。第四个combine就是去两个之前获得的c包裹的a并产生一个新的同类型</p>
+<p>一个完整定义的monad差不多是这个</p>
+<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Monad m where</span><br><span class="line">    return :: <span class="tag">a</span> -&gt; m <span class="tag">a</span></span><br><span class="line">    fail :: String -&gt; m <span class="tag">a</span></span><br><span class="line">    (&gt;&gt;=) :: m <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; m b) -&gt; m <span class="tag">b</span></span><br><span class="line">    (&gt;&gt;) :: m <span class="tag">a</span> -&gt; m <span class="tag">b</span> -&gt; m b</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>第一个success即return，failure即fail， augment即&gt;&gt;=，combine即&gt;&gt;，不同的是，&gt;&gt;中的定义更宽泛点，是&gt;&gt;=的简化版本，省略掉了中间的a</p>
+<p>对于monad一共有三个转义定律<br>
+        
+          <p class="article-more-link">
+            <a href="/2013/09/23/3335786/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/09/23/3335786/" data-id="ci9jzipiv000qawv4ao0hbgrh" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-3323388" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/09/15/3323388/" class="article-date">
+  <time datetime="2013-09-15T14:53:00.000Z" itemprop="datePublished">2013-09-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/09/15/3323388/">haskell中的let和where</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>haskell中有两种定义局部变量的方法let和where，方法分别如下</p>
+<div class="cnblogs_code"><br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots a b c = <span class="list">(<span class="list">(<span class="keyword">-b</span> + det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>, <span class="list">(<span class="keyword">-b</span> - det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>)</span></span><br><span class="line">      where det = sqrt<span class="list">(<span class="keyword">b*b-4*a*c</span>)</span></span><br><span class="line">               a2 = <span class="number">2</span>*a</span><br></pre></td></tr></table></figure><br><br></div><br><div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots <span class="tag">a</span> <span class="tag">b</span> c = let det = sqrt (b*<span class="tag">b</span> - <span class="number">4</span>*a*c)</span><br><span class="line">                        a2 = <span class="number">2</span>*<span class="tag">a</span></span><br><span class="line">                   <span class="keyword">in</span> ((-<span class="tag">b</span> + det) / a2, (-<span class="tag">b</span> - det) / a2)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这两种方法都可以使全局变量定义失效</p>
+<div class="cnblogs_code"><br><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">det = <span class="string">"Hello World"</span></span><br><span class="line">roots a b c =((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">    where det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">roots' a b c=</span><br><span class="line">    let det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">    in ((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">f _ = det</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots' 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; f 'a'</span><br><span class="line"><span class="string">"Hello World"</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>对于let和where混用，那么是let的优先级高，也就是说优先使用let定义的变量，而不是where定义的变量，比如</p>
+<div class="cnblogs_code"><br><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">f <span class="variable">x =</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y =</span> x+<span class="number">1</span></span><br><span class="line">    <span class="keyword">in</span> y</span><br><span class="line">    where <span class="variable">y =</span> x+<span class="number">2</span></span><br><span class="line">*Main&gt; f <span class="number">10</span></span><br><span class="line"><span class="number">11</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>等于11而不是12</p>
+<p>对于let和where，同样也支持模式匹配，例如<br>
+        
+          <p class="article-more-link">
+            <a href="/2013/09/15/3323388/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/09/15/3323388/" data-id="ci9jzipix000rawv4ayvbhjl6" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-3322584" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/09/15/3322584/" class="article-date">
+  <time datetime="2013-09-15T07:33:00.000Z" itemprop="datePublished">2013-09-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/09/15/3322584/">haskell io模块</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>haskell中的io模块主要是用于读写文件屏幕的，通过import IO来导入</p>
+<p>其中有如下常用定义</p>
+<div class="cnblogs_code"><br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="typedef"><span class="keyword">data</span> <span class="type">IOMode</span> = <span class="type">ReadMode</span> | <span class="type">WriteMode</span> | <span class="type">AppendMode</span> | <span class="type">ReadWriteMode</span></span></span><br></pre></td></tr></table></figure><br><br></div><br><div class="cnblogs_code"><br><figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">openFile <span class="type-annotation">::</span> FilePath -&gt; IOMode -&gt; <span class="built_in">IO</span> Handle</span><br><span class="line">hClose   <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">hIsEOF   <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">Bool</span></span><br><span class="line">hGetChar <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">Char</span></span><br><span class="line">hGetLine  <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">hGetContents <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">getChar <span class="type-annotation">::</span> <span class="built_in">IO</span> <span class="built_in">Char</span></span><br><span class="line">getLine <span class="type-annotation">::</span> <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">getContents <span class="type-annotation">::</span> <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">hPutChar <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">Char</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">hPutStr <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">hPutStrLn <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">putChar <span class="type-annotation">::</span> <span class="built_in">Char</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">putStr <span class="type-annotation">::</span> <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">putStrLn <span class="type-annotation">::</span> <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">readFile <span class="type-annotation">::</span> FilePath -&gt; <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">writeFile <span class="type-annotation">::</span> FilePath -&gt; <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">bracket  <span class="type-annotation">::</span> <span class="built_in">IO</span> a-&gt; (a -&gt; <span class="built_in">IO</span> b) -&gt; (a -&gt; <span class="built_in">IO</span> c) -&gt; <span class="built_in">IO</span> c</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>其中readFile和writeFile是不需要事先打开文件就能读写整个文件的。bracket是用来安全读写文件的，在对外部操作中很可能遇到异常，这时候就需要bracket来保证异常发生时，文件能被正确关闭。bracket的第一个参数一般是一开始做的事情，第二个是最后做的事情，第三个是中间做的事情。在读写文件中，一般性是打开文件 关闭文件 读写文件这么三个选项</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/09/15/3322584/" data-id="ci9jzipiy000sawv4cq5t6sx0" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+  
+    <nav id="page-nav">
+      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
+    </nav>
+  
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/11/hexoblog/">hexoblog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/first-blog/">first blog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/19/4439945/">初学python里的yield send next</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

@@ -138,4 +138,682 @@ markdown-<span class="literal">mode</span>
     
   </entry>
   
+  <entry>
+    <title><![CDATA[在docker里部署网络服务]]></title>
+    <link href="http://yoursite.com/2015/05/08/4488876/"/>
+    <id>http://yoursite.com/2015/05/08/4488876/</id>
+    <published>2015-05-08T13:17:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>之前试着玩玩docker有一阵子了，今天算是头一回正式在docker里部署网络服务。</p>
+<p>本来想和lxc差不多的东西那自然是手到擒来，没想到还是改了很多。</p>
+<p>第一个遇到的问题是，远程连到docker宿主机干活的时候突然断网了。一下傻掉了，以前都是连内网，从来不断的。这次连了一个反向隧道，居然断了，傻眼了。</p>
+<p>再连回去，发现docker ps里还有进程，好办，docker attach这个进程，就又进去了。</p>
+<p>如果没有找到进程，就只要docker commit存一下，然后再docker run拉起来继续<br><a id="more"></a></p>
+<p>如果连id号也忘了，那还可以docker ps -a看一下最近用过的容器。</p>
+<p>第二个遇到的问题是，部署了tornado以后起服务发现cannot bind address，想了一下，猜估计是容器里命令太少没法自动决定ip地址，手工指定了一个，可是问题又来了，怎么把内部的端口和外部的端口打通呢？</p>
+<p>有几种办法，</p>
+<p>第一种是讲docker的网络非容器花，—net=host将网络置为和主机一样的环境</p>
+<p>第二种就是docker run -p outerip:outerport:innerport将外部的ip，端口映射到内部的端口，当然也可以用-v将外部的目录映射到内部的目录</p>
+<p>&nbsp;</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>之前试着玩玩docker有一阵子了，今天算是头一回正式在docker里部署网络服务。</p>
+<p>本来想和lxc差不多的东西那自然是手到擒来，没想到还是改了很多。</p>
+<p>第一个遇到的问题是，远程连到docker宿主机干活的时候突然断网了。一下傻掉了，以前都是连内网，从来不断的。这次连了一个反向隧道，居然断了，傻眼了。</p>
+<p>再连回去，发现docker ps里还有进程，好办，docker attach这个进程，就又进去了。</p>
+<p>如果没有找到进程，就只要docker commit存一下，然后再docker run拉起来继续<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[初学python里的yield send next]]></title>
+    <link href="http://yoursite.com/2015/04/19/4439945/"/>
+    <id>http://yoursite.com/2015/04/19/4439945/</id>
+    <published>2015-04-19T13:09:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>今天看书的时候突然看到这个想起来一直没有怎么使用过send和next试了一下</p>
+<p>发现了一个诡异的问题</p>
+<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_primes</span><span class="params">(start)</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="number">1</span> :</span><br><span class="line">        <span class="keyword">if</span> is_prime(start) :</span><br><span class="line">            start = <span class="keyword">yield</span> start</span><br><span class="line">        start += <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">is_prime</span><span class="params">(number)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> number &gt; <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">if</span> number == <span class="number">2</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">        <span class="keyword">if</span> number % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">        <span class="keyword">for</span> current <span class="keyword">in</span> range(<span class="number">3</span>, int(math.sqrt(number) + <span class="number">1</span>), <span class="number">2</span>):</span><br><span class="line">            <span class="keyword">if</span> number % current == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span> :</span></span><br><span class="line">    genet = get_primes(<span class="number">100</span>)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> genet : </span><br><span class="line">        send(i)</span><br><span class="line">        <span class="keyword">print</span> i</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span> :</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>告诉我start的值为None</p>
+<p>然后跑去翻资料，发现自己理解错误的地方，send和next其实有一个类似的功能，就是拿一个yield的值，不同的是send是传一个进去，而next传一个None</p>
+<p>所以第一次跑的时候，start=100不是质数，直接过，101是质数，get_primes执行到yield停住，等带main的循环执行next，101拿出来，再用send传101进get_primes，start赋值为101，然后start加1为102，发现不是质数再加1。yield停住。而这时候main里的循环又执行到了next（倒数第一步是send），所以next传递进去的是None，这时候start就被赋值为None了。<br><a id="more"></a></p>
+<p>&nbsp;</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>今天看书的时候突然看到这个想起来一直没有怎么使用过send和next试了一下</p>
+<p>发现了一个诡异的问题</p>
+<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_primes</span><span class="params">(start)</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="number">1</span> :</span><br><span class="line">        <span class="keyword">if</span> is_prime(start) :</span><br><span class="line">            start = <span class="keyword">yield</span> start</span><br><span class="line">        start += <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">is_prime</span><span class="params">(number)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> number &gt; <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">if</span> number == <span class="number">2</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">        <span class="keyword">if</span> number % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">        <span class="keyword">for</span> current <span class="keyword">in</span> range(<span class="number">3</span>, int(math.sqrt(number) + <span class="number">1</span>), <span class="number">2</span>):</span><br><span class="line">            <span class="keyword">if</span> number % current == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span> :</span></span><br><span class="line">    genet = get_primes(<span class="number">100</span>)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> genet : </span><br><span class="line">        send(i)</span><br><span class="line">        <span class="keyword">print</span> i</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span> :</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>告诉我start的值为None</p>
+<p>然后跑去翻资料，发现自己理解错误的地方，send和next其实有一个类似的功能，就是拿一个yield的值，不同的是send是传一个进去，而next传一个None</p>
+<p>所以第一次跑的时候，start=100不是质数，直接过，101是质数，get_primes执行到yield停住，等带main的循环执行next，101拿出来，再用send传101进get_primes，start赋值为101，然后start加1为102，发现不是质数再加1。yield停住。而这时候main里的循环又执行到了next（倒数第一步是send），所以next传递进去的是None，这时候start就被赋值为None了。<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[opencl初体验]]></title>
+    <link href="http://yoursite.com/2015/04/10/4415746/"/>
+    <id>http://yoursite.com/2015/04/10/4415746/</id>
+    <published>2015-04-10T13:46:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>总结一下，opencl的步骤差不多是这些</p>
+<p>先要获取平台的id clGetPlatformIDs(nPlatforms, platform_id, &amp;num_of_platforms)</p>
+<p>然后获取设备id clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_GPU, 1, %device_id &amp;num_of_devices)</p>
+<p>////这里要注意的是，如果有多个设备（如cpu和gpu）platform_id必须使用数组形式传入</p>
+<p>然后是创建上下文clCreateContext（properties, 1, &amp;device_id, NULL, NULL, &amp;err)<br><a id="more"></a></p>
+<p>创建命令队列clCreateCommandQueue(context, device_id, 0, &amp;err)</p>
+<p>创建设备缓存clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * DATA_SIZE, NULL, NULL);</p>
+<p>复制数据clEnqueueWriteBuffer(command_queue, input, CL_TRUE, 0, sizeof(float)*DATA_SIZE, inputData, 0, NULL, NULL)</p>
+<p>然后是根据源代码产生program代码 clCreateProgramWithSource(context, 1, (const char **)&amp;ProgramSource, NULL, &amp;err)</p>
+<p>然后编译program clBuildProgram(program, 0, NULL, NULL, NULL, NULL)</p>
+<p>最后产生kernel clCreateKernel(program, “test”, &amp;err);</p>
+<p>设定kernel的参数 clSetKernelArg(kernel, 0, sizeof(cl_mem), &amp;input)</p>
+<p>将kernel推入命令队列 clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &amp;global, NULL, 0, NULL, NULL)</p>
+<p>完成计算clFinish(command_queue)</p>
+<p>读取设备缓存clEnqueueReadBuffer(command_queue, input, CL_TRUE, 0, sizeof(float) * DATA_SIZE, inputData, 0, NULL, NULL)</p>
+<p>最后是清理工作</p>
+<p>clReleaseMemObject(input)</p>
+<p>clReleaseProgram(program)</p>
+<p>clReleaseKernel(kernel)</p>
+<p>clReleaseCommandQueue(command_queue)</p>
+<p>clReleaseContext(context)</p>
+<p>大致是这个流程，详细每个命令的参数怎么设定还要看文档</p>
+<p><a href="https://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/" target="_blank" rel="external">https://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/</a></p>
+<p>出了任何报错最好还是查一下头文件，很有帮助</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>总结一下，opencl的步骤差不多是这些</p>
+<p>先要获取平台的id clGetPlatformIDs(nPlatforms, platform_id, &amp;num_of_platforms)</p>
+<p>然后获取设备id clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_GPU, 1, %device_id &amp;num_of_devices)</p>
+<p>////这里要注意的是，如果有多个设备（如cpu和gpu）platform_id必须使用数组形式传入</p>
+<p>然后是创建上下文clCreateContext（properties, 1, &amp;device_id, NULL, NULL, &amp;err)<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[cuda计算的分块]]></title>
+    <link href="http://yoursite.com/2015/04/03/4390056/"/>
+    <id>http://yoursite.com/2015/04/03/4390056/</id>
+    <published>2015-04-03T06:50:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>gpu的架构分为streaming multiprocessors</p>
+<p>每个streaming&nbsp;multiprocessors（SM）又能分步骤执行很多threads，单个SM内部能同时执行的threads叫做warp。一个warp能同时操作16个单精度浮点数/8个双精度（tesla），或者32个单精度浮点数/16个双精度浮点数（feimi）。</p>
+<p>单个SM内部有local&nbsp;memory和16kb大小的share&nbsp;memory，后者是在做计算的时候要尽量利用好的东西。</p>
+<p>&nbsp;</p>
+<p>根据gpu的架构，做cuda计算的时候基本上是这么一个流程<br><a id="more"></a></p>
+<p>先把目标矩阵分块，8<em>8或者16</em>16等，具体多大要看所用gpu的配置</p>
+<p>分块完以后，gpu会把每个块调度到每个SM上去执行。SM执行的时候按照warp大小起线程，直到运算完成。</p>
+<p>&nbsp;</p>
+<p>资源限制：</p>
+<p>每个GPU必须有16个以上的block（对应16个SM）。而每个SM最多只能有8个block（对应8个flag位）。</p>
+<p>&nbsp;</p>
+<p>算法举例</p>
+<p>拿矩阵乘法C=A*B举例，</p>
+<p>在不使用share&nbsp;memory的时候，每计算C中的一个值就需要2<em>N</em>N的数值。所以不使用BLOCK算法的时候，一个N<em>N的矩阵算一次就需要读2</em>N^4的数据，起了N^2的threads。每次要读2<em>N的数，这个操作数就是2N。带宽显然不够。这是非常慢的。在使用share memory的时候，每计算BLOCK_SIZE</em>BLOCK_SIZE中的值就需要读2<em>BLOCK_SIZE</em>BLOCK_SIZE的数据，当BLOCK_SIZE是16的时候，那就是2k，16kb的share memory能允许8个block。</p>
+<p>当BLOCK_SIZE是32的时候，大小是8k，就是2个block。</p>
+<p>那回顾一下刚才的数据，我们能知道，大小是32<em>32的block在16kbshare&nbsp;memory的时候对SM的利用率不高，（只能放2个block），而大小是16</em>16的block在16kb&nbsp;sharememory的时候对SM的利用率高（到了8个block，到顶了）。</p>
+<p>为什么不用2个block而是8个block呢？</p>
+<p>因为在从local&nbsp;memory读到share&nbsp;memory的是要时间的，gpu可以在这一个warp读取share&nbsp;memory的时候切换到别的warp&nbsp;让他们也读share&nbsp;memory。还记得吗？一个warp是16个线程，SM能同时保存8个BLOCK的状态。对于32*32这个大小的block，对于SM的调度没有利用好，所有线程全都卡在读取内存上了。</p>
+<p>对于16<em>16的block，每次要读2</em>256=512个数，这256个数的操作是256<em>16</em>2=8192个浮点操作。这时带宽就足够了。</p>
+<p>&nbsp;</p>
+<p>对于feimi架构来说，share&nbsp;memory翻了3倍成了48kb</p>
+<p>BLOCK_SIZE等于16的时候，就是24个block，BLOCK_SIZE=32的时候就是6个block。gpu读取share&nbsp;memory大概要20个cycle。一个32*32的block有1024个线程，一个warp 32个线程。这样就至少32个cycle过去了，足够前面的线程读完。</p>
+<p>而对于BLOCK_SIZE等于16的时候，24个block对于一个SM来说太多了（同时只能调度8个）.</p>
+<p>&nbsp;</p>
+<p>ps:</p>
+<p>在调试矩阵乘法的时候掉进坑里了&hellip;&hellip;给每个矩阵赋值10.0<em>i+j，两个矩阵互相乘。当矩阵比较小的时候100</em>100及以下，一点问题都没有。大到1000*1000的开始出现计算错误。找了大半天都没找出个所以然来。突然发现结果比较长，一数位数，都快7-8位了，原来是过了单精度浮点数的有效位数了。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>gpu的架构分为streaming multiprocessors</p>
+<p>每个streaming&nbsp;multiprocessors（SM）又能分步骤执行很多threads，单个SM内部能同时执行的threads叫做warp。一个warp能同时操作16个单精度浮点数/8个双精度（tesla），或者32个单精度浮点数/16个双精度浮点数（feimi）。</p>
+<p>单个SM内部有local&nbsp;memory和16kb大小的share&nbsp;memory，后者是在做计算的时候要尽量利用好的东西。</p>
+<p>&nbsp;</p>
+<p>根据gpu的架构，做cuda计算的时候基本上是这么一个流程<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[尽信书不如无书]]></title>
+    <link href="http://yoursite.com/2015/01/27/4253426/"/>
+    <id>http://yoursite.com/2015/01/27/4253426/</id>
+    <published>2015-01-27T08:56:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>最近在看dive into python，看到介绍了另外一种字典类UserDict，挖好玩，试试看。请鄙视我这个不读书星人，之前都是用到什么stackoverflow上搜什么&hellip;&hellip;</p>
+<p>开始使用到代码里去。发现在某个地方报了个错</p>
+<p>for&nbsp; i in a:</p>
+<p>blablabla</p>
+<p>KeyError: 0<br><a id="more"></a></p>
+<p>虽然遍历的方式可以用for k,v in a.items()来完成，但是这个0值是哪里来的？再把字典打出来也没有发现根源</p>
+<p>好奇</p>
+<p>然后放狗搜，居然userdict已经从2.6版本开始就deprecated!这是为什么，感觉碰到幽灵了。</p>
+<p>换成从dict类继承同样的代码一点问题都没有。</p>
+<p>&hellip;&hellip;浪费了我好多时间，悲哀，人果然还是要多读书啊！</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>最近在看dive into python，看到介绍了另外一种字典类UserDict，挖好玩，试试看。请鄙视我这个不读书星人，之前都是用到什么stackoverflow上搜什么&hellip;&hellip;</p>
+<p>开始使用到代码里去。发现在某个地方报了个错</p>
+<p>for&nbsp; i in a:</p>
+<p>blablabla</p>
+<p>KeyError: 0<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[docker on centos]]></title>
+    <link href="http://yoursite.com/2015/01/09/4212796/"/>
+    <id>http://yoursite.com/2015/01/09/4212796/</id>
+    <published>2015-01-09T03:03:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>docker最好在centos7上安装，centos6.5上似乎麻烦不少</p>
+<p>这里直接在centos7上安装，要提前装一下epel的repo</p>
+<p>yum install docker&nbsp;安装就行</p>
+<p>chkconfig docker on</p>
+<p>service docker start<br><a id="more"></a></p>
+<p>把docker服务设置为每次开机启动，然后启动docker服务</p>
+<p>然后就能docker pull centos抓一个镜像下来</p>
+<p>和lxc略有不一样的是，lxc&nbsp;和普通虚拟机一样有create命令，能够创建一个容器，还要自己手动配一下网络，主机名等等</p>
+<p>docker直接把这些都封装起来了，你能看到的只有id以及repo名，而repo名是不在容器内体现的。</p>
+<p>所以docker没有create命令，直接docker run &lt;image name&gt; &lt;command name&gt;就能运行</p>
+<p>一旦对容器状态进行改变以后，比如装了一个包啊之类的，就需要docker&nbsp;push来对状态改变进行保存到另一个repo里面去（或者原repo）</p>
+<p>看来，docker风靡不是没有原因的，类git的操作方法应该很容易被码农接受，并且避免了环境依赖，使得部署测试变得非常方便。</p>
+<p>以后应该会大规模流行。</p>
+<p>而lxc可能更适合定制化需求的paas平台吧。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>docker最好在centos7上安装，centos6.5上似乎麻烦不少</p>
+<p>这里直接在centos7上安装，要提前装一下epel的repo</p>
+<p>yum install docker&nbsp;安装就行</p>
+<p>chkconfig docker on</p>
+<p>service docker start<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[lxc on centos]]></title>
+    <link href="http://yoursite.com/2015/01/08/4211267/"/>
+    <id>http://yoursite.com/2015/01/08/4211267/</id>
+    <published>2015-01-08T08:17:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>终于把lxc的网络配通了，也不知道对不对，记一下</p>
+<p>一开始都是雷同的地方</p>
+<p>yum install libcgroup lxc lxc-templates</p>
+<p>安装lxc&nbsp;cgroup</p>
+<p>然后记得<br><a id="more"></a></p>
+<p>chkconfig —level 345 libcgroup on把cgroup始终启动</p>
+<p>添加一个桥</p>
+<p>ifcfg-eth0改成如下</p>
+<p>DEVICE=”eth0”<br>ONBOOT=”yes”<br>TYPE=Ethernet<br>IPV6INIT=no<br>USERCTL=no<br>BRIDGE=virbr0<br>新建一个ifcfg-virbr0，如下内容</p>
+<p>DEVICE=virbr0<br>TYPE=Bridge<br>BOOTPROTO=static<br>DNS1=192.168.8.254<br>GATEWAY=192.168.8.254<br>IPADDR=192.168.8.50<br>NETMASK=255.255.255.0<br>ONBOOT=yes<br>重启一下桥就产生了</p>
+<p>然后</p>
+<p>lxc-create -n testcentos -t centos</p>
+<p>创建一个以centos为模板的容器</p>
+<p>然后</p>
+<p>vi /var/lib/lxc/testcentos/config</p>
+<p>lxc.network.type = veth<br>lxc.network.flags = up<br>lxc.network.link = virbr0<br>lxc.network.hwaddr = fe:7c:d6:5a:ed:10<br>lxc.network.ipv4 = 192.168.8.55/24<br>lxc.network.ipv4.gateway = 192.168.8.50<br>lxc.network.name = eth0<br>lxc.rootfs = /var/lib/lxc/testcentos/rootfs</p>
+<p>装完了以后</p>
+<p>cat /var/lib/lxc/testcentos/tmp_root_pass</p>
+<p>看一下root密码</p>
+<p>然后</p>
+<p>lxc-start -n testcentos -d</p>
+<p>启动容器，并且</p>
+<p>lxc-console -n testcentos</p>
+<p>登陆容器</p>
+<p>登录完了以后问题来了，网络呢？这里搞了好久</p>
+<p>sysctl net.ipv4.ip_forward=1</p>
+<p>打开转发</p>
+<p>然后&nbsp;iptables设一条规则</p>
+<p>iptables -t nat -A POSTROUTING -o eth0 -s 192.168.8.55 -j MASQUERADE</p>
+<p>这条规则有问题，一开始设的有点问题，后来改成</p>
+<p>iptables -t nat -A POSTROUTING -o virbr0 -s 192.168.8.55 -j MASQUERADE</p>
+<p>就没问题了，好奇怪。不懂为什么。但这里也只是保证了能访问实验室外部网络，实验室内部网络还是不通</p>
+<p>最后在容器里ping实验室内部地址，再在virbr0上dump icmp包</p>
+<p>tcpdump -n -i&nbsp; virbr0 icmp</p>
+<p>发现压根没有包通过，然后发现容器里的路由有问题</p>
+<p>Destination&nbsp;&nbsp;&nbsp;&nbsp; Gateway&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Genmask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Flags Metric Ref&nbsp;&nbsp;&nbsp; Use Iface<br>192.168.8.0 &nbsp;&nbsp; <em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 255.255.255.0 UH&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 eth0<br>link-local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 255.255.0.0&nbsp;&nbsp;&nbsp;&nbsp; U&nbsp;&nbsp;&nbsp;&nbsp; 1002&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 eth0<br>default&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 192.168.8.50&nbsp;&nbsp;&nbsp; 0.0.0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; UG&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 eth0<br>也就是说所有192.168.8.0网段的ip都不需要转发直接能被访问到。这个不对，最后在</p>
+<p>vi /var/lib/lxc/testcentos/config </p>
+<p>里把容器的ip改为lxc.network.ipv4 = 192.168.8.55/32</p>
+<p>并且在容器内部的/etc/sysconfig/network-scripts/ifcfg-eth0里改掉netmask</p>
+<p>最后都能访问了。</p>
+<p>几点疑问，为什么我在所有文档上都没看到类似的做法，大家都是直接重定向到eth0完事呢？</p>
+<p>另外容器内部的ip设置也和别人不一样。可能别人都是再加一个子网？</p>
+<p>无论怎么样，这个容器算是能用了，有鉴于他的出色计算性能</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>终于把lxc的网络配通了，也不知道对不对，记一下</p>
+<p>一开始都是雷同的地方</p>
+<p>yum install libcgroup lxc lxc-templates</p>
+<p>安装lxc&nbsp;cgroup</p>
+<p>然后记得<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[spark on centos6.5 安装]]></title>
+    <link href="http://yoursite.com/2014/09/05/3958082/"/>
+    <id>http://yoursite.com/2014/09/05/3958082/</id>
+    <published>2014-09-05T06:51:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>第一步在centos 6.5上安装java&nbsp;运行环境</p>
+<p><a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html" target="_blank" rel="external">http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html</a></p>
+<p>第二步安装hadoop，去</p>
+<p><a href="http://hadoop.apache.org/上下一个" target="_blank" rel="external">http://hadoop.apache.org/上下一个</a></p>
+<p><a href="http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz" target="_blank" rel="external">http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz</a><br><a id="more"></a></p>
+<p>解压缩即可</p>
+<p>第三步要装scala，去</p>
+<p><a href="http://www.scala-lang.org/download/上下一个" target="_blank" rel="external">http://www.scala-lang.org/download/上下一个</a></p>
+<p><a href="http://downloads.typesafe.com/scala/2.11.2/scala-2.11.2.rpm?_ga=1.193880237.1644075876.1409819439" target="_blank" rel="external">http://downloads.typesafe.com/scala/2.11.2/scala-2.11.2.rpm?_ga=1.193880237.1644075876.1409819439</a></p>
+<p>在centos上直接rpm安装即可</p>
+<p>第四步下载spark</p>
+<p><a href="http://spark.apache.org/downloads.html" target="_blank" rel="external">http://spark.apache.org/downloads.html</a></p>
+<p>根据自己的hadoop版本挑选一个预编译的spark，如（<a href="http://www.apache.org/dyn/closer.cgi/spark/spark-1.0.2/spark-1.0.2-bin-hadoop2.tgz），下完解压缩即可" target="_blank" rel="external">http://www.apache.org/dyn/closer.cgi/spark/spark-1.0.2/spark-1.0.2-bin-hadoop2.tgz），下完解压缩即可</a></p>
+<p>或者下源码包自己编译（<a href="http://d3kbcqa49mib13.cloudfront.net/spark-1.0.2.tgz），自己编译maven可能被墙。" target="_blank" rel="external">http://d3kbcqa49mib13.cloudfront.net/spark-1.0.2.tgz），自己编译maven可能被墙。</a></p>
+<p>如果第四步选的是源码包，那还有第五步编译</p>
+<p>即解压缩spark源码包以后，进入源代码目录执行sbt/sbt assembly，自己就会下载相应文件进行编译。</p>
+<p>最后一步执行spark目录下的bin/spark-shell</p>
+<p>在此之前记得打开hadoop的服务，不然在执行spark-shell的时候会报错</p>
+<p>spark java.net.UnknownHostException: spark: spark: Name or service not known</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>第一步在centos 6.5上安装java&nbsp;运行环境</p>
+<p><a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html">http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html</a></p>
+<p>第二步安装hadoop，去</p>
+<p><a href="http://hadoop.apache.org/上下一个">http://hadoop.apache.org/上下一个</a></p>
+<p><a href="http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz">http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz</a><br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[矩阵对角化]]></title>
+    <link href="http://yoursite.com/2014/06/23/3804254/"/>
+    <id>http://yoursite.com/2014/06/23/3804254/</id>
+    <published>2014-06-23T08:21:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>numerical&nbsp;recipe&nbsp;里一共讲了两种实数对称矩阵的对角化，</p>
+<p>jacobi法</p>
+<p>tred2生成上三角阵以后用tqli对角化</p>
+<p>前者稳定但慢易并行，后者较快但疑似不稳定，串行。</p>
+<p>花了一下午，一点点调试终于知道了第二种方法不稳定的原因在哪里<br><a id="more"></a></p>
+<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"> 1         SUBROUTINE tred2(a,<span class="keyword">d</span>,<span class="keyword">e</span>,novectors)</span><br><span class="line"> 2         <span class="keyword">USE</span> nrtype; <span class="keyword">USE</span> nrutil, ONLY : assert_eq,outerprod</span><br><span class="line"> 3         IMPLICIT NONE</span><br><span class="line"> 4         <span class="literal">REAL</span>(SP), DIMENSION(:,:), INTENT(INOUT) :: a</span><br><span class="line"> 5         <span class="literal">REAL</span>(SP), DIMENSION(:), INTENT(<span class="keyword">OUT</span>) :: <span class="keyword">d</span>,<span class="literal">e</span></span><br><span class="line"> 6         LOGICAL(LGT), OPTIONAL, INTENT(<span class="keyword">IN</span>) :: novectors</span><br><span class="line"> 7         INTEGER(I4B) :: i,j,<span class="keyword">l</span>,<span class="keyword">n</span></span><br><span class="line"> 8         <span class="literal">REAL</span>(SP) :: f,<span class="keyword">g</span>,<span class="keyword">h</span>,hh,scale</span><br><span class="line"> 9         <span class="literal">REAL</span>(SP), DIMENSION(size(a,1)) :: gg</span><br><span class="line">10         LOGICAL(LGT) :: yesvec</span><br><span class="line">11         <span class="keyword">n</span>=assert_eq(size(a,1),size(a,2),size(<span class="keyword">d</span>),size(<span class="keyword">e</span>),'tred2')</span><br><span class="line">12         <span class="keyword">if</span> (present(novectors)) then</span><br><span class="line">13                 yesvec=.not. novectors</span><br><span class="line">14         <span class="keyword">else</span></span><br><span class="line">15                 yesvec=.true.</span><br><span class="line">16         end <span class="keyword">if</span></span><br><span class="line">17         <span class="keyword">do</span> i=<span class="keyword">n</span>,2,-1</span><br><span class="line">18                 <span class="keyword">l</span>=i-1</span><br><span class="line">19                 <span class="keyword">h</span>=0.0</span><br><span class="line">20                 <span class="keyword">if</span> (<span class="keyword">l</span> &gt; 1) then</span><br><span class="line">21                         scale=<span class="literal">sum</span>(<span class="literal">abs</span>(a(i,1:<span class="keyword">l</span>)))</span><br><span class="line">22                         <span class="keyword">if</span> (scale == 0.0) then</span><br><span class="line">23                                 <span class="literal">e</span>(i)=a(i,<span class="keyword">l</span>)</span><br><span class="line">24                         <span class="keyword">else</span></span><br><span class="line">25                                 a(i,1:<span class="keyword">l</span>)=a(i,1:<span class="keyword">l</span>)/scale</span><br><span class="line">26                                 <span class="keyword">h</span>=<span class="literal">sum</span>(a(i,1:<span class="keyword">l</span>)**2)</span><br><span class="line">27                                 f=a(i,<span class="keyword">l</span>)</span><br><span class="line">28                                 <span class="keyword">g</span>=-<span class="literal">sign</span>(<span class="literal">sqrt</span>(<span class="keyword">h</span>),f)</span><br><span class="line">29                                 <span class="literal">e</span>(i)=scale*<span class="keyword">g</span></span><br><span class="line">30                                 <span class="keyword">h</span>=<span class="keyword">h</span>-f*<span class="keyword">g</span></span><br><span class="line">31                                 a(i,<span class="keyword">l</span>)=f-<span class="keyword">g</span></span><br><span class="line">32                                 <span class="keyword">if</span> (yesvec) a(1:<span class="keyword">l</span>,i)=a(i,1:<span class="keyword">l</span>)/<span class="literal">h</span></span><br><span class="line">33                                 <span class="keyword">do</span> j=1,<span class="keyword">l</span></span><br><span class="line">34                                         <span class="literal">e</span>(j)=(dot_product(a(j,1:j),a(i,1:j)) &amp;</span><br><span class="line">35                                         +dot_product(a(j+1:<span class="keyword">l</span>,j),a(i,j+1:<span class="keyword">l</span>)))/<span class="literal">h</span></span><br><span class="line">36                                 end <span class="keyword">do</span></span><br><span class="line">37                                 f=dot_product(<span class="literal">e</span>(1:<span class="keyword">l</span>),a(i,1:<span class="keyword">l</span>))</span><br><span class="line">38                                 hh=f/(<span class="keyword">h</span>+<span class="keyword">h</span>)</span><br><span class="line">39                                 <span class="literal">e</span>(1:<span class="keyword">l</span>)=<span class="literal">e</span>(1:<span class="keyword">l</span>)-hh*a(i,1:<span class="keyword">l</span>)</span><br><span class="line">40                                 <span class="keyword">do</span> j=1,<span class="keyword">l</span></span><br><span class="line">41                                         a(j,1:j)=a(j,1:j)-a(i,j)*<span class="literal">e</span>(1:j)-<span class="literal">e</span>(j)*a(i,1:j)</span><br><span class="line">42                                 end <span class="keyword">do</span></span><br><span class="line">43                         end <span class="keyword">if</span></span><br><span class="line">44                 <span class="keyword">else</span></span><br><span class="line">45                         <span class="literal">e</span>(i)=a(i,<span class="keyword">l</span>)</span><br><span class="line">46                 end <span class="keyword">if</span></span><br><span class="line">47                 <span class="literal">d</span>(i)=<span class="literal">h</span></span><br><span class="line">48         end <span class="keyword">do</span></span><br><span class="line">49         <span class="keyword">if</span> (yesvec) <span class="literal">d</span>(1)=0.0</span><br><span class="line">50         <span class="literal">e</span>(1)=0.0</span><br><span class="line">51         <span class="keyword">do</span> i=1,<span class="keyword">n</span></span><br><span class="line">52                 <span class="keyword">if</span> (yesvec) then</span><br><span class="line">53                         <span class="keyword">l</span>=i-1</span><br><span class="line">54                         <span class="keyword">if</span> (<span class="literal">d</span>(i) /= 0.0) then</span><br><span class="line">55                                 gg(1:<span class="keyword">l</span>)=matmul(a(i,1:<span class="keyword">l</span>),a(1:<span class="keyword">l</span>,1:<span class="keyword">l</span>))</span><br><span class="line">56                                 a(1:<span class="keyword">l</span>,1:<span class="keyword">l</span>)=a(1:<span class="keyword">l</span>,1:<span class="keyword">l</span>)-outerprod(a(1:<span class="keyword">l</span>,i),gg(1:<span class="keyword">l</span>))</span><br><span class="line">57                         end <span class="keyword">if</span></span><br><span class="line">58                         <span class="literal">d</span>(i)=a(i,i)</span><br><span class="line">59                         a(i,i)=1.0</span><br><span class="line">60                         a(i,1:<span class="keyword">l</span>)=0.0</span><br><span class="line">61                         a(1:<span class="keyword">l</span>,i)=0.0</span><br><span class="line">62                 <span class="keyword">else</span></span><br><span class="line">63                         <span class="literal">d</span>(i)=a(i,i)</span><br><span class="line">64                 end <span class="keyword">if</span></span><br><span class="line">65         end <span class="keyword">do</span></span><br><span class="line">66         END SUBROUTINE tred2</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>问题出在22行,scale==0.0的判断上。稍微有点常识的人都知道，计算机里做浮点数判断不能用==，必须用abs(scale-0.0)&lt;episilon episilon为一个很小的数。没想到numerical&nbsp;recipe第三版的这本书里还有这样子的代码。</p>
+<p>鉴于scale&gt;=0.0，所以改成scale&lt;=episilon就行了，结果就很稳定了。</p>
+<p>吐槽一下，怪不得我总觉得结果怎么那么随机，原来是这里出的问题，这可是真随机啊！</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>numerical&nbsp;recipe&nbsp;里一共讲了两种实数对称矩阵的对角化，</p>
+<p>jacobi法</p>
+<p>tred2生成上三角阵以后用tqli对角化</p>
+<p>前者稳定但慢易并行，后者较快但疑似不稳定，串行。</p>
+<p>花了一下午，一点点调试终于知道了第二种方法不稳定的原因在哪里<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[redhat 6上nis配置]]></title>
+    <link href="http://yoursite.com/2013/12/10/3466917/"/>
+    <id>http://yoursite.com/2013/12/10/3466917/</id>
+    <published>2013-12-10T01:51:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>redhat 6上nis有点改动。在这里记一下</p>
+<p>新装系统以后，首先要</p>
+<p>yum install ypserv</p>
+<p>安装ypserv的包</p>
+<p>然后是设置<br><a id="more"></a></p>
+<p>&nbsp;</p>
+<h1 id="设置nis服务器名字">设置nis服务器名字</h1><p>ypdomainname centos<br>vi /etc/sysconfig/network<br>NETWORKING=yes<br>HOSTNAME=headnode</p>
+<h1 id="最后加上一句">最后加上一句</h1><p>NISDOMAIN=centos<br>修改yp的Makefile<br>vi /var/yp/Makefile</p>
+<h1 id="MERGE_PASSWD=true|false">MERGE_PASSWD=true|false</h1><h1 id="line_42:_change">line 42: change</h1><p>MERGE_PASSWD=<br>false</p>
+<h1 id="MERGE_GROUP=true|false">MERGE_GROUP=true|false</h1><h1 id="line_46:_change">line 46: change</h1><p>MERGE_GROUP=<br>false</p>
+<h1 id="line_117:_add">line 117: add</h1><p>all: passwd shadow group hosts rpc services netid protocols</p>
+<p>最后加一行</p>
+<p>192.168.100.1/255.255.255.0 : <em> :</em> :none</p>
+<p>修改安全设置</p>
+<p>vi /var/yp/securenets</p>
+<p>255.255.255.0&nbsp;&nbsp; 192.168.100.0</p>
+<p>添加主机名</p>
+<p>vi /etc/hosts</p>
+<h1 id="add_own_IP_address">add own IP address</h1><p>192.168.100.1 headnode</p>
+<p>开启nis服务</p>
+<p>/etc/rc.d/init.d/ypserv start</p>
+<p>/etc/rc.d/init.d/yppasswdd start</p>
+<p>/etc/rc.d/init.d/ypxrfd start</p>
+<p>chkconfig ypserv on</p>
+<p>chkconfig yppasswdd on </p>
+<p>chkconfig ypxfrd on</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>redhat 6上nis有点改动。在这里记一下</p>
+<p>新装系统以后，首先要</p>
+<p>yum install ypserv</p>
+<p>安装ypserv的包</p>
+<p>然后是设置<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[如何查看cache信息]]></title>
+    <link href="http://yoursite.com/2013/11/13/3420705/"/>
+    <id>http://yoursite.com/2013/11/13/3420705/</id>
+    <published>2013-11-13T01:28:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>很多时候查不到本机cpu的cache信息。而了解这些信息，对于调优很有帮助</p>
+<p>查看1级缓存cache大小</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span><span class="keyword">size</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看能访问这个1级缓存的cpu编号</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>shared_cpu_list</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看1级缓存cache line的大小</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>coherency_line_size</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看1级缓存cache set的数目<br><a id="more"></a></p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>number_of_sets</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看2级缓存大小</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index2/</span><span class="keyword">size</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看其他级别的缓存可以更改index后的数字</p>
+<p>cache_size = number_of_sets <em> cache_line_size </em> line_per_set</p>
+<p>会导致cache miss率提高的vector size</p>
+<p>criticalStride = number_of_sets * cache_line_size</p>
+<p>参考：</p>
+<p><a href="http://stackoverflow.com/questions/11413855/why-is-transposing-a-matrix-of-512x512-much-slower-than-transposing-a-matrix-of" target="_blank" rel="external">http://stackoverflow.com/questions/11413855/why-is-transposing-a-matrix-of-512x512-much-slower-than-transposing-a-matrix-of</a></p>
+<p><a href="http://www.7-cpu.com/cpu/SandyBridge.html" target="_blank" rel="external">http://www.7-cpu.com/cpu/SandyBridge.html</a></p>
+<p><a href="http://www.7-cpu.com/cpu/Westmere.html" target="_blank" rel="external">http://www.7-cpu.com/cpu/Westmere.html</a></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>很多时候查不到本机cpu的cache信息。而了解这些信息，对于调优很有帮助</p>
+<p>查看1级缓存cache大小</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span><span class="keyword">size</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看能访问这个1级缓存的cpu编号</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>shared_cpu_list</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看1级缓存cache line的大小</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>coherency_line_size</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>查看1级缓存cache set的数目<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[oprofile 安装使用]]></title>
+    <link href="http://yoursite.com/2013/11/08/3413801/"/>
+    <id>http://yoursite.com/2013/11/08/3413801/</id>
+    <published>2013-11-08T02:32:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>ubuntu上要编译安装oprofile。现在版本（0.9.9）的oprofile的编译需要binutil-dev libpopt-dev</p>
+<p><span style="font-size: medium;"><span lang="en-US">apt-get install binutil-dev</span></span> <span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">libpopt-dev</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">然后./configure make make install</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">安装完以后</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">1.执行<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —init</span></span></span>启动加载oprofile模块</span></span></span><br><a id="more"></a></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">2.<span style="font-size: large;"><span style="font-size: medium;"><strong><span lang="en-US"><span style="font-weight: normal;">opcontrol —no-vmlinux</span></span></strong></span></span></span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">3.（可选）<span style="font-size: medium;"><span lang="en-US">opcontrol —event=L2_CACHE_MISS:500</span></span> 查看cache miss率，增加监听事件</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">4.<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —start</span> </span></span>启动op</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">5.运行待检测程序（必须用-g选项编译，不然没有源代码）</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">6.<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol &ndash;dump取出数据</span> </span></span></span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">7.<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —stop</span></span></span> 停止检测</span></span></span></span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">8.<span style="font-size: medium;"><span lang="en-US">opannotate —source 待检测程序</span></span></span></span></span></span></span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: medium;"><span lang="en-US">参考</span></span></span></span></span></span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: medium;"><span lang="en-US"><a href="http://www.ibm.com/developerworks/cn/linux/l-pow-oprofile/index.html" target="_blank" rel="external">http://www.ibm.com/developerworks/cn/linux/l-pow-oprofile/index.html</a></span></span></span></span></span></span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: medium;"><span lang="en-US"><a href="http://www.ibm.com/developerworks/cn/linux/l-oprof/index.html" target="_blank" rel="external">http://www.ibm.com/developerworks/cn/linux/l-oprof/index.html</a></span></span></span></span></span></span></span></span></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>ubuntu上要编译安装oprofile。现在版本（0.9.9）的oprofile的编译需要binutil-dev libpopt-dev</p>
+<p><span style="font-size: medium;"><span lang="en-US">apt-get install binutil-dev</span></span> <span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">libpopt-dev</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">然后./configure make make install</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">安装完以后</span></span></span></p>
+<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">1.执行<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —init</span></span></span>启动加载oprofile模块</span></span></span><br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[gromacs, quake III和vrsqrtps]]></title>
+    <link href="http://yoursite.com/2013/10/27/3391235/"/>
+    <id>http://yoursite.com/2013/10/27/3391235/</id>
+    <published>2013-10-27T13:16:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>看标题大家可能觉得三个词汇风马牛不相及，第一个是解蛋白质分子动力学的软件，第二个是上三代宅男最爱雷神之锤，第三个则是一个存在于IntelSSE及AVX中的一个指令，他的作用是快速求平方根的倒数。</p>
+<p>起因是这样子的。某天闲着没事，跑去benchmarksgame.alioth.debian.org上看到了万年被压在fortran身体下蹂躏的c++居然翻身了。最不可思议的是，在fortran长项上的多体运算nbody居然被c++拉了一大截性能下来（2倍,5千万步，fortran用时19秒，C++用时9.59秒）。本着fortran居然能被c++搞倒根本是不可能的事情的信念，我开始出发了。</p>
+<p>好在他们提供了nbody的f90代码。装好ifort就开始优化，初一眼看过去就好多问题，&ldquo;怪不得那么慢&rdquo;，看来现在fortran培训太少了以至于部分不合格码农直接拿java代码改改就过来用了。内存不对齐，行列优先搞混，没有写成向量化，这类错误比比皆是。改了改，差不多跑快了10秒，感觉差不多了，把c++的代码拉下来一编译，瞬间崩溃，在本机上只跑了6秒！</p>
+<p>接下去是苦逼的两天，我绞尽脑汁改代码，向量化，发现部分代码无法向量化，然后手工指定，变更慢了&hellip;&hellip;终于，在现实面前，终于低下头，想想是不是c++里用了什么新技术导致比fortran快呢？或许人家也有新的算法呢？（可喜可贺）</p>
+<p>跑去看c++的代码部分。就发现他将多体问题中常见的求出距离求倒数r^(-1)=(1/sqrt(x<em>x+y</em>y+z*z))的那一步用了很简明的方法写了一下<br><a id="more"></a></p>
+<p>distance<span>=</span><span>_mm_cvtps_pd</span><span>(</span><span>_mm_rsqrt_ps</span><span>(</span><span>_mm_cvtpd_ps</span><span>(</span>dsquared<span>)));</span></p>
+<p><span>这里给不是很了解这段代码的人解释一下，dsquared是一个双精度浮点数，_mm_cvtpd_ps是把一个双精度浮点数变成了单精度浮点数。<span>_mm_cvtps_pd</span>是把一个单精度浮点数变成双精度浮点数。_mm_rsqrt_ps就难倒我了，</span>不懂c++的人表示很不解：这是什么东西啊？拿去搜了一把发现这其实是调用SSE指令集vrsqrtps的一个函数，好高端！居然能在C++里直接实现SSE/AVX指令集的调用。再一搜索，差点笑喷出来，搞了半天敢情这个算法就是QuakeIII中开用的快速求平方根倒数的那个算法。也就是传说中的超快算法，利用泰勒展开来求解。所以在intel官网上，关于这一指令的介绍是这么写的&ldquo;(V)RSQRT[P/S]SComputeapproximatereciprocalofsquarerootofpacked/scalarsingleprecision&rdquo;</p>
+<p>关于这个fastinversesquareroot的具体步骤可以看wiki：<a href="http://en.wikipedia.org/wiki/Fast_inverse_square_root" target="_blank" rel="external">http://en.wikipedia.org/wiki/Fast_inverse_square_root</a></p>
+<p>但很遗憾的是，这只是一种近似算法。在大多数情况下一次迭代能收敛到单精度准确值。但二次迭代就变慢了，所以很多人不使用二次迭代。雷神之锤里用的也是一次迭代，而对于一个3d游戏来说这个精度足够了。在浏览之余，我看到了某个小论坛上表明GROMACS其实也是使用这个算法的，于是就去搜了一下，在最新版本4.6.3中也发现了类似代码（以下只是专门为avx指令集编写的头文件中的一个，有兴趣的人可以自己在gromacs源代码目录中用grep-IRn_mm_rsqrt_ps*看一下）</p>
+<div class="cnblogs_code"><br><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">include/gmx_math_x86_avx_128_fma_double.h:70</span><br><span class="line"></span><br><span class="line">/* 1.0/sqrt(x) */</span><br><span class="line"><span class="keyword">static</span> gmx_inline __m128d</span><br><span class="line">gmx_mm_invsqrt_pd(__m128d x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">const</span> __m128d half  = _mm_set1_pd(<span class="number">0.5</span>);</span><br><span class="line">    <span class="keyword">const</span> __m128d three = _mm_set1_pd(<span class="number">3.0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Lookup instruction only exists in single precision, convert back and forth... */</span></span><br><span class="line">    __m128d lu = _mm_cvtps_pd(_mm_rsqrt_ps( _mm_cvtpd_ps(x)));</span><br><span class="line"></span><br><span class="line">    lu = _mm_mul_pd(_mm_mul_pd(half, lu), _mm_nmacc_pd(_mm_mul_pd(lu, lu), x, three));</span><br><span class="line">    <span class="keyword">return</span> _mm_mul_pd(_mm_mul_pd(half, lu), _mm_nmacc_pd(_mm_mul_pd(lu, lu), x, three));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>不同之处在于，这个算法是完整的fastinversesquareroot算法（做了一步迭代以保证收敛到单精度），而nbody中的那个fastinverseSquareroot算法则没有做这一步迭代。这里要提醒诸位注意。这一函数对于双精度程序也会降低精度到单精度。由于_mm_cvtpd_ps已经把一个双精度数值降低到单精度了，所以_mm_cvtps_pd拿到的是一个单精度值，而对于单精度数值变成双精度数值，计算机的做法就是剩余位数用随机数填充。所以无论是gromacs编译时如何指定单双精度。拿到距离矩阵已经是单精度了。</p>
+<p>接下去做一个比较</p>
+<p>双精度1/sqrt</p>
+<p>~$./nbody2f50000000<br>初始能量-0.1690751638285244717874178377<br>终态能量-0.16905990678<strong>77010530658310472</strong></p>
+<p>单精度1/sqrt<br>~$./nbodyc50000000<br>初始能量-0.1690751638285244717874178377<br>终态能量-0.16905990678<strong>81611849983869433</strong></p>
+<p>加黑部分就是误差了。而且这个体系非常小，只有5体运动，而对于一般性蛋白质模拟，可能牵涉到几百万个原子，这个误差积累就相当大了</p>
+<p>然后，这里测试了5亿个数，从0开始步长0.0001的1/sqrt测试（也就是0.0001,0.0002,0.0003…..到50000）。我发现在不迭代时，最大误差能达过8.5e-3。当计算3e-4的1/sqrt时，误差能达到8.5e-3，平均误差则在3.57e-7，IEEE允许的单精度误差是1.17e-7，而双精度允许误差则是2.22e-16。所以说不包含一次迭代的误差已经超过单精度允许误差了。</p>
+<p>而包含一次迭代的算法，最大误差在2.7e-13，高于双精度允许误差但低于单精度允许误差，有问题的是2.1e-3的1/sqrt(2.1e-3)。平均误差8.67e-19。</p>
+<p>从误差分布来，1/sqrt(x)的快速算法中，x与误差是成反比的，x越靠近0，误差越大，x越大误差则越小。</p>
+<p>到这里。谜底揭晓了，alioth上那个速度超快的c++程序和gromacs都是通过降低精度来达到高速的，fortran的王者地位依然无法动摇（偷笑）。</p>
+<p>Reference</p>
+<p><a href="http://software.intel.com/en-us/articles/introduction-to-intel-advanced-vector-extensions" target="_blank" rel="external">http://software.intel.com/en-us/articles/introduction-to-intel-advanced-vector-extensions</a></p>
+<p>ftp://ftp.gromacs.org/pub/manual/manual-4.5.6.pdf AppendixB.3，我猜没人会看到附录B.3的&hellip;&hellip;</p>
+<p><a href="http://scicomp.stackexchange.com/questions/2168/what-is-the-computational-cost-of-sqrtx-in-standard-libraries" target="_blank" rel="external">http://scicomp.stackexchange.com/questions/2168/what-is-the-computational-cost-of-sqrtx-in-standard-libraries</a></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>看标题大家可能觉得三个词汇风马牛不相及，第一个是解蛋白质分子动力学的软件，第二个是上三代宅男最爱雷神之锤，第三个则是一个存在于IntelSSE及AVX中的一个指令，他的作用是快速求平方根的倒数。</p>
+<p>起因是这样子的。某天闲着没事，跑去benchmarksgame.alioth.debian.org上看到了万年被压在fortran身体下蹂躏的c++居然翻身了。最不可思议的是，在fortran长项上的多体运算nbody居然被c++拉了一大截性能下来（2倍,5千万步，fortran用时19秒，C++用时9.59秒）。本着fortran居然能被c++搞倒根本是不可能的事情的信念，我开始出发了。</p>
+<p>好在他们提供了nbody的f90代码。装好ifort就开始优化，初一眼看过去就好多问题，&ldquo;怪不得那么慢&rdquo;，看来现在fortran培训太少了以至于部分不合格码农直接拿java代码改改就过来用了。内存不对齐，行列优先搞混，没有写成向量化，这类错误比比皆是。改了改，差不多跑快了10秒，感觉差不多了，把c++的代码拉下来一编译，瞬间崩溃，在本机上只跑了6秒！</p>
+<p>接下去是苦逼的两天，我绞尽脑汁改代码，向量化，发现部分代码无法向量化，然后手工指定，变更慢了&hellip;&hellip;终于，在现实面前，终于低下头，想想是不是c++里用了什么新技术导致比fortran快呢？或许人家也有新的算法呢？（可喜可贺）</p>
+<p>跑去看c++的代码部分。就发现他将多体问题中常见的求出距离求倒数r^(-1)=(1/sqrt(x<em>x+y</em>y+z*z))的那一步用了很简明的方法写了一下<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[haskell中的cps]]></title>
+    <link href="http://yoursite.com/2013/09/27/3342893/"/>
+    <id>http://yoursite.com/2013/09/27/3342893/</id>
+    <published>2013-09-27T07:56:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>cps全称叫continuation passing style，简要来讲就是告诉函数下一步做什么的递归方式，由于普通递归有栈溢出的问题，而cps都是尾递归(tail recursion)，尾递归则是没有栈溢出问题的，所以haskell推荐都用cps的方式去编写代码。</p>
+<p>当然，相对于普通递归方式，cps也有着非常不便于理解的问题。</p>
+<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> n* fact(n-<span class="number">1</span>)</span><br><span class="line"><span class="keyword">print</span> fact(<span class="number">400</span>)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这是一段递归求阶乘的python代码。用cps改写就是</p>
+<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact_cps</span><span class="params">(n,ret)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        ret(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        fact_cps(n-<span class="number">1</span>, <span class="keyword">lambda</span> x:ret(n*x))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ret2</span><span class="params">(x)</span>:</span></span><br><span class="line">    <span class="keyword">print</span> x</span><br><span class="line">fact_cps(<span class="number">400</span>,ret2)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这里要注意的是，我们在传参数的时候多了一个ret，而这个ret其实是一个函数，函数的作用就是传入一个值并打印他。在实际运行过程中，其实是这样子的</p>
+<p>以fact_cps(3,ret2)求3的阶乘为例，第一步我们是执行fact_cps(3,ret2)，到第五行的地方，我们执行的是fact_cps(2, lambda x:ret2(3*x))，这里的ret即最外层的ret2<br><a id="more"></a></p>
+<p>fact_cps中的lambda x:ret (3<em>x)其实是一个函数的简单写法，也就是说这是一个输入x的函数，然后运算ret(3</em>x)</p>
+<p>第二步调用以后，fact_cps的输入值是2以及一个叫做lambda x:ret(3<em>x)的函数，也就是说ret函数变成了ret(x): print (3</em>x) 然后到第五行调用fact_cps(1,lambda x:ret(2<em>x))即fact_cps(1,lambda x:ret2(3</em>2*x))</p>
+<p>第三布调用的就是fact_cps(0,lambda x:ret2(3<em>2</em>1<em>x))，然后到第三行结束，所以总的一个计算其实就是lambda x:ret2(3</em>2<em>1</em>x)然后将最后一次调用的1带入，得到6。</p>
+<p>这中间我们可以看到，和普通递归传递的是参数不同，cps调用每一步都产生一个新的函数，传递给下一步调用，这个传递的函数告诉了被递归函数下一步做的是什么。</p>
+<p>&nbsp;</p>
+<p>用haskell写cps更难懂点先写一个简单点的</p>
+<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysqrt :: Floating <span class="tag">a</span> =&gt; <span class="tag">a</span> -&gt; <span class="tag">a</span></span><br><span class="line">mysqrt <span class="tag">a</span> = sqrt <span class="tag">a</span></span><br><span class="line">print (mysqrt <span class="number">4</span>) :: IO ()</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这是一个普通的开根号，用cps写则是</p>
+<div class="cnblogs_code"><br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="label">mysqrtCPS ::</span> <span class="literal">a</span> -&gt; (<span class="literal">a</span> -&gt; r) -&gt; r</span><br><span class="line">mysqrtCPS <span class="literal">a</span> k = k (sqrt <span class="literal">a</span>)</span><br><span class="line"><span class="label">mysqrtCPS 4 print ::</span> IO ()</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这里把print函数传递进了mysqrtCPS并且用print函数调用sqrt a的结果，达到了cps的目的</p>
+<p>普通的阶乘是这么写的</p>
+<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fact</span> :: (Num a, <span class="keyword">Eq</span> a)=&gt;a-&gt;a</span><br><span class="line"><span class="keyword">fact</span> 0=1</span><br><span class="line"><span class="keyword">fact</span> <span class="keyword">n</span>=<span class="keyword">n</span>*(<span class="keyword">fact</span> (<span class="keyword">n</span>-1))</span><br><span class="line"><span class="keyword">print</span> (<span class="keyword">fact</span> 40)</span><br><span class="line">815915283247897734345611269596115894272000000000</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>cps方式是这么写的</p>
+<div class="cnblogs_code"><br><figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">factCPS :: <span class="function"><span class="params">(Num a, Eq a)</span>=&gt;<span class="title">a</span>-&gt;</span><span class="function"><span class="params">(a-&gt;IO ())</span>-&gt;</span>IO ()</span><br><span class="line">factCPS <span class="number">0</span> ret=ret <span class="number">1</span></span><br><span class="line">factCPS n ret=factCPS (n-<span class="number">1</span>) (<span class="string">\x-&gt;ret</span> (n*x))</span><br><span class="line">factCPS <span class="number">40</span> <span class="built_in">print</span> :: IO ()</span><br><span class="line"><span class="number">815915283247897734345611269596115894272000000000</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>对于Fibonacci数列，普通的方法是这么写的</p>
+<div class="cnblogs_code"><br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="label">fib ::</span> (Num <span class="literal">a</span>,Eq <span class="literal">a</span>)=&gt;<span class="literal">a</span>-&gt;<span class="literal">a</span></span><br><span class="line">fib <span class="number">0</span>=<span class="number">0</span></span><br><span class="line">fib <span class="number">1</span>=<span class="number">1</span></span><br><span class="line">fib n=fib (n-<span class="number">1</span>)+fib (n-<span class="number">2</span>)</span><br><span class="line">print (fib <span class="number">30</span>)</span><br><span class="line"><span class="number">832040</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>CPS方式的Fibonacci数列是这么写的</p>
+<div class="cnblogs_code"><br><figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">fibCPS :: <span class="function"><span class="params">(Num a, Eq a)</span>=&gt;<span class="title">a</span>-&gt;</span><span class="function"><span class="params">(a-&gt;IO ())</span>-&gt;</span>IO ()</span><br><span class="line">fibCPS <span class="number">0</span> f=f <span class="number">0</span></span><br><span class="line">fibCPS <span class="number">1</span> f=f <span class="number">1</span></span><br><span class="line">fibCPS n f=fibCPS (n-<span class="number">1</span>) (<span class="string">\f1-&gt;fibCPS</span> (n-<span class="number">2</span>) (<span class="string">\f2-&gt;f</span> (f1+f2)))</span><br><span class="line">fibCPS <span class="number">30</span> <span class="built_in">print</span> :: IO ()</span><br><span class="line"><span class="number">832040</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>参考</p>
+<p><a href="http://www.haskell.org/haskellwiki/Continuation" target="_blank" rel="external">http://www.haskell.org/haskellwiki/Continuation</a></p>
+<p><a href="http://www.haskell.org/haskellwiki/Tail_recursion" target="_blank" rel="external">http://www.haskell.org/haskellwiki/Tail_recursion</a></p>
+<p><a href="http://en.wikibooks.org/wiki/Haskell/Continuation_passing_style" target="_blank" rel="external">http://en.wikibooks.org/wiki/Haskell/Continuation_passing_style</a></p>
+<p><a href="http://people.csail.mit.edu/meyer/6001/continuations.txt" target="_blank" rel="external">http://people.csail.mit.edu/meyer/6001/continuations.txt</a></p>
+<p>&nbsp;</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>cps全称叫continuation passing style，简要来讲就是告诉函数下一步做什么的递归方式，由于普通递归有栈溢出的问题，而cps都是尾递归(tail recursion)，尾递归则是没有栈溢出问题的，所以haskell推荐都用cps的方式去编写代码。</p>
+<p>当然，相对于普通递归方式，cps也有着非常不便于理解的问题。</p>
+<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> n* fact(n-<span class="number">1</span>)</span><br><span class="line"><span class="keyword">print</span> fact(<span class="number">400</span>)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这是一段递归求阶乘的python代码。用cps改写就是</p>
+<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact_cps</span><span class="params">(n,ret)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        ret(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        fact_cps(n-<span class="number">1</span>, <span class="keyword">lambda</span> x:ret(n*x))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ret2</span><span class="params">(x)</span>:</span></span><br><span class="line">    <span class="keyword">print</span> x</span><br><span class="line">fact_cps(<span class="number">400</span>,ret2)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这里要注意的是，我们在传参数的时候多了一个ret，而这个ret其实是一个函数，函数的作用就是传入一个值并打印他。在实际运行过程中，其实是这样子的</p>
+<p>以fact_cps(3,ret2)求3的阶乘为例，第一步我们是执行fact_cps(3,ret2)，到第五行的地方，我们执行的是fact_cps(2, lambda x:ret2(3*x))，这里的ret即最外层的ret2<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[haskell中的monad]]></title>
+    <link href="http://yoursite.com/2013/09/23/3335786/"/>
+    <id>http://yoursite.com/2013/09/23/3335786/</id>
+    <published>2013-09-23T14:13:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>monad本意是单子。在haskell中，第一个接触的基本都是IO action，通过把IO动作包装起来我们能很方便的与现实世界进行数据交换。但其实monad的用途不止如此，monad还能讲一系列操作进行序列化，而这一点在通常编程中是非常需要的。而在haskell中，类似的事情则是通过递归来完成了平时需要序列化的工作。但其实haskell中也有能进行顺序操作的方法，那就是monad。一个类似于monad的定义基本是这个样子的。</p>
+<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Computation c where</span><br><span class="line">    success :: <span class="tag">a</span> -&gt; c <span class="tag">a</span></span><br><span class="line">    failure :: String -&gt; c <span class="tag">a</span></span><br><span class="line">    augment :: c <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; c b) -&gt; c <span class="tag">b</span></span><br><span class="line">    combine :: c <span class="tag">a</span> -&gt; c <span class="tag">a</span> -&gt; c a</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>第一个success即是讲一个动作包裹成computation类型，代表一次顺利的操作，第二个failure代表一个失败的操作，取一个字符串返回一个c包裹的a，第三个augment取两个参数，一个是之前的操作，另一个是一个能将a变成c包裹的b的函数，并返回一个c包裹的b。这其实就是将操作序列化。第四个combine就是去两个之前获得的c包裹的a并产生一个新的同类型</p>
+<p>一个完整定义的monad差不多是这个</p>
+<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Monad m where</span><br><span class="line">    return :: <span class="tag">a</span> -&gt; m <span class="tag">a</span></span><br><span class="line">    fail :: String -&gt; m <span class="tag">a</span></span><br><span class="line">    (&gt;&gt;=) :: m <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; m b) -&gt; m <span class="tag">b</span></span><br><span class="line">    (&gt;&gt;) :: m <span class="tag">a</span> -&gt; m <span class="tag">b</span> -&gt; m b</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>第一个success即return，failure即fail， augment即&gt;&gt;=，combine即&gt;&gt;，不同的是，&gt;&gt;中的定义更宽泛点，是&gt;&gt;=的简化版本，省略掉了中间的a</p>
+<p>对于monad一共有三个转义定律<br><a id="more"></a></p>
+<div class="cnblogs_code"><br><figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;<span class="literal">e</span>&#125; → <span class="literal">e</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>讲一个操作用do单独包裹起来等于他自己</p>
+<div class="cnblogs_code"><br><figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;<span class="literal">e</span>;es&#125; → <span class="literal">e</span>&gt;&gt;<span class="keyword">do</span> &#123;es&#125;</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>讲一个序列操作包裹起来等于e执行完以后将结果交给do {es}串起来</p>
+<div class="cnblogs_code"><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;<span class="built_in">let</span> decls; es&#125; → <span class="built_in">let</span> decls <span class="keyword">in</span> <span class="keyword">do</span> &#123;es&#125;</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>在do中有let可以将它提取出来</p>
+<p>&nbsp;</p>
+<p>monad还必须符合三个定义</p>
+<div class="cnblogs_code"><br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="literal">a</span> &gt;&gt;= f ≡ f <span class="literal">a</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>将一个a return并赋值给f继续计算恒等于直接对a进行f计算</p>
+<div class="cnblogs_code"><br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">f <span class="prompt">&gt;&gt;= </span>return ≡ f</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>将一个f计算的结果给return返回恒等于直接进行f计算</p>
+<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">f &gt;&gt;= (\x -&gt; <span class="keyword">g</span> x &gt;&gt;= <span class="keyword">h</span>) ≡ (f &gt;&gt;= <span class="keyword">g</span>) &gt;&gt;= <span class="literal">h</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>monad中符合结合律，及f的计算结果给(\x-&gt;g x &gt;&gt;=h)恒等于(f&gt;&gt;=g)的结果给h</p>
+<p>&nbsp;</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>monad本意是单子。在haskell中，第一个接触的基本都是IO action，通过把IO动作包装起来我们能很方便的与现实世界进行数据交换。但其实monad的用途不止如此，monad还能讲一系列操作进行序列化，而这一点在通常编程中是非常需要的。而在haskell中，类似的事情则是通过递归来完成了平时需要序列化的工作。但其实haskell中也有能进行顺序操作的方法，那就是monad。一个类似于monad的定义基本是这个样子的。</p>
+<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Computation c where</span><br><span class="line">    success :: <span class="tag">a</span> -&gt; c <span class="tag">a</span></span><br><span class="line">    failure :: String -&gt; c <span class="tag">a</span></span><br><span class="line">    augment :: c <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; c b) -&gt; c <span class="tag">b</span></span><br><span class="line">    combine :: c <span class="tag">a</span> -&gt; c <span class="tag">a</span> -&gt; c a</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>第一个success即是讲一个动作包裹成computation类型，代表一次顺利的操作，第二个failure代表一个失败的操作，取一个字符串返回一个c包裹的a，第三个augment取两个参数，一个是之前的操作，另一个是一个能将a变成c包裹的b的函数，并返回一个c包裹的b。这其实就是将操作序列化。第四个combine就是去两个之前获得的c包裹的a并产生一个新的同类型</p>
+<p>一个完整定义的monad差不多是这个</p>
+<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Monad m where</span><br><span class="line">    return :: <span class="tag">a</span> -&gt; m <span class="tag">a</span></span><br><span class="line">    fail :: String -&gt; m <span class="tag">a</span></span><br><span class="line">    (&gt;&gt;=) :: m <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; m b) -&gt; m <span class="tag">b</span></span><br><span class="line">    (&gt;&gt;) :: m <span class="tag">a</span> -&gt; m <span class="tag">b</span> -&gt; m b</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>第一个success即return，failure即fail， augment即&gt;&gt;=，combine即&gt;&gt;，不同的是，&gt;&gt;中的定义更宽泛点，是&gt;&gt;=的简化版本，省略掉了中间的a</p>
+<p>对于monad一共有三个转义定律<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[haskell中的let和where]]></title>
+    <link href="http://yoursite.com/2013/09/15/3323388/"/>
+    <id>http://yoursite.com/2013/09/15/3323388/</id>
+    <published>2013-09-15T14:53:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>haskell中有两种定义局部变量的方法let和where，方法分别如下</p>
+<div class="cnblogs_code"><br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots a b c = <span class="list">(<span class="list">(<span class="keyword">-b</span> + det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>, <span class="list">(<span class="keyword">-b</span> - det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>)</span></span><br><span class="line">      where det = sqrt<span class="list">(<span class="keyword">b*b-4*a*c</span>)</span></span><br><span class="line">               a2 = <span class="number">2</span>*a</span><br></pre></td></tr></table></figure><br><br></div><br><div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots <span class="tag">a</span> <span class="tag">b</span> c = let det = sqrt (b*<span class="tag">b</span> - <span class="number">4</span>*a*c)</span><br><span class="line">                        a2 = <span class="number">2</span>*<span class="tag">a</span></span><br><span class="line">                   <span class="keyword">in</span> ((-<span class="tag">b</span> + det) / a2, (-<span class="tag">b</span> - det) / a2)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这两种方法都可以使全局变量定义失效</p>
+<div class="cnblogs_code"><br><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">det = <span class="string">"Hello World"</span></span><br><span class="line">roots a b c =((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">    where det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">roots' a b c=</span><br><span class="line">    let det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">    in ((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">f _ = det</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots' 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; f 'a'</span><br><span class="line"><span class="string">"Hello World"</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>对于let和where混用，那么是let的优先级高，也就是说优先使用let定义的变量，而不是where定义的变量，比如</p>
+<div class="cnblogs_code"><br><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">f <span class="variable">x =</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y =</span> x+<span class="number">1</span></span><br><span class="line">    <span class="keyword">in</span> y</span><br><span class="line">    where <span class="variable">y =</span> x+<span class="number">2</span></span><br><span class="line">*Main&gt; f <span class="number">10</span></span><br><span class="line"><span class="number">11</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>等于11而不是12</p>
+<p>对于let和where，同样也支持模式匹配，例如<br><a id="more"></a></p>
+<div class="cnblogs_code"><br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">showmoney2 <span class="operator">a</span> b c=</span><br><span class="line">    (<span class="built_in">create</span> <span class="operator">a</span> <span class="number">0</span> <span class="number">0</span>)+(<span class="built_in">create</span> <span class="number">0</span> b <span class="number">0</span>)+(<span class="built_in">create</span> <span class="number">0</span> <span class="number">0</span> c)</span><br><span class="line">    where <span class="built_in">create</span> <span class="number">1</span> _ _=<span class="number">1</span></span><br><span class="line">          <span class="built_in">create</span> _ <span class="number">1</span> _=<span class="number">2</span></span><br><span class="line">          <span class="built_in">create</span> _ _ <span class="number">1</span>=<span class="number">3</span></span><br><span class="line"></span><br><span class="line">showmoney <span class="operator">a</span> b c=</span><br><span class="line">    let <span class="built_in">create</span> <span class="number">1</span> _ _=<span class="number">1</span></span><br><span class="line">        <span class="built_in">create</span> _ <span class="number">1</span> _=<span class="number">2</span></span><br><span class="line">        <span class="built_in">create</span> _ _ <span class="number">1</span>=<span class="number">3</span></span><br><span class="line">    <span class="operator">in</span> (<span class="built_in">create</span> <span class="operator">a</span> <span class="number">0</span> <span class="number">0</span>) + (<span class="built_in">create</span> <span class="number">0</span> b <span class="number">0</span>) + (<span class="built_in">create</span> <span class="number">0</span> <span class="number">0</span> c)</span><br><span class="line">*Main&gt; showmoney <span class="number">1</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"><span class="number">6</span></span><br><span class="line">*Main&gt; showmoney2 <span class="number">1</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"><span class="number">6</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>haskell中有两种定义局部变量的方法let和where，方法分别如下</p>
+<div class="cnblogs_code"><br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots a b c = <span class="list">(<span class="list">(<span class="keyword">-b</span> + det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>, <span class="list">(<span class="keyword">-b</span> - det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>)</span></span><br><span class="line">      where det = sqrt<span class="list">(<span class="keyword">b*b-4*a*c</span>)</span></span><br><span class="line">               a2 = <span class="number">2</span>*a</span><br></pre></td></tr></table></figure><br><br></div><br><div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots <span class="tag">a</span> <span class="tag">b</span> c = let det = sqrt (b*<span class="tag">b</span> - <span class="number">4</span>*a*c)</span><br><span class="line">                        a2 = <span class="number">2</span>*<span class="tag">a</span></span><br><span class="line">                   <span class="keyword">in</span> ((-<span class="tag">b</span> + det) / a2, (-<span class="tag">b</span> - det) / a2)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这两种方法都可以使全局变量定义失效</p>
+<div class="cnblogs_code"><br><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">det = <span class="string">"Hello World"</span></span><br><span class="line">roots a b c =((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">    where det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">roots' a b c=</span><br><span class="line">    let det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">    in ((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">f _ = det</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots' 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; f 'a'</span><br><span class="line"><span class="string">"Hello World"</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>对于let和where混用，那么是let的优先级高，也就是说优先使用let定义的变量，而不是where定义的变量，比如</p>
+<div class="cnblogs_code"><br><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">f <span class="variable">x =</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y =</span> x+<span class="number">1</span></span><br><span class="line">    <span class="keyword">in</span> y</span><br><span class="line">    where <span class="variable">y =</span> x+<span class="number">2</span></span><br><span class="line">*Main&gt; f <span class="number">10</span></span><br><span class="line"><span class="number">11</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>等于11而不是12</p>
+<p>对于let和where，同样也支持模式匹配，例如<br>]]>
+    
+    </summary>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[haskell io模块]]></title>
+    <link href="http://yoursite.com/2013/09/15/3322584/"/>
+    <id>http://yoursite.com/2013/09/15/3322584/</id>
+    <published>2013-09-15T07:33:00.000Z</published>
+    <updated>2015-05-11T14:27:15.000Z</updated>
+    <content type="html"><![CDATA[<p>haskell中的io模块主要是用于读写文件屏幕的，通过import IO来导入</p>
+<p>其中有如下常用定义</p>
+<div class="cnblogs_code"><br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="typedef"><span class="keyword">data</span> <span class="type">IOMode</span> = <span class="type">ReadMode</span> | <span class="type">WriteMode</span> | <span class="type">AppendMode</span> | <span class="type">ReadWriteMode</span></span></span><br></pre></td></tr></table></figure><br><br></div><br><div class="cnblogs_code"><br><figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">openFile <span class="type-annotation">::</span> FilePath -&gt; IOMode -&gt; <span class="built_in">IO</span> Handle</span><br><span class="line">hClose   <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">hIsEOF   <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">Bool</span></span><br><span class="line">hGetChar <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">Char</span></span><br><span class="line">hGetLine  <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">hGetContents <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">getChar <span class="type-annotation">::</span> <span class="built_in">IO</span> <span class="built_in">Char</span></span><br><span class="line">getLine <span class="type-annotation">::</span> <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">getContents <span class="type-annotation">::</span> <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">hPutChar <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">Char</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">hPutStr <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">hPutStrLn <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">putChar <span class="type-annotation">::</span> <span class="built_in">Char</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">putStr <span class="type-annotation">::</span> <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">putStrLn <span class="type-annotation">::</span> <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">readFile <span class="type-annotation">::</span> FilePath -&gt; <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">writeFile <span class="type-annotation">::</span> FilePath -&gt; <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">bracket  <span class="type-annotation">::</span> <span class="built_in">IO</span> a-&gt; (a -&gt; <span class="built_in">IO</span> b) -&gt; (a -&gt; <span class="built_in">IO</span> c) -&gt; <span class="built_in">IO</span> c</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>其中readFile和writeFile是不需要事先打开文件就能读写整个文件的。bracket是用来安全读写文件的，在对外部操作中很可能遇到异常，这时候就需要bracket来保证异常发生时，文件能被正确关闭。bracket的第一个参数一般是一开始做的事情，第二个是最后做的事情，第三个是中间做的事情。在读写文件中，一般性是打开文件 关闭文件 读写文件这么三个选项</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>haskell中的io模块主要是用于读写文件屏幕的，通过import IO来导入</p>
+<p>其中有如下常用定义</p>
+<div class="cnblogs_code"><br><figure class="highlight haskell"><table><tr>]]>
+    </summary>
+    
+  </entry>
+  
 </feed>

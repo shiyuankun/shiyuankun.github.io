@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>haskell io模块 | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="haskell中的io模块主要是用于读写文件屏幕的，通过import IO来导入
+其中有如下常用定义
+1data IOMode = ReadMode | WriteMode | AppendMode | ReadWriteMode123456789101112131415161718openFile :: FilePath -&amp;gt; IOMode -&amp;gt; IO HandlehClose">
+<meta property="og:type" content="article">
+<meta property="og:title" content="haskell io模块">
+<meta property="og:url" content="http://yoursite.com/2013/09/15/3322584/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="haskell中的io模块主要是用于读写文件屏幕的，通过import IO来导入
+其中有如下常用定义
+1data IOMode = ReadMode | WriteMode | AppendMode | ReadWriteMode123456789101112131415161718openFile :: FilePath -&amp;gt; IOMode -&amp;gt; IO HandlehClose">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="haskell io模块">
+<meta name="twitter:description" content="haskell中的io模块主要是用于读写文件屏幕的，通过import IO来导入
+其中有如下常用定义
+1data IOMode = ReadMode | WriteMode | AppendMode | ReadWriteMode123456789101112131415161718openFile :: FilePath -&amp;gt; IOMode -&amp;gt; IO HandlehClose">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+  
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-3322584" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/09/15/3322584/" class="article-date">
+  <time datetime="2013-09-15T07:33:00.000Z" itemprop="datePublished">2013-09-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      haskell io模块
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>haskell中的io模块主要是用于读写文件屏幕的，通过import IO来导入</p>
+<p>其中有如下常用定义</p>
+<div class="cnblogs_code"><br><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="typedef"><span class="keyword">data</span> <span class="type">IOMode</span> = <span class="type">ReadMode</span> | <span class="type">WriteMode</span> | <span class="type">AppendMode</span> | <span class="type">ReadWriteMode</span></span></span><br></pre></td></tr></table></figure><br><br></div><br><div class="cnblogs_code"><br><figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">openFile <span class="type-annotation">::</span> FilePath -&gt; IOMode -&gt; <span class="built_in">IO</span> Handle</span><br><span class="line">hClose   <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">hIsEOF   <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">Bool</span></span><br><span class="line">hGetChar <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">Char</span></span><br><span class="line">hGetLine  <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">hGetContents <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">getChar <span class="type-annotation">::</span> <span class="built_in">IO</span> <span class="built_in">Char</span></span><br><span class="line">getLine <span class="type-annotation">::</span> <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">getContents <span class="type-annotation">::</span> <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">hPutChar <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">Char</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">hPutStr <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">hPutStrLn <span class="type-annotation">::</span> Handle -&gt; <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">putChar <span class="type-annotation">::</span> <span class="built_in">Char</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">putStr <span class="type-annotation">::</span> <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">putStrLn <span class="type-annotation">::</span> <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">readFile <span class="type-annotation">::</span> FilePath -&gt; <span class="built_in">IO</span> <span class="built_in">String</span></span><br><span class="line">writeFile <span class="type-annotation">::</span> FilePath -&gt; <span class="built_in">String</span> -&gt; <span class="built_in">IO</span> ()</span><br><span class="line">bracket  <span class="type-annotation">::</span> <span class="built_in">IO</span> a-&gt; (a -&gt; <span class="built_in">IO</span> b) -&gt; (a -&gt; <span class="built_in">IO</span> c) -&gt; <span class="built_in">IO</span> c</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>其中readFile和writeFile是不需要事先打开文件就能读写整个文件的。bracket是用来安全读写文件的，在对外部操作中很可能遇到异常，这时候就需要bracket来保证异常发生时，文件能被正确关闭。bracket的第一个参数一般是一开始做的事情，第二个是最后做的事情，第三个是中间做的事情。在读写文件中，一般性是打开文件 关闭文件 读写文件这么三个选项</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/09/15/3322584/" data-id="ci9jzipiy000sawv4cq5t6sx0" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2013/09/15/3323388/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          haskell中的let和where
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2013/09/15/3322460/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">haskell中的do</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/11/hexoblog/">hexoblog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/first-blog/">first blog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/19/4439945/">初学python里的yield send next</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

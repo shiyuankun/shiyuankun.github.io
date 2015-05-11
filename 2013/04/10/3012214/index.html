@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>lsf安装 | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="lsf安装一共需要这么几个文件
+12345[root@mgmt3 lsfinstall]# ls -lhtotal 262M-rw-r--r-- 1 root root 157M Feb 27 14:39 lsf9.1_linux2.6-glibc2.3-x86_64.tar.Z-rw-r--r-- 1 root root 106M Feb 27 13:20 lsf9.1_lsfinstall_l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="lsf安装">
+<meta property="og:url" content="http://yoursite.com/2013/04/10/3012214/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="lsf安装一共需要这么几个文件
+12345[root@mgmt3 lsfinstall]# ls -lhtotal 262M-rw-r--r-- 1 root root 157M Feb 27 14:39 lsf9.1_linux2.6-glibc2.3-x86_64.tar.Z-rw-r--r-- 1 root root 106M Feb 27 13:20 lsf9.1_lsfinstall_l">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="lsf安装">
+<meta name="twitter:description" content="lsf安装一共需要这么几个文件
+12345[root@mgmt3 lsfinstall]# ls -lhtotal 262M-rw-r--r-- 1 root root 157M Feb 27 14:39 lsf9.1_linux2.6-glibc2.3-x86_64.tar.Z-rw-r--r-- 1 root root 106M Feb 27 13:20 lsf9.1_lsfinstall_l">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+  
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-3012214" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/04/10/3012214/" class="article-date">
+  <time datetime="2013-04-10T05:50:00.000Z" itemprop="datePublished">2013-04-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      lsf安装
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>lsf安装一共需要这么几个文件</p>
+<div class="cnblogs_code"><br><figure class="highlight puppet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="literal">root</span>@mgmt3 lsfinstall]<span class="comment"># ls -lh</span></span><br><span class="line">total <span class="number">262</span>M</span><br><span class="line">-rw-r--r-- <span class="number">1</span> <span class="literal">root</span> <span class="literal">root</span> <span class="number">157</span>M <span class="constant">Feb</span> <span class="number">27</span> <span class="number">14</span>:<span class="number">39</span> lsf9.<span class="number">1_</span>linux2.<span class="number">6</span>-glibc2.<span class="number">3</span>-x86_64.tar.<span class="constant">Z</span></span><br><span class="line">-rw-r--r-- <span class="number">1</span> <span class="literal">root</span> <span class="literal">root</span> <span class="number">106</span>M <span class="constant">Feb</span> <span class="number">27</span> <span class="number">13</span>:<span class="number">20</span> lsf9.<span class="number">1_</span>lsfinstall_linux_x86_64.tar.<span class="constant">Z</span></span><br><span class="line">-rw-r--r-- <span class="number">1</span> <span class="literal">root</span> <span class="literal">root</span>   <span class="number">82</span> <span class="constant">Feb</span> <span class="number">27</span> <span class="number">13</span>:<span class="number">46</span> platform_lsf_std_entitlement.dat</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>其中，lsf9.1_lsfinstall_linux_x86_64.tar.Z需要解压缩出来，然后把lsf9.1_linux2.6-glibc2.3-x86_64.tar.Z这个文件放到解压缩目录中，最后编辑安装所需要的配置文件，注意配置文件需要dos2unix一下确保不包含dos回车符</p>
+<div class="cnblogs_code"><br><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@mgmt3 ~]<span class="comment"># cat lsf.txt</span></span><br><span class="line"><span class="variable">LSF_TOP=</span><span class="string">"/gpfs/lsf9/"</span>安装到哪里去</span><br><span class="line"><span class="variable">LSF_ADMINS=</span><span class="string">"lsfadmin"</span>队列系统管理员账户</span><br><span class="line"><span class="variable">LSF_CLUSTER_NAME=</span><span class="string">"platform"</span></span><br><span class="line"><span class="variable">LSF_MASTER_LIST=</span><span class="string">"mgmt3"</span>管理节点</span><br><span class="line"><span class="variable">LSF_ENTITLEMENT_FILE=</span><span class="string">"/root/platform_lsf_std_entitlement.dat"</span>认证文件</span><br><span class="line"><span class="variable">LSF_TARDIR=</span><span class="string">"/root/lsf9.1_lsfinstall"</span>安装源目录</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>然后再解压缩目录下执行</p>
+<div class="cnblogs_code"><br><figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="property">@mgmt3</span> lsf9.1_lsfinstall]<span class="comment"># ./lsfinstall -f ../lsf.txt</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>安装很快就结束。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/04/10/3012214/" data-id="ci9jzipj8000wawv4rv3odg6o" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2013/04/12/3016605/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          lsf安装后配置
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2013/04/10/3011839/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">gpfs安装细节</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/11/hexoblog/">hexoblog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/first-blog/">first blog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/08/4488876/">在docker里部署网络服务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/19/4439945/">初学python里的yield send next</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>
