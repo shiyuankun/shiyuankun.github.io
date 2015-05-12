@@ -3,29 +3,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>solaris 11 下编译ruby on rails | 彼格海德的笔记空间</title>
+  <title>Tag: migrate | 彼格海德的笔记空间</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="solaris 11
-下载ruby的源代码
-wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz
-从1.9以后，ruby开始使用psych处理yaml，而psych的编译依赖于libyaml，所以还要安装psych
-wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.g">
-<meta property="og:type" content="article">
-<meta property="og:title" content="solaris 11 下编译ruby on rails">
-<meta property="og:url" content="http://yoursite.com/2012/04/19/2457006/index.html">
+  <meta name="description" content="python">
+<meta property="og:type" content="website">
+<meta property="og:title" content="彼格海德的笔记空间">
+<meta property="og:url" content="http://yoursite.com/tags/migrate/index.html">
 <meta property="og:site_name" content="彼格海德的笔记空间">
-<meta property="og:description" content="solaris 11
-下载ruby的源代码
-wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz
-从1.9以后，ruby开始使用psych处理yaml，而psych的编译依赖于libyaml，所以还要安装psych
-wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.g">
+<meta property="og:description" content="python">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="solaris 11 下编译ruby on rails">
-<meta name="twitter:description" content="solaris 11
-下载ruby的源代码
-wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz
-从1.9以后，ruby开始使用psych处理yaml，而psych的编译依赖于libyaml，所以还要安装psych
-wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.g">
+<meta name="twitter:title" content="彼格海德的笔记空间">
+<meta name="twitter:description" content="python">
   
     <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
   
@@ -105,75 +93,39 @@ ga('send', 'pageview');
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-2457006" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2012/04/19/2457006/" class="article-date">
-  <time datetime="2012-04-19T06:01:00.000Z" itemprop="datePublished">2012-04-19</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
+        <section id="main">
   
-    <h1 class="article-title" itemprop="name">
-      solaris 11 下编译ruby on rails
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2015" class="archive-year">2015</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      <a href="/2015/05/12/把博客迁到github上来了/" class="archive-article-date">
+  <time datetime="2015-05-12T01:52:53.000Z" itemprop="datePublished">May 12</time>
+</a>
+      
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2015/05/12/把博客迁到github上来了/">把博客迁到github上来了</a>
     </h1>
   
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>solaris 11</p>
-<p>下载ruby的源代码</p>
-<p>wget <a>ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz</a></p>
-<p>从1.9以后，ruby开始使用psych处理yaml，而psych的编译依赖于libyaml，所以还要安装psych</p>
-<p>wget <a href="http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz" target="_blank" rel="external">http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz</a><br><a id="more"></a></p>
-<p>解压缩以后，</p>
-<p>./configure</p>
-<p>make &amp;&amp; make install安装</p>
-<p>解压缩以后编译，solaris 11下的grep不支持-e选项，所以要设为egrep</p>
-<p>export GREP=egrep<br>./configure —with-opt-dir=/usr/local（这个目录是yaml的安装目录）<br>make<br>make install<br>编译完以后</p>
-<p>gem install rails</p>
-<p>之后测试</p>
-<p>mkdir ~/newrails<br>rails new ~/newrails/<br>cd ../newrails/<br>rails server</p>
-<p>&nbsp;</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/19/2457006/" data-id="ci9koc9gm0016cxv4gqm5n70u" class="article-share-link">Share</a>
-      
-      
-    </footer>
+    </header>
   </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2012/06/06/2538546/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          android源代码下载
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2012/04/18/2455540/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">solaris 11 下编译mongodb</div>
-    </a>
-  
-</nav>
-
-  
 </article>
-
+  
+  
+    </div></section>
+  
 </section>
         
           <aside id="sidebar">

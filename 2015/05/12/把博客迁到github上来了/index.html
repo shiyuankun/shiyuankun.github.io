@@ -3,29 +3,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>solaris 11 下编译ruby on rails | 彼格海德的笔记空间</title>
+  <title>把博客迁到github上来了 | 彼格海德的笔记空间</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="solaris 11
-下载ruby的源代码
-wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz
-从1.9以后，ruby开始使用psych处理yaml，而psych的编译依赖于libyaml，所以还要安装psych
-wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.g">
+  <meta name="description" content="昨天建站搞了一下午，晚上又忙了一会，终于把博客从cnblogs全迁移到github上来了。这里要赞一下hexo的高效。本来没打算迁移的，结果在学习hexo的过程中发现了一篇文章就想试一下。结果很沮丧的发现作者的github去年9月份以后就不更新了。没办法，fork一个下来自己改，javascript一点都不懂，只好console.log一个一个点追过来。最后发现cnblogs改版了以后有些标签换掉">
 <meta property="og:type" content="article">
-<meta property="og:title" content="solaris 11 下编译ruby on rails">
-<meta property="og:url" content="http://yoursite.com/2012/04/19/2457006/index.html">
+<meta property="og:title" content="把博客迁到github上来了">
+<meta property="og:url" content="http://yoursite.com/2015/05/12/把博客迁到github上来了/index.html">
 <meta property="og:site_name" content="彼格海德的笔记空间">
-<meta property="og:description" content="solaris 11
-下载ruby的源代码
-wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz
-从1.9以后，ruby开始使用psych处理yaml，而psych的编译依赖于libyaml，所以还要安装psych
-wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.g">
+<meta property="og:description" content="昨天建站搞了一下午，晚上又忙了一会，终于把博客从cnblogs全迁移到github上来了。这里要赞一下hexo的高效。本来没打算迁移的，结果在学习hexo的过程中发现了一篇文章就想试一下。结果很沮丧的发现作者的github去年9月份以后就不更新了。没办法，fork一个下来自己改，javascript一点都不懂，只好console.log一个一个点追过来。最后发现cnblogs改版了以后有些标签换掉">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="solaris 11 下编译ruby on rails">
-<meta name="twitter:description" content="solaris 11
-下载ruby的源代码
-wget ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz
-从1.9以后，ruby开始使用psych处理yaml，而psych的编译依赖于libyaml，所以还要安装psych
-wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.g">
+<meta name="twitter:title" content="把博客迁到github上来了">
+<meta name="twitter:description" content="昨天建站搞了一下午，晚上又忙了一会，终于把博客从cnblogs全迁移到github上来了。这里要赞一下hexo的高效。本来没打算迁移的，结果在学习hexo的过程中发现了一篇文章就想试一下。结果很沮丧的发现作者的github去年9月份以后就不更新了。没办法，fork一个下来自己改，javascript一点都不懂，只好console.log一个一个点追过来。最后发现cnblogs改版了以后有些标签换掉">
   
     <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
   
@@ -105,10 +93,10 @@ ga('send', 'pageview');
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-2457006" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-把博客迁到github上来了" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2012/04/19/2457006/" class="article-date">
-  <time datetime="2012-04-19T06:01:00.000Z" itemprop="datePublished">2012-04-19</time>
+    <a href="/2015/05/12/把博客迁到github上来了/" class="article-date">
+  <time datetime="2015-05-12T01:52:53.000Z" itemprop="datePublished">2015-05-12</time>
 </a>
     
   </div>
@@ -119,7 +107,7 @@ ga('send', 'pageview');
         
   
     <h1 class="article-title" itemprop="name">
-      solaris 11 下编译ruby on rails
+      把博客迁到github上来了
     </h1>
   
 
@@ -127,46 +115,26 @@ ga('send', 'pageview');
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>solaris 11</p>
-<p>下载ruby的源代码</p>
-<p>wget <a>ftp://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz</a></p>
-<p>从1.9以后，ruby开始使用psych处理yaml，而psych的编译依赖于libyaml，所以还要安装psych</p>
-<p>wget <a href="http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz" target="_blank" rel="external">http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz</a><br><a id="more"></a></p>
-<p>解压缩以后，</p>
-<p>./configure</p>
-<p>make &amp;&amp; make install安装</p>
-<p>解压缩以后编译，solaris 11下的grep不支持-e选项，所以要设为egrep</p>
-<p>export GREP=egrep<br>./configure —with-opt-dir=/usr/local（这个目录是yaml的安装目录）<br>make<br>make install<br>编译完以后</p>
-<p>gem install rails</p>
-<p>之后测试</p>
-<p>mkdir ~/newrails<br>rails new ~/newrails/<br>cd ../newrails/<br>rails server</p>
-<p>&nbsp;</p>
+        <p>昨天建站搞了一下午，晚上又忙了一会，终于把博客从cnblogs全迁移到github上来了。这里要赞一下hexo的高效。<br>本来没打算迁移的，结果在学习hexo的过程中发现了一篇<a href="http://www.huangyunkun.com/2014/03/17/migrate_from_cnblogs_to_hexo/" target="_blank" rel="external">文章</a>就想试一下。<br>结果很沮丧的发现作者的<a href="https://github.com/htynkn/hexo-migrator-cnblogs/" target="_blank" rel="external">github</a>去年9月份以后就不更新了。<br>没办法，fork一个下来自己改，javascript一点都不懂，只好console.log一个一个点追过来。<br>最后发现cnblogs改版了以后有些标签换掉了，而且hexo从2升级到3以后hexo.util已经没有这个包了。<br>最后下了独立出来的hexo-fs替换了事。<br>没仔细测试过，不过我这里的cnblogs文章都读出来了。<br>最后欢迎大家使用我更新过的<a href="https://github.com/shiyuankun/hexo-migrator-cnblogs" target="_blank" rel="external">hexo-migrate-cnblogs</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/19/2457006/" data-id="ci9koc9gm0016cxv4gqm5n70u" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="ci9koc9e10002cxv42tc925tx" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cnblogs/">cnblogs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/migrate/">migrate</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
   
-    <a href="/2012/06/06/2538546/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          android源代码下载
-        
-      </div>
-    </a>
   
-  
-    <a href="/2012/04/18/2455540/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2015/05/11/hexoblog/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">solaris 11 下编译mongodb</div>
+      <div class="article-nav-title">hexoblog</div>
     </a>
   
 </nav>
