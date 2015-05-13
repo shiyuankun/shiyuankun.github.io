@@ -13,6 +13,7 @@ Include/listobject">
 <meta property="og:site_name" content="彼格海德的笔记空间">
 <meta property="og:description" content="一直以来大家提到python的性能总是一个字慢，然后顺带提一下GIL表示自己也知道。但其实python有不少模块可以显著提高性能，而且GIL也并不总是影响性能。这里就做了一个很简单的测试。二维矩阵求和。鉴于运行效率，以及内存连续性考虑，这里的矩阵都是用numpy提供的array而没有使用list。numpy的数组和list相比更接近于c fortran的数组。
 Include/listobject">
+<meta property="og:image" content="/images/compare_python_performance.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="comparison_between_high_performance_packages_for_python">
 <meta name="twitter:description" content="一直以来大家提到python的性能总是一个字慢，然后顺带提一下GIL表示自己也知道。但其实python有不少模块可以显著提高性能，而且GIL也并不总是影响性能。这里就做了一个很简单的测试。二维矩阵求和。鉴于运行效率，以及内存连续性考虑，这里的矩阵都是用numpy提供的array而没有使用list。numpy的数组和list相比更接近于c fortran的数组。
@@ -239,7 +240,7 @@ def sum2djit(arr):
     <span class="keyword">return</span> <span class="literal">result</span>
 </code></pre><p>居然到了惊人的0.22秒</p>
 <p>当然还有一个numpy自带的求和是0.04秒</p>
-<p>最后来一个![汇总][/images/compare_python_performance.png]</p>
+<p>最后来一个<img src="/images/compare_python_performance.png" alt="汇总"></p>
 
       
     </div>
