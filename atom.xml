@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-05-13T09:48:09.000Z</updated>
+  <updated>2015-05-13T09:48:37.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/"/>
     <id>http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/</id>
     <published>2015-05-12T10:01:30.000Z</published>
-    <updated>2015-05-13T09:48:09.000Z</updated>
+    <updated>2015-05-13T09:48:37.000Z</updated>
     <content type="html"><![CDATA[<p>一直以来大家提到python的性能总是一个字慢，然后顺带提一下GIL表示自己也知道。但其实python有不少模块可以显著提高性能，而且GIL也并不总是影响性能。这里就做了一个很简单的测试。二维矩阵求和。<br>鉴于运行效率，以及内存连续性考虑，这里的矩阵都是用numpy提供的array而没有使用list。numpy的数组和list相比更接近于c fortran的数组。</p>
 <pre><code>Include/listobject.h
 typedef struct {
@@ -149,9 +149,13 @@ def sum2djit(arr):
     
       <category term="benchmark" scheme="http://yoursite.com/tags/benchmark/"/>
     
+      <category term="cython" scheme="http://yoursite.com/tags/cython/"/>
+    
       <category term="f2py" scheme="http://yoursite.com/tags/f2py/"/>
     
       <category term="numba" scheme="http://yoursite.com/tags/numba/"/>
+    
+      <category term="numpy" scheme="http://yoursite.com/tags/numpy/"/>
     
       <category term="python" scheme="http://yoursite.com/tags/python/"/>
     
