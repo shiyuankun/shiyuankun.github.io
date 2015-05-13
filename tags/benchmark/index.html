@@ -3,26 +3,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>haskell中的do | 彼格海德的笔记空间</title>
+  <title>Tag: benchmark | 彼格海德的笔记空间</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="在haskell中，有一个do的语句专门用来做一些不那么&amp;ldquo;干净&amp;rdquo;的事情，比如读写都需要用do来开头
-一开始以为do的作用是做monad，后来发现是错误的，其实do做的事情是包裹一个顺序操作
-比如在如下代码中
-1234567main=do    if 2&amp;gt;1    then do        putStrLn &quot;Step 1&quot;        putStrLn &quot;Ste">
-<meta property="og:type" content="article">
-<meta property="og:title" content="haskell中的do">
-<meta property="og:url" content="http://yoursite.com/2013/09/15/3322460/index.html">
+  <meta name="description" content="python">
+<meta property="og:type" content="website">
+<meta property="og:title" content="彼格海德的笔记空间">
+<meta property="og:url" content="http://yoursite.com/tags/benchmark/index.html">
 <meta property="og:site_name" content="彼格海德的笔记空间">
-<meta property="og:description" content="在haskell中，有一个do的语句专门用来做一些不那么&amp;ldquo;干净&amp;rdquo;的事情，比如读写都需要用do来开头
-一开始以为do的作用是做monad，后来发现是错误的，其实do做的事情是包裹一个顺序操作
-比如在如下代码中
-1234567main=do    if 2&amp;gt;1    then do        putStrLn &quot;Step 1&quot;        putStrLn &quot;Ste">
+<meta property="og:description" content="python">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="haskell中的do">
-<meta name="twitter:description" content="在haskell中，有一个do的语句专门用来做一些不那么&amp;ldquo;干净&amp;rdquo;的事情，比如读写都需要用do来开头
-一开始以为do的作用是做monad，后来发现是错误的，其实do做的事情是包裹一个顺序操作
-比如在如下代码中
-1234567main=do    if 2&amp;gt;1    then do        putStrLn &quot;Step 1&quot;        putStrLn &quot;Ste">
+<meta name="twitter:title" content="彼格海德的笔记空间">
+<meta name="twitter:description" content="python">
   
     <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
   
@@ -102,70 +93,39 @@ ga('send', 'pageview');
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-3322460" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2013/09/15/3322460/" class="article-date">
-  <time datetime="2013-09-15T04:54:00.000Z" itemprop="datePublished">2013-09-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
+        <section id="main">
   
-    <h1 class="article-title" itemprop="name">
-      haskell中的do
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2015" class="archive-year">2015</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      <a href="/2015/05/12/comparison-between-high-performance-packages-for-python/" class="archive-article-date">
+  <time datetime="2015-05-12T10:01:30.000Z" itemprop="datePublished">May 12</time>
+</a>
+      
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2015/05/12/comparison-between-high-performance-packages-for-python/">comparison_between_high_performance_packages_for_python</a>
     </h1>
   
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在haskell中，有一个do的语句专门用来做一些不那么&ldquo;干净&rdquo;的事情，比如读写都需要用do来开头</p>
-<p>一开始以为do的作用是做monad，后来发现是错误的，其实do做的事情是包裹一个顺序操作</p>
-<p>比如在如下代码中</p>
-<div class="cnblogs_code"><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">main=<span class="keyword">do</span></span><br><span class="line">    <span class="keyword">if</span> <span class="number">2</span>&gt;<span class="number">1</span></span><br><span class="line">    <span class="keyword">then</span> <span class="keyword">do</span></span><br><span class="line">        putStrLn <span class="string">"Step 1"</span></span><br><span class="line">        putStrLn <span class="string">"Step 2"</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        putStrLn <span class="string">"Step 3"</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>第三行中的do如果缺少的话，编译器会报这个错误</p>
-<div class="cnblogs_code"><br><figure class="highlight fsharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">The <span class="keyword">function</span> `putStrLn' is applied <span class="keyword">to</span> three arguments,</span><br><span class="line">but its <span class="class"><span class="keyword">type</span> `<span class="title">String</span> -&gt; <span class="title">IO</span> </span>()' has only one</span><br><span class="line">In the expression: putStrLn <span class="string">"Step 1"</span> putStrLn <span class="string">"Step 2"</span></span><br><span class="line">In a stmt <span class="keyword">of</span> a '<span class="keyword">do</span>' block:</span><br><span class="line">  <span class="keyword">if</span> <span class="number">2</span> &gt; <span class="number">1</span> <span class="keyword">then</span></span><br><span class="line">      putStrLn <span class="string">"Step 1"</span> putStrLn <span class="string">"Step 2"</span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">      putStrLn <span class="string">"Step 3"</span></span><br><span class="line">In the expression:</span><br><span class="line">  <span class="keyword">do</span> &#123; <span class="keyword">if</span> <span class="number">2</span> &gt; <span class="number">1</span> <span class="keyword">then</span></span><br><span class="line">           putStrLn <span class="string">"Step 1"</span> putStrLn <span class="string">"Step 2"</span></span><br><span class="line">       <span class="keyword">else</span></span><br><span class="line">           putStrLn <span class="string">"Step 3"</span> &#125;</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>意思就是，第一个putStrLn被传了3个参数，&ldquo;Step 1”， putStrLn 和”Step 2”。没有写do，编译器就把这一段连续执行的代码认为是一个命令了。<br><a id="more"></a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2013/09/15/3322460/" data-id="ci9mkefkb0018bnv4imzemj7l" class="article-share-link">Share</a>
-      
-      
-    </footer>
+    </header>
   </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2013/09/15/3322584/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          haskell io模块
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2013/08/11/3251033/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">haskell debug</div>
-    </a>
-  
-</nav>
-
-  
 </article>
-
+  
+  
+    </div></section>
+  
 </section>
         
           <aside id="sidebar">

@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-05-12T02:03:08.000Z</updated>
+  <updated>2015-05-13T09:48:09.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,149 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[comparison_between_high_performance_packages_for_python]]></title>
+    <link href="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/"/>
+    <id>http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/</id>
+    <published>2015-05-12T10:01:30.000Z</published>
+    <updated>2015-05-13T09:48:09.000Z</updated>
+    <content type="html"><![CDATA[<p>一直以来大家提到python的性能总是一个字慢，然后顺带提一下GIL表示自己也知道。但其实python有不少模块可以显著提高性能，而且GIL也并不总是影响性能。这里就做了一个很简单的测试。二维矩阵求和。<br>鉴于运行效率，以及内存连续性考虑，这里的矩阵都是用numpy提供的array而没有使用list。numpy的数组和list相比更接近于c fortran的数组。</p>
+<pre><code>Include/listobject.h
+typedef struct {
+    PyObject_VAR_HEAD
+    /* Vector <span class="keyword">of</span> pointers <span class="keyword">to</span> <span class="type">list</span> elements.  <span class="type">list</span>[<span class="number">0</span>] <span class="keyword">is</span> ob_item[<span class="number">0</span>], etc. */
+    PyObject **ob_item;
+
+    /* ob_item <span class="keyword">contains</span> <span class="constant">space</span> <span class="keyword">for</span> 'allocated' elements.  The <span class="type">number</span>
+     * currently <span class="keyword">in</span> use <span class="keyword">is</span> ob_size.
+     * Invariants:
+     *     <span class="number">0</span> &lt;= ob_size &lt;= allocated
+     *     len(<span class="type">list</span>) == ob_size
+     *     ob_item == NULL implies ob_size == allocated == <span class="number">0</span>
+     * <span class="type">list</span>.sort() temporarily sets allocated <span class="keyword">to</span> -<span class="number">1</span> <span class="keyword">to</span> detect mutations.
+     *
+     * Items must normally <span class="keyword">not</span> be NULL, except during construction when
+     * <span class="keyword">the</span> <span class="type">list</span> <span class="keyword">is</span> <span class="keyword">not</span> yet visible outside <span class="keyword">the</span> function <span class="keyword">that</span> builds <span class="keyword">it</span>.
+     */
+    Py_ssize_t allocated;
+} PyListObject;
+</code></pre><p>拿一个包含浮点数的list来说，list里面的东西其实是PyFloatObject</p>
+<pre><code>Include/floatobject.h
+<span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> {</span>
+    PyObject_HEAD
+    <span class="built_in">double</span> ob_fval;
+} PyFloatObject;
+</code></pre><p>也就是一个PyObject_HEAD的头加上具体的值，看源代码可以发现PyObject_HEAD的定义是这样子的</p>
+<pre><code>Include/<span class="keyword">object</span>.h
+<span class="preprocessor">#<span class="keyword">define</span> PyObject_HEAD                   \</span>
+    _PyObject_HEAD_EXTRA                \
+    Py_ssize_t ob_refcnt;               \
+    <span class="keyword">struct</span> _typeobject *ob_type;
+</code></pre><p>一堆零零碎碎的东西。本身list存object的时候已经不能保证一个list内的对象是内存连续了，对象内部也掺杂着其他信息，这样子的内存排列方式对于计算其实没有多少帮助。<br>例如在做浮点计算的时候要用到的sse/avx指令集就要求2/4个double必须连续排列。<br>而对于numpy来说，事情就简单的多了</p>
+<pre><code>numpy/core/include/numpy/ndarraytypes.h
+typedef struct tagPyArrayObject_fields {
+    PyObject_HEAD
+    /<span class="keyword">*</span> Pointer to the raw data buffer <span class="keyword">*</span>/
+    char <span class="keyword">*</span>data;
+    /<span class="keyword">*</span> The number of dimensions, also called 'ndim' <span class="keyword">*</span>/
+    int nd;
+    /<span class="keyword">*</span> The size in each dimension, also called 'shape' <span class="keyword">*</span>/
+    npy_intp <span class="keyword">*</span>dimensions;
+    /<span class="keyword">*</span>
+     <span class="keyword">*</span> Number of bytes to jump to get to the
+     <span class="keyword">*</span> next element in each dimension
+     <span class="keyword">*</span>/
+    npy_intp <span class="keyword">*</span>strides;
+    /<span class="keyword">*</span>
+     <span class="keyword">*</span> This object is decref'd upon
+     <span class="keyword">*</span> deletion of array. Except in the
+     <span class="keyword">*</span> case of UPDATEIFCOPY which has
+     <span class="keyword">*</span> special handling.
+     <span class="keyword">*</span>
+     <span class="keyword">*</span> For views it points to the original
+     <span class="keyword">*</span> array, collapsed so no chains of
+     <span class="keyword">*</span> views occur.
+     <span class="keyword">*</span>
+     <span class="keyword">*</span> For creation from buffer object it
+     <span class="keyword">*</span> points to an object that shold be
+     <span class="keyword">*</span> decref'd on deletion
+     <span class="keyword">*</span>
+     <span class="keyword">*</span> For UPDATEIFCOPY flag this is an
+     <span class="keyword">*</span> array to-be-updated upon deletion
+     <span class="keyword">*</span> of this one
+     <span class="keyword">*</span>/
+    PyObject <span class="keyword">*</span>base;
+    /<span class="keyword">*</span> Pointer to type structure <span class="keyword">*</span>/
+    PyArray_Descr <span class="keyword">*</span>descr;
+    /<span class="keyword">*</span> Flags describing array -- see below <span class="keyword">*</span>/
+    int flags;
+    /<span class="keyword">*</span> For weak references <span class="keyword">*</span>/
+    PyObject <span class="keyword">*</span>weakreflist;
+} PyArrayObject_fields;
+</code></pre><p>除了ndim，size这些零碎以外，核心部分的数据都是连续存放在一个char *data里的，这就能保证了浮点数据的连续存放。在做浮点运算的时候也能利用上指令集了。<br>好了说完这些我们回过头来看python的这些加速库就能知道孰优孰劣了</p>
+<p>首先是比较的条件，7000×7000的矩阵，全都是随机数的求和。虚拟机<br>当然是最差的cpython</p>
+<pre><code>def sum2d(arr):
+    M, N = arr.shape
+    <span class="literal">result</span> = <span class="number">0</span>.<span class="number">0</span>
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="type">range</span>(M):
+        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="type">range</span>(N):
+            <span class="literal">result</span> += arr[i, j]
+    <span class="keyword">return</span> <span class="literal">result</span>
+</code></pre><p>时间是9.8秒</p>
+<p>然后试试看f2py</p>
+<pre><code><span class="function"><span class="keyword">subroutine</span></span> sum2dfort(x, y, n, m)
+    <span class="type">implicit</span> <span class="type">none</span>
+    <span class="type">integer</span>(<span class="keyword">kind</span> = <span class="number">4</span>) :: n, m
+    <span class="type">real</span>(<span class="keyword">kind</span> = <span class="number">8</span>), <span class="type">dimension</span>(n, m), <span class="type">intent</span>(<span class="type">in</span>) :: x
+    <span class="type">real</span>(<span class="keyword">kind</span> = <span class="number">8</span>), <span class="type">intent</span>(<span class="type">out</span>) :: y
+    <span class="type">integer</span>(<span class="keyword">kind</span> = <span class="number">4</span>):: i, j
+    y = <span class="number">0.0</span>
+    <span class="keyword">do</span> j = <span class="number">1</span>, m
+        <span class="keyword">do</span> i = <span class="number">1</span>, n
+                y = y + x(i, j)
+        <span class="keyword">end</span> <span class="keyword">do</span>
+    <span class="keyword">end</span> <span class="keyword">do</span>
+    <span class="keyword">return</span>
+<span class="keyword">end</span> <span class="function"><span class="keyword">subroutine</span></span> sum2dfort
+</code></pre><p>时间是5.83秒，快了很多哟。不过这里还是要吐嘈一下f2py，为啥矩阵一大就要用swap了，其他几个方法都没有这么大的内存需求量</p>
+<p>然后是cython</p>
+<pre><code>def sum2dcyt(arr):
+    cdef <span class="type">int</span> m=arr.shape[<span class="number">0</span>]
+    cdef <span class="type">int</span> n=arr.shape[<span class="number">1</span>]
+    cdef double <span class="literal">result</span>=<span class="number">0</span>.<span class="number">0</span>
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="type">range</span>(m):
+        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="type">range</span>(n):
+            <span class="literal">result</span> += arr[i,j]
+    <span class="keyword">return</span> <span class="literal">result</span>
+</code></pre><p>一定是我写的方式不对，为什么只有9秒？</p>
+<p>最后是numba</p>
+<pre><code><span class="keyword">from</span> numba <span class="keyword">import</span> jit
+@jit
+def sum2djit(arr):
+    M,N = arr.shape
+    <span class="literal">result</span> = <span class="number">0</span>.<span class="number">0</span>
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="type">range</span>(M):
+        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="type">range</span>(N):
+            <span class="literal">result</span> += arr[i, j]
+    <span class="keyword">return</span> <span class="literal">result</span>
+</code></pre><p>居然到了惊人的0.22秒</p>
+<p>当然还有一个numpy自带的求和是0.04秒</p>
+<p>最后来一个<img src="/images/compare_python_performance.png" alt="汇总"></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>一直以来大家提到python的性能总是一个字慢，然后顺带提一下GIL表示自己也知道。但其实python有不少模块可以显著提高性能，而且GIL也并不总是影响性能。这里就做了一个很简单的测试。二维矩阵求和。<br>鉴于运行效率，以及内存连续性考虑，这里的矩阵都是用numpy提供]]>
+    </summary>
+    
+      <category term="benchmark" scheme="http://yoursite.com/tags/benchmark/"/>
+    
+      <category term="f2py" scheme="http://yoursite.com/tags/f2py/"/>
+    
+      <category term="numba" scheme="http://yoursite.com/tags/numba/"/>
+    
+      <category term="python" scheme="http://yoursite.com/tags/python/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[把博客迁到github上来了]]></title>
@@ -771,46 +914,6 @@ markdown-<span class="literal">mode</span>
 
 <p>第一个success即return，failure即fail， augment即&gt;&gt;=，combine即&gt;&gt;，不同的是，&gt;&gt;中的定义更宽泛点，是&gt;&gt;=的简化版本，省略掉了中间的a</p>
 <p>对于monad一共有三个转义定律<br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[haskell中的let和where]]></title>
-    <link href="http://yoursite.com/2013/09/15/3323388/"/>
-    <id>http://yoursite.com/2013/09/15/3323388/</id>
-    <published>2013-09-15T14:53:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>haskell中有两种定义局部变量的方法let和where，方法分别如下</p>
-<div class="cnblogs_code"><br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots a b c = <span class="list">(<span class="list">(<span class="keyword">-b</span> + det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>, <span class="list">(<span class="keyword">-b</span> - det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>)</span></span><br><span class="line">      where det = sqrt<span class="list">(<span class="keyword">b*b-4*a*c</span>)</span></span><br><span class="line">               a2 = <span class="number">2</span>*a</span><br></pre></td></tr></table></figure><br><br></div><br><div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots <span class="tag">a</span> <span class="tag">b</span> c = let det = sqrt (b*<span class="tag">b</span> - <span class="number">4</span>*a*c)</span><br><span class="line">                        a2 = <span class="number">2</span>*<span class="tag">a</span></span><br><span class="line">                   <span class="keyword">in</span> ((-<span class="tag">b</span> + det) / a2, (-<span class="tag">b</span> - det) / a2)</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>这两种方法都可以使全局变量定义失效</p>
-<div class="cnblogs_code"><br><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">det = <span class="string">"Hello World"</span></span><br><span class="line">roots a b c =((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">    where det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">roots' a b c=</span><br><span class="line">    let det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">    in ((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">f _ = det</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots' 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; f 'a'</span><br><span class="line"><span class="string">"Hello World"</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>对于let和where混用，那么是let的优先级高，也就是说优先使用let定义的变量，而不是where定义的变量，比如</p>
-<div class="cnblogs_code"><br><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">f <span class="variable">x =</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y =</span> x+<span class="number">1</span></span><br><span class="line">    <span class="keyword">in</span> y</span><br><span class="line">    where <span class="variable">y =</span> x+<span class="number">2</span></span><br><span class="line">*Main&gt; f <span class="number">10</span></span><br><span class="line"><span class="number">11</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>等于11而不是12</p>
-<p>对于let和where，同样也支持模式匹配，例如<br><a id="more"></a></p>
-<div class="cnblogs_code"><br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">showmoney2 <span class="operator">a</span> b c=</span><br><span class="line">    (<span class="built_in">create</span> <span class="operator">a</span> <span class="number">0</span> <span class="number">0</span>)+(<span class="built_in">create</span> <span class="number">0</span> b <span class="number">0</span>)+(<span class="built_in">create</span> <span class="number">0</span> <span class="number">0</span> c)</span><br><span class="line">    where <span class="built_in">create</span> <span class="number">1</span> _ _=<span class="number">1</span></span><br><span class="line">          <span class="built_in">create</span> _ <span class="number">1</span> _=<span class="number">2</span></span><br><span class="line">          <span class="built_in">create</span> _ _ <span class="number">1</span>=<span class="number">3</span></span><br><span class="line"></span><br><span class="line">showmoney <span class="operator">a</span> b c=</span><br><span class="line">    let <span class="built_in">create</span> <span class="number">1</span> _ _=<span class="number">1</span></span><br><span class="line">        <span class="built_in">create</span> _ <span class="number">1</span> _=<span class="number">2</span></span><br><span class="line">        <span class="built_in">create</span> _ _ <span class="number">1</span>=<span class="number">3</span></span><br><span class="line">    <span class="operator">in</span> (<span class="built_in">create</span> <span class="operator">a</span> <span class="number">0</span> <span class="number">0</span>) + (<span class="built_in">create</span> <span class="number">0</span> b <span class="number">0</span>) + (<span class="built_in">create</span> <span class="number">0</span> <span class="number">0</span> c)</span><br><span class="line">*Main&gt; showmoney <span class="number">1</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"><span class="number">6</span></span><br><span class="line">*Main&gt; showmoney2 <span class="number">1</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"><span class="number">6</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>haskell中有两种定义局部变量的方法let和where，方法分别如下</p>
-<div class="cnblogs_code"><br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots a b c = <span class="list">(<span class="list">(<span class="keyword">-b</span> + det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>, <span class="list">(<span class="keyword">-b</span> - det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>)</span></span><br><span class="line">      where det = sqrt<span class="list">(<span class="keyword">b*b-4*a*c</span>)</span></span><br><span class="line">               a2 = <span class="number">2</span>*a</span><br></pre></td></tr></table></figure><br><br></div><br><div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots <span class="tag">a</span> <span class="tag">b</span> c = let det = sqrt (b*<span class="tag">b</span> - <span class="number">4</span>*a*c)</span><br><span class="line">                        a2 = <span class="number">2</span>*<span class="tag">a</span></span><br><span class="line">                   <span class="keyword">in</span> ((-<span class="tag">b</span> + det) / a2, (-<span class="tag">b</span> - det) / a2)</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>这两种方法都可以使全局变量定义失效</p>
-<div class="cnblogs_code"><br><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">det = <span class="string">"Hello World"</span></span><br><span class="line">roots a b c =((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">    where det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">roots' a b c=</span><br><span class="line">    let det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">    in ((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">f _ = det</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots' 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; f 'a'</span><br><span class="line"><span class="string">"Hello World"</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>对于let和where混用，那么是let的优先级高，也就是说优先使用let定义的变量，而不是where定义的变量，比如</p>
-<div class="cnblogs_code"><br><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">f <span class="variable">x =</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y =</span> x+<span class="number">1</span></span><br><span class="line">    <span class="keyword">in</span> y</span><br><span class="line">    where <span class="variable">y =</span> x+<span class="number">2</span></span><br><span class="line">*Main&gt; f <span class="number">10</span></span><br><span class="line"><span class="number">11</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>等于11而不是12</p>
-<p>对于let和where，同样也支持模式匹配，例如<br>]]>
     
     </summary>
     
