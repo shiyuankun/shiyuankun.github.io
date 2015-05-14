@@ -3,17 +3,23 @@
 <head>
   <meta charset="utf-8">
   
-  <title>xcat无法连接服务器 | 彼格海德的笔记空间</title>
+  <title>pyspark dataframe的实现 | 彼格海德的笔记空间</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="123tabdump siteUnable to open socket connection to xcatd daemon on localhost:3001.Verify that the xcatd daemon is running and that your SSL setup is correct.Connection failure: IO::Socket::SSL: Timeou">
+  <meta name="description" content="dataframe是spark 1.3今年新推出的东西，但其实早期叫做SchemaRDD，这还可以在源代码里看到。不过按照SPARK east summit 2015上的说法，dataframe速度很快，这得益于全部用内核实现计算。随便摘一段出来就能发现，Dataframe这个类里的大多数计算都是交由self._jdf实现的。
+def count(self):
+    &quot;&quot;&quot;Returns the">
 <meta property="og:type" content="article">
-<meta property="og:title" content="xcat无法连接服务器">
-<meta property="og:url" content="http://yoursite.com/2012/04/12/2444656/index.html">
+<meta property="og:title" content="pyspark dataframe的实现">
+<meta property="og:url" content="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/index.html">
 <meta property="og:site_name" content="彼格海德的笔记空间">
-<meta property="og:description" content="123tabdump siteUnable to open socket connection to xcatd daemon on localhost:3001.Verify that the xcatd daemon is running and that your SSL setup is correct.Connection failure: IO::Socket::SSL: Timeou">
+<meta property="og:description" content="dataframe是spark 1.3今年新推出的东西，但其实早期叫做SchemaRDD，这还可以在源代码里看到。不过按照SPARK east summit 2015上的说法，dataframe速度很快，这得益于全部用内核实现计算。随便摘一段出来就能发现，Dataframe这个类里的大多数计算都是交由self._jdf实现的。
+def count(self):
+    &quot;&quot;&quot;Returns the">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="xcat无法连接服务器">
-<meta name="twitter:description" content="123tabdump siteUnable to open socket connection to xcatd daemon on localhost:3001.Verify that the xcatd daemon is running and that your SSL setup is correct.Connection failure: IO::Socket::SSL: Timeou">
+<meta name="twitter:title" content="pyspark dataframe的实现">
+<meta name="twitter:description" content="dataframe是spark 1.3今年新推出的东西，但其实早期叫做SchemaRDD，这还可以在源代码里看到。不过按照SPARK east summit 2015上的说法，dataframe速度很快，这得益于全部用内核实现计算。随便摘一段出来就能发现，Dataframe这个类里的大多数计算都是交由self._jdf实现的。
+def count(self):
+    &quot;&quot;&quot;Returns the">
   
     <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
   
@@ -93,10 +99,10 @@ ga('send', 'pageview');
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-2444656" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-explore-the-source-of-pyspark-dataframe" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2012/04/12/2444656/" class="article-date">
-  <time datetime="2012-04-12T12:52:00.000Z" itemprop="datePublished">2012-04-12</time>
+    <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/" class="article-date">
+  <time datetime="2015-05-14T07:24:15.000Z" itemprop="datePublished">2015-05-14</time>
 </a>
     
   </div>
@@ -107,7 +113,7 @@ ga('send', 'pageview');
         
   
     <h1 class="article-title" itemprop="name">
-      xcat无法连接服务器
+      pyspark dataframe的实现
     </h1>
   
 
@@ -115,39 +121,105 @@ ga('send', 'pageview');
     
     <div class="article-entry" itemprop="articleBody">
       
-        <div class="cnblogs_code"><br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tabdump siteUnable <span class="keyword">to</span> open socket connection <span class="keyword">to</span> xcatd daemon <span class="function_start"><span class="keyword">on</span></span> localhost:<span class="number">3001.</span></span><br><span class="line">Verify <span class="keyword">that</span> <span class="keyword">the</span> xcatd daemon <span class="keyword">is</span> <span class="property">running</span> <span class="keyword">and</span> <span class="keyword">that</span> your SSL setup <span class="keyword">is</span> correct.</span><br><span class="line">Connection failure: IO::Socket::SSL: Timeout <span class="keyword">at</span> /opt/xcat/lib/perl/xCAT/Client.pm line <span class="number">159.</span></span><br></pre></td></tr></table></figure><br><br></div>
+        <p>dataframe是spark 1.3今年新推出的东西，但其实早期叫做SchemaRDD，这还可以在源代码里看到。不过按照SPARK east summit 2015上的说法，dataframe速度很快，这得益于全部用内核实现计算。<br>随便摘一段出来就能发现，Dataframe这个类里的大多数计算都是交由self._jdf实现的。</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">count</span><span class="params">(self)</span>:</span>
+    <span class="string">"""Returns the number of rows in this :class:`DataFrame`.
 
-<p>经常遇到这个问题，网上找了很久都没发现原因。</p>
-<p><a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3430897&amp;group_id=208749&amp;atid=1006945" target="_blank" rel="external">http://sourceforge.net/tracker/?func=detail&amp;aid=3430897&amp;group_id=208749&amp;atid=1006945</a></p>
-<p>这个讨论讲了一些处理方法，似乎</p>
-<p>XCATBYPASS这个变量对连接xcat守护进程有影响</p>
-<p>export XCATBYPASS=1后问题消除。<br><a id="more"></a></p>
+    &gt;&gt;&gt; df.count()
+    2L
+    """</span>
+    <span class="keyword">return</span> self._jdf.count()
+
+<span class="function"><span class="keyword">def</span> <span class="title">collect</span><span class="params">(self)</span>:</span>
+    <span class="string">"""Returns all the records as a list of :class:`Row`.
+
+    &gt;&gt;&gt; df.collect()
+    [Row(age=2, name=u'Alice'), Row(age=5, name=u'Bob')]
+    """</span>
+    <span class="keyword">with</span> SCCallSiteSync(self._sc) <span class="keyword">as</span> css:
+        port = self._sc._jvm.PythonRDD.collectAndServe(self._jdf.javaToPython().rdd())
+    rs = list(_load_from_socket(port, BatchedSerializer(PickleSerializer())))
+    cls = _create_cls(self.schema)
+    <span class="keyword">return</span> [cls(r) <span class="keyword">for</span> r <span class="keyword">in</span> rs]
+
+<span class="function"><span class="keyword">def</span> <span class="title">limit</span><span class="params">(self, num)</span>:</span>
+    <span class="string">"""Limits the result count to the number specified.
+
+    &gt;&gt;&gt; df.limit(1).collect()
+    [Row(age=2, name=u'Alice')]
+    &gt;&gt;&gt; df.limit(0).collect()
+    []
+    """</span>
+    jdf = self._jdf.limit(num)
+    <span class="keyword">return</span> DataFrame(jdf, self.sql_ctx)
+</code></pre><p>而self._jdf来自类初始化传入的值，通常如果用SQLContext创建DataFrame的话都来自这段代码</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">createDataFrame</span><span class="params">(self, data, schema=None, samplingRatio=None)</span>:</span>
+   ...
+   <span class="keyword">if</span> isinstance(schema, (list, tuple)):
+       first = rdd.first()
+       <span class="keyword">if</span> <span class="keyword">not</span> isinstance(first, (list, tuple)):
+           <span class="keyword">raise</span> ValueError(<span class="string">"each row in `rdd` should be list or tuple, "</span>
+                            <span class="string">"but got %r"</span> % type(first))
+       row_cls = Row(*schema)
+       schema = self._inferSchema(rdd.map(<span class="keyword">lambda</span> r: row_cls(*r)), samplingRatio)
+
+   <span class="comment"># take the first few rows to verify schema</span>
+   rows = rdd.take(<span class="number">10</span>)
+   <span class="comment"># Row() cannot been deserialized by Pyrolite</span>
+   <span class="keyword">if</span> rows <span class="keyword">and</span> isinstance(rows[<span class="number">0</span>], tuple) <span class="keyword">and</span> rows[<span class="number">0</span>].__class__.__name__ == <span class="string">'Row'</span>:
+       rdd = rdd.map(tuple)
+       rows = rdd.take(<span class="number">10</span>)
+
+   <span class="keyword">for</span> row <span class="keyword">in</span> rows:
+       _verify_type(row, schema)
+
+   <span class="comment"># convert python objects to sql data</span>
+   converter = _python_to_sql_converter(schema)
+   rdd = rdd.map(converter)
+
+   jrdd = self._jvm.SerDeUtil.toJavaArray(rdd._to_java_object_rdd())
+   df = self._ssql_ctx.applySchemaToPythonRDD(jrdd.rdd(), schema.json())
+   <span class="keyword">return</span> DataFrame(df, self)
+</code></pre><p>而这里的self._ssql_ctx来自于同一个类里的</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">_ssql_ctx</span><span class="params">(self)</span>:</span>
+    <span class="string">"""Accessor for the JVM Spark SQL context.
+
+    Subclasses can override this property to provide their own
+    JVM Contexts.
+    """</span>
+    <span class="keyword">if</span> self._scala_SQLContext <span class="keyword">is</span> <span class="keyword">None</span>:
+        self._scala_SQLContext = self._jvm.SQLContext(self._jsc.sc())
+    <span class="keyword">return</span> self._scala_SQLContext
+</code></pre><p>是对scala_SQLContext的一个封装。包括sql语句的执行也是直接调用_ssql_ctx</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">sql</span><span class="params">(self, sqlQuery)</span>:</span>
+    <span class="string">"""Returns a :class:`DataFrame` representing the result of the given query.
+
+    &gt;&gt;&gt; sqlContext.registerDataFrameAsTable(df, "table1")
+    &gt;&gt;&gt; df2 = sqlContext.sql("SELECT field1 AS f1, field2 as f2 from table1")
+    &gt;&gt;&gt; df2.collect()
+    [Row(f1=1, f2=u'row1'), Row(f1=2, f2=u'row2'), Row(f1=3, f2=u'row3')]
+    """</span>
+    <span class="keyword">return</span> DataFrame(self._ssql_ctx.sql(sqlQuery), self)
+</code></pre><p>而原先的SchemaRDD则不用了，不过看1.2.2的代码似乎也是调用_ssql_ctx来实现计算的，不能明白为什么1.3和1.2能性能差那么多。这还有待于阅读spark的代码来解答。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/12/2444656/" data-id="ci9nvv1lt001z1nv4ypkei9i8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/" data-id="ci9nvv1gs000r1nv4lc3oigbh" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dataframe/">dataframe</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
   
-    <a href="/2012/04/17/2453630/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          solaris上编译node.js
-        
-      </div>
-    </a>
   
-  
-    <a href="/2012/04/10/2440667/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2015/05/14/spark-rdd-pipeline-lazyevaluation/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">xcat网络无盘启动——添加自定义安装包</div>
+      <div class="article-nav-title">spark rdd, pipeline, lazyevaluation</div>
     </a>
   
 </nav>

@@ -95,6 +95,65 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-2538546" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/06/06/2538546/" class="article-date">
+  <time datetime="2012-06-06T09:19:00.000Z" itemprop="datePublished">2012-06-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2012/06/06/2538546/">android源代码下载</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>下载android代码，repo sync的时候遇到以下报错</p>
+<div class="cnblogs_code"><br><code>Exception in thread Thread-3:  
+    Traceback (most recent call last):  
+      File &quot;/usr/lib/python2.6/threading.py&quot;, line 532, in __bootstrap_inner  
+      self.run()  
+      File &quot;/usr/lib/python2.6/threading.py&quot;, line 484, in run  
+      self.__target(*self.__args, **self.__kwargs)  
+      File &quot;/home/haili/android-4.0.4_r1.2/.repo/repo/subcmds/sync.py&quot;, line 200, in _FetchHelper  
+      clone_bundle=not opt.no_clone_bundle)  
+      File &quot;/home/haili/android-4.0.4_r1.2/.repo/repo/project.py&quot;, line 978, in Sync_NetworkHalf  
+      and self._ApplyCloneBundle(initial=is_new, quiet=quiet):  
+      File &quot;/home/haili/android-4.0.4_r1.2/.repo/repo/project.py&quot;, line 1519, in _ApplyCloneBundle  
+      exist_dst = self._FetchBundle(bundle_url, bundle_tmp, bundle_dst, quiet)  
+      File &quot;/home/haili/android-4.0.4_r1.2/.repo/repo/project.py&quot;, line 1583, in _FetchBundle  
+      raise DownloadError(&#39;%s: %s &#39; % (req.get_host(), str(e)))  
+    DownloadError: android.googlesource.com: &lt;urlopen error=&quot;&quot; [errno=&quot;&quot; 110]=&quot;&quot; connection=&quot;&quot; timed=&quot;&quot; out=&quot;&quot;&gt;    
+    ...</code><br></div>
+
+<p>一开始以为是网站被屏蔽了，试了很多FQ手段都不行，后来发觉不是。解决方法很简单，本机打开<a href="https://android.googlesource.com/new-password%C3%AF%C2%BC%C2%8C%C3%A5%C2%B9%C2%B6%C3%A4%C2%B8%C2%94" target="_blank" rel="external">https://android.googlesource.com/new-password</a>，并且用gmail帐号登录以后得到类似于</p>
+<div class="cnblogs_code"><br><code>machine android.googlesource.com login git-&lt;username&gt;.gmail.com password &lt;password&gt;  
+    machine android-review.googlesource.com login git-&lt;username&gt;.gmail.com password &lt;password&gt;</code><br></div>
+
+<p>的信息。将这段信息添加到~/.netrc下之后，重新通过<a href="https://android.googlesource.com/a/platform/manifest" target="_blank" rel="external">https://android.googlesource.com<strong><span style="color: #ff0000;">/a/</span></strong>platform/manifest</a>同步源代码，按照步骤来就能正常下载了</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2012/06/06/2538546/" data-id="ci9nvv1lm001v1nv4t1c8r07c" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-2457006" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2012/04/19/2457006/" class="article-date">
@@ -130,7 +189,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/19/2457006/" data-id="ci9nl0aax001oktv4n3n55jzh" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/19/2457006/" data-id="ci9nvv1lo001w1nv4lf1b0798" class="article-share-link">Share</a>
       
       
     </footer>
@@ -175,7 +234,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/18/2455540/" data-id="ci9nl0aaz001pktv40ntmjd0t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/18/2455540/" data-id="ci9nvv1lp001x1nv4xpuibj04" class="article-share-link">Share</a>
       
       
     </footer>
@@ -220,7 +279,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/17/2453630/" data-id="ci9nl0ab3001qktv400hv2p6n" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/17/2453630/" data-id="ci9nvv1lq001y1nv4zngzip4a" class="article-share-link">Share</a>
       
       
     </footer>
@@ -267,7 +326,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/12/2444656/" data-id="ci9nl0ac9001rktv4sig8zube" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/12/2444656/" data-id="ci9nvv1lt001z1nv4ypkei9i8" class="article-share-link">Share</a>
       
       
     </footer>
@@ -314,7 +373,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/10/2440667/" data-id="ci9nl0ace001sktv43lg6hdjb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/10/2440667/" data-id="ci9nvv1lv00201nv474riyzvo" class="article-share-link">Share</a>
       
       
     </footer>
@@ -359,7 +418,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/09/2439300/" data-id="ci9nl0ach001tktv4bp0n9ztw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/09/2439300/" data-id="ci9nvv1lw00211nv4m5d2o4a8" class="article-share-link">Share</a>
       
       
     </footer>
@@ -408,7 +467,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/07/2436061/" data-id="ci9nl0acl001uktv4wfy91bqz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/07/2436061/" data-id="ci9nvv1mu00221nv4n3xg1f83" class="article-share-link">Share</a>
       
       
     </footer>
@@ -455,7 +514,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/22/2411421/" data-id="ci9nl0acp001vktv47swomsvm" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/22/2411421/" data-id="ci9nvv1mv00231nv4zfkc0yvo" class="article-share-link">Share</a>
       
       
     </footer>
@@ -504,56 +563,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/22/2411348/" data-id="ci9nl0ada001wktv46ubsat8s" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-2410769" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2012/03/21/2410769/" class="article-date">
-  <time datetime="2012-03-21T14:50:00.000Z" itemprop="datePublished">2012-03-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2012/03/21/2410769/">并行编程——MPI</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>MPI是<span class="st">Message Passing Interface</span>的简称，通过这个协议可以在各个进程&mdash;&mdash;尤其是分布式内存进程&mdash;&mdash;间能够进行通信，交流消息共同完成一个任务。</p>
-<p>进行mpi编程的基本流程如下</p>
-<p>首先要载入头文件</p>
-<div class="cnblogs_code"><br><figure class="highlight ocaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Fortran</span> <span class="number">77</span>:    <span class="keyword">include</span> <span class="symbol">'mpif</span>.h' <span class="type">Fortran</span> <span class="number">90</span>:    use mpi <span class="type">C</span>/<span class="type">C</span>++:    #<span class="keyword">include</span> <span class="string">"mpi.h"</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>第二步是初始化MPI环境</p>
-<div class="cnblogs_code"><br><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Fortran <span class="number">77</span>/<span class="number">90</span>:    Call MPI_INIT(ierror)其中integer ierrorC:    <span class="keyword">int</span> MPI_Init(<span class="keyword">int</span> *argc, <span class="keyword">char</span> ***argv); C++:    <span class="keyword">int</span> MPI::Init(<span class="keyword">int</span> *argc, <span class="keyword">char</span> ***argv);</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>第三步是获知参与并行的核的总数<br>
-        
-          <p class="article-more-link">
-            <a href="/2012/03/21/2410769/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/21/2410769/" data-id="ci9nl0ade001xktv4om5rr0d0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/22/2411348/" data-id="ci9nvv1mx00241nv4smp5k1hp" class="article-share-link">Share</a>
       
       
     </footer>
@@ -578,7 +588,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -587,7 +597,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 20px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/python/" style="font-size: 10px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/spark/" style="font-size: 10px;">spark</a>
+      <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 15px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 15px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 20px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/spark/" style="font-size: 15px;">spark</a>
     </div>
   </div>
 
@@ -596,7 +606,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -606,6 +616,10 @@ ga('send', 'pageview');
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/">pyspark dataframe的实现</a>
+          </li>
         
           <li>
             <a href="/2015/05/14/spark-rdd-pipeline-lazyevaluation/">spark rdd, pipeline, lazyevaluation</a>
@@ -621,10 +635,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/2015/05/11/hexoblog/">hexoblog</a>
-          </li>
-        
-          <li>
-            <a href="/2015/05/11/hello-world/">Hello World</a>
           </li>
         
       </ul>

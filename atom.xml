@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-05-14T02:51:54.000Z</updated>
+  <updated>2015-05-14T07:56:38.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,11 +15,110 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[pyspark dataframe的实现]]></title>
+    <link href="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/"/>
+    <id>http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/</id>
+    <published>2015-05-14T07:24:15.000Z</published>
+    <updated>2015-05-14T07:56:38.000Z</updated>
+    <content type="html"><![CDATA[<p>dataframe是spark 1.3今年新推出的东西，但其实早期叫做SchemaRDD，这还可以在源代码里看到。不过按照SPARK east summit 2015上的说法，dataframe速度很快，这得益于全部用内核实现计算。<br>随便摘一段出来就能发现，Dataframe这个类里的大多数计算都是交由self._jdf实现的。</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">count</span><span class="params">(self)</span>:</span>
+    <span class="string">"""Returns the number of rows in this :class:`DataFrame`.
+
+    &gt;&gt;&gt; df.count()
+    2L
+    """</span>
+    <span class="keyword">return</span> self._jdf.count()
+
+<span class="function"><span class="keyword">def</span> <span class="title">collect</span><span class="params">(self)</span>:</span>
+    <span class="string">"""Returns all the records as a list of :class:`Row`.
+
+    &gt;&gt;&gt; df.collect()
+    [Row(age=2, name=u'Alice'), Row(age=5, name=u'Bob')]
+    """</span>
+    <span class="keyword">with</span> SCCallSiteSync(self._sc) <span class="keyword">as</span> css:
+        port = self._sc._jvm.PythonRDD.collectAndServe(self._jdf.javaToPython().rdd())
+    rs = list(_load_from_socket(port, BatchedSerializer(PickleSerializer())))
+    cls = _create_cls(self.schema)
+    <span class="keyword">return</span> [cls(r) <span class="keyword">for</span> r <span class="keyword">in</span> rs]
+
+<span class="function"><span class="keyword">def</span> <span class="title">limit</span><span class="params">(self, num)</span>:</span>
+    <span class="string">"""Limits the result count to the number specified.
+
+    &gt;&gt;&gt; df.limit(1).collect()
+    [Row(age=2, name=u'Alice')]
+    &gt;&gt;&gt; df.limit(0).collect()
+    []
+    """</span>
+    jdf = self._jdf.limit(num)
+    <span class="keyword">return</span> DataFrame(jdf, self.sql_ctx)
+</code></pre><p>而self._jdf来自类初始化传入的值，通常如果用SQLContext创建DataFrame的话都来自这段代码</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">createDataFrame</span><span class="params">(self, data, schema=None, samplingRatio=None)</span>:</span>
+   ...
+   <span class="keyword">if</span> isinstance(schema, (list, tuple)):
+       first = rdd.first()
+       <span class="keyword">if</span> <span class="keyword">not</span> isinstance(first, (list, tuple)):
+           <span class="keyword">raise</span> ValueError(<span class="string">"each row in `rdd` should be list or tuple, "</span>
+                            <span class="string">"but got %r"</span> % type(first))
+       row_cls = Row(*schema)
+       schema = self._inferSchema(rdd.map(<span class="keyword">lambda</span> r: row_cls(*r)), samplingRatio)
+
+   <span class="comment"># take the first few rows to verify schema</span>
+   rows = rdd.take(<span class="number">10</span>)
+   <span class="comment"># Row() cannot been deserialized by Pyrolite</span>
+   <span class="keyword">if</span> rows <span class="keyword">and</span> isinstance(rows[<span class="number">0</span>], tuple) <span class="keyword">and</span> rows[<span class="number">0</span>].__class__.__name__ == <span class="string">'Row'</span>:
+       rdd = rdd.map(tuple)
+       rows = rdd.take(<span class="number">10</span>)
+
+   <span class="keyword">for</span> row <span class="keyword">in</span> rows:
+       _verify_type(row, schema)
+
+   <span class="comment"># convert python objects to sql data</span>
+   converter = _python_to_sql_converter(schema)
+   rdd = rdd.map(converter)
+
+   jrdd = self._jvm.SerDeUtil.toJavaArray(rdd._to_java_object_rdd())
+   df = self._ssql_ctx.applySchemaToPythonRDD(jrdd.rdd(), schema.json())
+   <span class="keyword">return</span> DataFrame(df, self)
+</code></pre><p>而这里的self._ssql_ctx来自于同一个类里的</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">_ssql_ctx</span><span class="params">(self)</span>:</span>
+    <span class="string">"""Accessor for the JVM Spark SQL context.
+
+    Subclasses can override this property to provide their own
+    JVM Contexts.
+    """</span>
+    <span class="keyword">if</span> self._scala_SQLContext <span class="keyword">is</span> <span class="keyword">None</span>:
+        self._scala_SQLContext = self._jvm.SQLContext(self._jsc.sc())
+    <span class="keyword">return</span> self._scala_SQLContext
+</code></pre><p>是对scala_SQLContext的一个封装。包括sql语句的执行也是直接调用_ssql_ctx</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">sql</span><span class="params">(self, sqlQuery)</span>:</span>
+    <span class="string">"""Returns a :class:`DataFrame` representing the result of the given query.
+
+    &gt;&gt;&gt; sqlContext.registerDataFrameAsTable(df, "table1")
+    &gt;&gt;&gt; df2 = sqlContext.sql("SELECT field1 AS f1, field2 as f2 from table1")
+    &gt;&gt;&gt; df2.collect()
+    [Row(f1=1, f2=u'row1'), Row(f1=2, f2=u'row2'), Row(f1=3, f2=u'row3')]
+    """</span>
+    <span class="keyword">return</span> DataFrame(self._ssql_ctx.sql(sqlQuery), self)
+</code></pre><p>而原先的SchemaRDD则不用了，不过看1.2.2的代码似乎也是调用_ssql_ctx来实现计算的，不能明白为什么1.3和1.2能性能差那么多。这还有待于阅读spark的代码来解答。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>dataframe是spark 1.3今年新推出的东西，但其实早期叫做SchemaRDD，这还可以在源代码里看到。不过按照SPARK east summit 2015上的说法，dataframe速度很快，这得益于全部用内核实现计算。<br>随便摘一段出来就能发现，Dataf]]>
+    </summary>
+    
+      <category term="dataframe" scheme="http://yoursite.com/tags/dataframe/"/>
+    
+      <category term="python" scheme="http://yoursite.com/tags/python/"/>
+    
+      <category term="spark" scheme="http://yoursite.com/tags/spark/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[spark rdd, pipeline, lazyevaluation]]></title>
     <link href="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/"/>
     <id>http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/</id>
     <published>2015-05-14T02:28:14.000Z</published>
-    <updated>2015-05-14T02:51:54.000Z</updated>
+    <updated>2015-05-14T04:44:45.000Z</updated>
     <content type="html"><![CDATA[<p>一直以来写代码不求甚解，感觉这样不好，从今天开始起读各数据框架的源代码，学习学习再学习  </p>
 <p>今天看的是pyspark里lazy evaluation的处理，python和scala不同不是函数式的。那这是怎么办到的呢？  </p>
 <p>首先所有的数据集在spark内部都叫做rdd，这在pyspark里也有定义：  </p>
@@ -152,6 +251,10 @@ def _jrdd(self):
 <p>今天看的是pyspark里lazy evaluation的处理，python和scala不同不是函数式的。那这是怎么办到的呢？  </p>
 <p>首先所有的数据集在sp]]>
     </summary>
+    
+      <category term="pyspark" scheme="http://yoursite.com/tags/pyspark/"/>
+    
+      <category term="python" scheme="http://yoursite.com/tags/python/"/>
     
       <category term="rdd" scheme="http://yoursite.com/tags/rdd/"/>
     
@@ -948,69 +1051,6 @@ markdown-<span class="literal">mode</span>
 <p>好在他们提供了nbody的f90代码。装好ifort就开始优化，初一眼看过去就好多问题，&ldquo;怪不得那么慢&rdquo;，看来现在fortran培训太少了以至于部分不合格码农直接拿java代码改改就过来用了。内存不对齐，行列优先搞混，没有写成向量化，这类错误比比皆是。改了改，差不多跑快了10秒，感觉差不多了，把c++的代码拉下来一编译，瞬间崩溃，在本机上只跑了6秒！</p>
 <p>接下去是苦逼的两天，我绞尽脑汁改代码，向量化，发现部分代码无法向量化，然后手工指定，变更慢了&hellip;&hellip;终于，在现实面前，终于低下头，想想是不是c++里用了什么新技术导致比fortran快呢？或许人家也有新的算法呢？（可喜可贺）</p>
 <p>跑去看c++的代码部分。就发现他将多体问题中常见的求出距离求倒数r^(-1)=(1/sqrt(x<em>x+y</em>y+z*z))的那一步用了很简明的方法写了一下<br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[haskell中的cps]]></title>
-    <link href="http://yoursite.com/2013/09/27/3342893/"/>
-    <id>http://yoursite.com/2013/09/27/3342893/</id>
-    <published>2013-09-27T07:56:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>cps全称叫continuation passing style，简要来讲就是告诉函数下一步做什么的递归方式，由于普通递归有栈溢出的问题，而cps都是尾递归(tail recursion)，尾递归则是没有栈溢出问题的，所以haskell推荐都用cps的方式去编写代码。</p>
-<p>当然，相对于普通递归方式，cps也有着非常不便于理解的问题。</p>
-<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> n* fact(n-<span class="number">1</span>)</span><br><span class="line"><span class="keyword">print</span> fact(<span class="number">400</span>)</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>这是一段递归求阶乘的python代码。用cps改写就是</p>
-<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact_cps</span><span class="params">(n,ret)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        ret(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        fact_cps(n-<span class="number">1</span>, <span class="keyword">lambda</span> x:ret(n*x))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ret2</span><span class="params">(x)</span>:</span></span><br><span class="line">    <span class="keyword">print</span> x</span><br><span class="line">fact_cps(<span class="number">400</span>,ret2)</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>这里要注意的是，我们在传参数的时候多了一个ret，而这个ret其实是一个函数，函数的作用就是传入一个值并打印他。在实际运行过程中，其实是这样子的</p>
-<p>以fact_cps(3,ret2)求3的阶乘为例，第一步我们是执行fact_cps(3,ret2)，到第五行的地方，我们执行的是fact_cps(2, lambda x:ret2(3*x))，这里的ret即最外层的ret2<br><a id="more"></a></p>
-<p>fact_cps中的lambda x:ret (3<em>x)其实是一个函数的简单写法，也就是说这是一个输入x的函数，然后运算ret(3</em>x)</p>
-<p>第二步调用以后，fact_cps的输入值是2以及一个叫做lambda x:ret(3<em>x)的函数，也就是说ret函数变成了ret(x): print (3</em>x) 然后到第五行调用fact_cps(1,lambda x:ret(2<em>x))即fact_cps(1,lambda x:ret2(3</em>2*x))</p>
-<p>第三布调用的就是fact_cps(0,lambda x:ret2(3<em>2</em>1<em>x))，然后到第三行结束，所以总的一个计算其实就是lambda x:ret2(3</em>2<em>1</em>x)然后将最后一次调用的1带入，得到6。</p>
-<p>这中间我们可以看到，和普通递归传递的是参数不同，cps调用每一步都产生一个新的函数，传递给下一步调用，这个传递的函数告诉了被递归函数下一步做的是什么。</p>
-<p>&nbsp;</p>
-<p>用haskell写cps更难懂点先写一个简单点的</p>
-<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysqrt :: Floating <span class="tag">a</span> =&gt; <span class="tag">a</span> -&gt; <span class="tag">a</span></span><br><span class="line">mysqrt <span class="tag">a</span> = sqrt <span class="tag">a</span></span><br><span class="line">print (mysqrt <span class="number">4</span>) :: IO ()</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>这是一个普通的开根号，用cps写则是</p>
-<div class="cnblogs_code"><br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="label">mysqrtCPS ::</span> <span class="literal">a</span> -&gt; (<span class="literal">a</span> -&gt; r) -&gt; r</span><br><span class="line">mysqrtCPS <span class="literal">a</span> k = k (sqrt <span class="literal">a</span>)</span><br><span class="line"><span class="label">mysqrtCPS 4 print ::</span> IO ()</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>这里把print函数传递进了mysqrtCPS并且用print函数调用sqrt a的结果，达到了cps的目的</p>
-<p>普通的阶乘是这么写的</p>
-<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fact</span> :: (Num a, <span class="keyword">Eq</span> a)=&gt;a-&gt;a</span><br><span class="line"><span class="keyword">fact</span> 0=1</span><br><span class="line"><span class="keyword">fact</span> <span class="keyword">n</span>=<span class="keyword">n</span>*(<span class="keyword">fact</span> (<span class="keyword">n</span>-1))</span><br><span class="line"><span class="keyword">print</span> (<span class="keyword">fact</span> 40)</span><br><span class="line">815915283247897734345611269596115894272000000000</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>cps方式是这么写的</p>
-<div class="cnblogs_code"><br><figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">factCPS :: <span class="function"><span class="params">(Num a, Eq a)</span>=&gt;<span class="title">a</span>-&gt;</span><span class="function"><span class="params">(a-&gt;IO ())</span>-&gt;</span>IO ()</span><br><span class="line">factCPS <span class="number">0</span> ret=ret <span class="number">1</span></span><br><span class="line">factCPS n ret=factCPS (n-<span class="number">1</span>) (<span class="string">\x-&gt;ret</span> (n*x))</span><br><span class="line">factCPS <span class="number">40</span> <span class="built_in">print</span> :: IO ()</span><br><span class="line"><span class="number">815915283247897734345611269596115894272000000000</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>对于Fibonacci数列，普通的方法是这么写的</p>
-<div class="cnblogs_code"><br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="label">fib ::</span> (Num <span class="literal">a</span>,Eq <span class="literal">a</span>)=&gt;<span class="literal">a</span>-&gt;<span class="literal">a</span></span><br><span class="line">fib <span class="number">0</span>=<span class="number">0</span></span><br><span class="line">fib <span class="number">1</span>=<span class="number">1</span></span><br><span class="line">fib n=fib (n-<span class="number">1</span>)+fib (n-<span class="number">2</span>)</span><br><span class="line">print (fib <span class="number">30</span>)</span><br><span class="line"><span class="number">832040</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>CPS方式的Fibonacci数列是这么写的</p>
-<div class="cnblogs_code"><br><figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">fibCPS :: <span class="function"><span class="params">(Num a, Eq a)</span>=&gt;<span class="title">a</span>-&gt;</span><span class="function"><span class="params">(a-&gt;IO ())</span>-&gt;</span>IO ()</span><br><span class="line">fibCPS <span class="number">0</span> f=f <span class="number">0</span></span><br><span class="line">fibCPS <span class="number">1</span> f=f <span class="number">1</span></span><br><span class="line">fibCPS n f=fibCPS (n-<span class="number">1</span>) (<span class="string">\f1-&gt;fibCPS</span> (n-<span class="number">2</span>) (<span class="string">\f2-&gt;f</span> (f1+f2)))</span><br><span class="line">fibCPS <span class="number">30</span> <span class="built_in">print</span> :: IO ()</span><br><span class="line"><span class="number">832040</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>参考</p>
-<p><a href="http://www.haskell.org/haskellwiki/Continuation" target="_blank" rel="external">http://www.haskell.org/haskellwiki/Continuation</a></p>
-<p><a href="http://www.haskell.org/haskellwiki/Tail_recursion" target="_blank" rel="external">http://www.haskell.org/haskellwiki/Tail_recursion</a></p>
-<p><a href="http://en.wikibooks.org/wiki/Haskell/Continuation_passing_style" target="_blank" rel="external">http://en.wikibooks.org/wiki/Haskell/Continuation_passing_style</a></p>
-<p><a href="http://people.csail.mit.edu/meyer/6001/continuations.txt" target="_blank" rel="external">http://people.csail.mit.edu/meyer/6001/continuations.txt</a></p>
-<p>&nbsp;</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>cps全称叫continuation passing style，简要来讲就是告诉函数下一步做什么的递归方式，由于普通递归有栈溢出的问题，而cps都是尾递归(tail recursion)，尾递归则是没有栈溢出问题的，所以haskell推荐都用cps的方式去编写代码。</p>
-<p>当然，相对于普通递归方式，cps也有着非常不便于理解的问题。</p>
-<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> n* fact(n-<span class="number">1</span>)</span><br><span class="line"><span class="keyword">print</span> fact(<span class="number">400</span>)</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>这是一段递归求阶乘的python代码。用cps改写就是</p>
-<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fact_cps</span><span class="params">(n,ret)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> (n==<span class="number">0</span>):</span><br><span class="line">        ret(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        fact_cps(n-<span class="number">1</span>, <span class="keyword">lambda</span> x:ret(n*x))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ret2</span><span class="params">(x)</span>:</span></span><br><span class="line">    <span class="keyword">print</span> x</span><br><span class="line">fact_cps(<span class="number">400</span>,ret2)</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>这里要注意的是，我们在传参数的时候多了一个ret，而这个ret其实是一个函数，函数的作用就是传入一个值并打印他。在实际运行过程中，其实是这样子的</p>
-<p>以fact_cps(3,ret2)求3的阶乘为例，第一步我们是执行fact_cps(3,ret2)，到第五行的地方，我们执行的是fact_cps(2, lambda x:ret2(3*x))，这里的ret即最外层的ret2<br>]]>
     
     </summary>
     

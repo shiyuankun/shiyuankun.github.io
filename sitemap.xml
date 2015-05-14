@@ -2,8 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/</loc>
+    <lastmod>2015-05-14T07:56:38.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/</loc>
-    <lastmod>2015-05-14T02:51:54.000Z</lastmod>
+    <lastmod>2015-05-14T04:44:45.000Z</lastmod>
   </url>
   
   <url>
@@ -22,17 +27,17 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2012/01/08/2316248/</loc>
-    <lastmod>2015-05-11T14:27:15.000Z</lastmod>
-  </url>
-  
-  <url>
     <loc>http://yoursite.com/2012/01/10/2318175/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
   <url>
     <loc>http://yoursite.com/2012/01/03/2311276/</loc>
+    <lastmod>2015-05-11T14:27:15.000Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2012/01/04/2312532/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
@@ -112,12 +117,12 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2013/09/15/3323388/</loc>
+    <loc>http://yoursite.com/2012/01/08/2316248/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
   <url>
-    <loc>http://yoursite.com/2012/01/04/2312532/</loc>
+    <loc>http://yoursite.com/2013/09/15/3322584/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
@@ -212,7 +217,7 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2013/09/15/3322584/</loc>
+    <loc>http://yoursite.com/2013/09/15/3323388/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   

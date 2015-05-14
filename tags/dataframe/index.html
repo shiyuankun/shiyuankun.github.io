@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>xcat无法连接服务器 | 彼格海德的笔记空间</title>
+  <title>Tag: dataframe | 彼格海德的笔记空间</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="123tabdump siteUnable to open socket connection to xcatd daemon on localhost:3001.Verify that the xcatd daemon is running and that your SSL setup is correct.Connection failure: IO::Socket::SSL: Timeou">
-<meta property="og:type" content="article">
-<meta property="og:title" content="xcat无法连接服务器">
-<meta property="og:url" content="http://yoursite.com/2012/04/12/2444656/index.html">
+  <meta name="description" content="python">
+<meta property="og:type" content="website">
+<meta property="og:title" content="彼格海德的笔记空间">
+<meta property="og:url" content="http://yoursite.com/tags/dataframe/index.html">
 <meta property="og:site_name" content="彼格海德的笔记空间">
-<meta property="og:description" content="123tabdump siteUnable to open socket connection to xcatd daemon on localhost:3001.Verify that the xcatd daemon is running and that your SSL setup is correct.Connection failure: IO::Socket::SSL: Timeou">
+<meta property="og:description" content="python">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="xcat无法连接服务器">
-<meta name="twitter:description" content="123tabdump siteUnable to open socket connection to xcatd daemon on localhost:3001.Verify that the xcatd daemon is running and that your SSL setup is correct.Connection failure: IO::Socket::SSL: Timeou">
+<meta name="twitter:title" content="彼格海德的笔记空间">
+<meta name="twitter:description" content="python">
   
     <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
   
@@ -93,68 +93,39 @@ ga('send', 'pageview');
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-2444656" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2012/04/12/2444656/" class="article-date">
-  <time datetime="2012-04-12T12:52:00.000Z" itemprop="datePublished">2012-04-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
+        <section id="main">
   
-    <h1 class="article-title" itemprop="name">
-      xcat无法连接服务器
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2015" class="archive-year">2015</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/" class="archive-article-date">
+  <time datetime="2015-05-14T07:24:15.000Z" itemprop="datePublished">May 14</time>
+</a>
+      
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2015/05/14/explore-the-source-of-pyspark-dataframe/">pyspark dataframe的实现</a>
     </h1>
   
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <div class="cnblogs_code"><br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tabdump siteUnable <span class="keyword">to</span> open socket connection <span class="keyword">to</span> xcatd daemon <span class="function_start"><span class="keyword">on</span></span> localhost:<span class="number">3001.</span></span><br><span class="line">Verify <span class="keyword">that</span> <span class="keyword">the</span> xcatd daemon <span class="keyword">is</span> <span class="property">running</span> <span class="keyword">and</span> <span class="keyword">that</span> your SSL setup <span class="keyword">is</span> correct.</span><br><span class="line">Connection failure: IO::Socket::SSL: Timeout <span class="keyword">at</span> /opt/xcat/lib/perl/xCAT/Client.pm line <span class="number">159.</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>经常遇到这个问题，网上找了很久都没发现原因。</p>
-<p><a href="http://sourceforge.net/tracker/?func=detail&amp;aid=3430897&amp;group_id=208749&amp;atid=1006945" target="_blank" rel="external">http://sourceforge.net/tracker/?func=detail&amp;aid=3430897&amp;group_id=208749&amp;atid=1006945</a></p>
-<p>这个讨论讲了一些处理方法，似乎</p>
-<p>XCATBYPASS这个变量对连接xcat守护进程有影响</p>
-<p>export XCATBYPASS=1后问题消除。<br><a id="more"></a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/12/2444656/" data-id="ci9nvv1lt001z1nv4ypkei9i8" class="article-share-link">Share</a>
-      
-      
-    </footer>
+    </header>
   </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2012/04/17/2453630/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          solaris上编译node.js
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2012/04/10/2440667/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">xcat网络无盘启动——添加自定义安装包</div>
-    </a>
-  
-</nav>
-
-  
 </article>
-
+  
+  
+    </div></section>
+  
 </section>
         
           <aside id="sidebar">
