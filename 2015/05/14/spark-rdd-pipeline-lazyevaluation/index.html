@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>spark rdd, pipeline, lazyevaluation | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="一直以来写代码不求甚解，感觉这样不好，从今天开始起读各数据框架的源代码，学习学习再学习  
+今天看的是pyspark里lazy evaluation的处理，python和scala不同不是函数式的。那这是怎么办到的呢？  
+首先所有的数据集在spark内部都叫做rdd，这在pyspark里也有定义：  
+class RDD(object):
+
+    &quot;&quot;&quot;
+    A Resilient Dis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spark rdd, pipeline, lazyevaluation">
+<meta property="og:url" content="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="一直以来写代码不求甚解，感觉这样不好，从今天开始起读各数据框架的源代码，学习学习再学习  
+今天看的是pyspark里lazy evaluation的处理，python和scala不同不是函数式的。那这是怎么办到的呢？  
+首先所有的数据集在spark内部都叫做rdd，这在pyspark里也有定义：  
+class RDD(object):
+
+    &quot;&quot;&quot;
+    A Resilient Dis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spark rdd, pipeline, lazyevaluation">
+<meta name="twitter:description" content="一直以来写代码不求甚解，感觉这样不好，从今天开始起读各数据框架的源代码，学习学习再学习  
+今天看的是pyspark里lazy evaluation的处理，python和scala不同不是函数式的。那这是怎么办到的呢？  
+首先所有的数据集在spark内部都叫做rdd，这在pyspark里也有定义：  
+class RDD(object):
+
+    &quot;&quot;&quot;
+    A Resilient Dis">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-62861406-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+<!-- Baidu Statistics -->
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+<!-- End Baidu Statistics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-spark-rdd-pipeline-lazyevaluation" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/14/spark-rdd-pipeline-lazyevaluation/" class="article-date">
+  <time datetime="2015-05-14T02:28:14.000Z" itemprop="datePublished">2015-05-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      spark rdd, pipeline, lazyevaluation
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>一直以来写代码不求甚解，感觉这样不好，从今天开始起读各数据框架的源代码，学习学习再学习  </p>
+<p>今天看的是pyspark里lazy evaluation的处理，python和scala不同不是函数式的。那这是怎么办到的呢？  </p>
+<p>首先所有的数据集在spark内部都叫做rdd，这在pyspark里也有定义：  </p>
+<pre><code><span class="keyword">class</span> RDD(object):
+
+    <span class="string">""</span>"
+    A Resilient Distributed Dataset (RDD), the basic abstraction <span class="keyword">in</span> Spark.
+    Represents <span class="keyword">an</span> immutable, partitioned collection of elements that can be
+    operated <span class="keyword">on</span> <span class="keyword">in</span> parallel.
+</code></pre><p>RDD内部实现了很多函数，有map，filter这类一个集合对一个集合的映射，也有collect，reduce这种一个集合到一个值的映射。</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">map</span><span class="params">(self, f, preservesPartitioning=False)</span>:</span>
+    <span class="string">"""
+    Return a new RDD by applying a function to each element of this RDD.
+
+    &gt;&gt;&gt; rdd = sc.parallelize(["b", "a", "c"])
+    &gt;&gt;&gt; sorted(rdd.map(lambda x: (x, 1)).collect())
+    [('a', 1), ('b', 1), ('c', 1)]
+    """</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">func</span><span class="params">(_, iterator)</span>:</span>
+        <span class="keyword">return</span> imap(f, iterator)
+    <span class="keyword">return</span> self.mapPartitionsWithIndex(func, preservesPartitioning)
+
+<span class="function"><span class="keyword">def</span> <span class="title">mapPartitionsWithIndex</span><span class="params">(self, f, preservesPartitioning=False)</span>:</span>
+    <span class="string">"""
+    Return a new RDD by applying a function to each partition of this RDD,
+    while tracking the index of the original partition.
+
+    &gt;&gt;&gt; rdd = sc.parallelize([1, 2, 3, 4], 4)
+    &gt;&gt;&gt; def f(splitIndex, iterator): yield splitIndex
+    &gt;&gt;&gt; rdd.mapPartitionsWithIndex(f).sum()
+    6
+    """</span>
+    <span class="keyword">return</span> PipelinedRDD(self, f, preservesPartitioning)
+</code></pre><p>对于map filter这类函数来说，他们每次操作都是产生一个叫做PipelinedRDD的对象，那这个PipelinedRDD又是干什么的呢？</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">PipelinedRDD</span><span class="params">(RDD)</span>:</span>
+
+    <span class="string">"""
+    Pipelined maps:
+
+    &gt;&gt;&gt; rdd = sc.parallelize([1, 2, 3, 4])
+    &gt;&gt;&gt; rdd.map(lambda x: 2 * x).cache().map(lambda x: 2 * x).collect()
+    [4, 8, 12, 16]
+    &gt;&gt;&gt; rdd.map(lambda x: 2 * x).map(lambda x: 2 * x).collect()
+    [4, 8, 12, 16]
+
+    Pipelined reduces:
+    &gt;&gt;&gt; from operator import add
+    &gt;&gt;&gt; rdd.map(lambda x: 2 * x).reduce(add)
+    20
+    &gt;&gt;&gt; rdd.flatMap(lambda x: [x, x]).reduce(add)
+    20
+    """</span>
+
+    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, prev, func, preservesPartitioning=False)</span>:</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> isinstance(prev, PipelinedRDD) <span class="keyword">or</span> <span class="keyword">not</span> prev._is_pipelinable():
+            <span class="comment"># This transformation is the first in its stage:</span>
+            self.func = func
+            self.preservesPartitioning = preservesPartitioning
+            self._prev_jrdd = prev._jrdd
+            self._prev_jrdd_deserializer = prev._jrdd_deserializer
+        <span class="keyword">else</span>:
+            prev_func = prev.func
+
+            <span class="function"><span class="keyword">def</span> <span class="title">pipeline_func</span><span class="params">(split, iterator)</span>:</span>
+                <span class="keyword">return</span> func(split, prev_func(split, iterator))
+            self.func = pipeline_func
+            self.preservesPartitioning = \
+                prev.preservesPartitioning <span class="keyword">and</span> preservesPartitioning
+            self._prev_jrdd = prev._prev_jrdd  <span class="comment"># maintain the pipeline</span>
+            self._prev_jrdd_deserializer = prev._prev_jrdd_deserializer
+        self.is_cached = <span class="keyword">False</span>
+        self.is_checkpointed = <span class="keyword">False</span>
+        self.ctx = prev.ctx
+        self.prev = prev
+        self._jrdd_val = <span class="keyword">None</span>
+        self._id = <span class="keyword">None</span>
+        self._jrdd_deserializer = self.ctx.serializer
+        self._bypass_serializer = <span class="keyword">False</span>
+        self.partitioner = prev.partitioner <span class="keyword">if</span> self.preservesPartitioning <span class="keyword">else</span> <span class="keyword">None</span>
+        self._broadcast = <span class="keyword">None</span>
+</code></pre><p>我们可以看到，PipelinedRDD只是记录下当前操作但不执行所以每做一次rdd操作，只是记录下了对应的映射关系，数据集还是在原始状态。只有当使用到了reduce这类函数时才会被执行计算。</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">mean</span><span class="params">(self)</span>:</span>
+    <span class="string">"""
+    Compute the mean of this RDD's elements.
+
+    &gt;&gt;&gt; sc.parallelize([1, 2, 3]).mean()
+    2.0
+    """</span>
+    <span class="keyword">return</span> self.stats().mean()
+
+<span class="function"><span class="keyword">def</span> <span class="title">stats</span><span class="params">(self)</span>:</span>
+    <span class="string">"""
+    Return a L{StatCounter} object that captures the mean, variance
+    and count of the RDD's elements in one operation.
+    """</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">redFunc</span><span class="params">(left_counter, right_counter)</span>:</span>
+        <span class="keyword">return</span> left_counter.mergeStats(right_counter)
+
+    <span class="keyword">return</span> self.mapPartitions(<span class="keyword">lambda</span> i: [StatCounter(i)]).reduce(redFunc)
+</code></pre><p>这里，也是回到了PipelinedRDD，但是这次就不只保存待执行的函数了，而是通过jrdd执行</p>
+<pre><code>@property
+def _jrdd(self):
+    <span class="keyword">if</span> self._jrdd_val:
+        return self._jrdd_val
+    <span class="keyword">if</span> self._bypass_serializer:
+        self._jrdd_deserializer = <span class="function"><span class="title">NoOpSerializer</span><span class="params">()</span></span>
+
+    <span class="keyword">if</span> self<span class="class">.ctx</span><span class="class">.profiler_collector</span>:
+        profiler = self<span class="class">.ctx</span><span class="class">.profiler_collector</span><span class="class">.new_profiler</span>(self.ctx)
+    <span class="keyword">else</span>:
+        profiler = None
+
+    command = (self<span class="class">.func</span>, profiler, self._prev_jrdd_deserializer,
+               self._jrdd_deserializer)
+    pickled_cmd, bvars, env, includes = _prepare_for_python_RDD(self<span class="class">.ctx</span>, command, self)
+    python_rdd = self<span class="class">.ctx</span>._jvm.<span class="function"><span class="title">PythonRDD</span><span class="params">(self._prev_jrdd.rdd()</span></span>,
+                                         <span class="function"><span class="title">bytearray</span><span class="params">(pickled_cmd)</span></span>,
+                                         env, includes, self<span class="class">.preservesPartitioning</span>,
+                                         self<span class="class">.ctx</span><span class="class">.pythonExec</span>,
+                                         bvars, self<span class="class">.ctx</span>._javaAccumulator)
+    self._jrdd_val = python_rdd.<span class="function"><span class="title">asJavaRDD</span><span class="params">()</span></span>
+
+    <span class="keyword">if</span> profiler:
+        self._id = self._jrdd_val.<span class="function"><span class="title">id</span><span class="params">()</span></span>
+        self<span class="class">.ctx</span><span class="class">.profiler_collector</span><span class="class">.add_profiler</span>(self._id, profiler)
+    return self._jrdd_val
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/" data-id="ci9nl0a1q0009ktv497tj2gpv" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rdd/">rdd</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/05/12/comparison-between-high-performance-packages-for-python/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">comparison_between_high_performance_packages_for_python</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 20px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 20px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/python/" style="font-size: 10px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/spark/" style="font-size: 10px;">spark</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/14/spark-rdd-pipeline-lazyevaluation/">spark rdd, pipeline, lazyevaluation</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/12/comparison-between-high-performance-packages-for-python/">comparison_between_high_performance_packages_for_python</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/12/把博客迁到github上来了/">把博客迁到github上来了</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hexoblog/">hexoblog</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/11/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

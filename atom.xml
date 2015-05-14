@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-05-13T09:54:22.000Z</updated>
+  <updated>2015-05-14T02:51:54.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,151 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[spark rdd, pipeline, lazyevaluation]]></title>
+    <link href="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/"/>
+    <id>http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/</id>
+    <published>2015-05-14T02:28:14.000Z</published>
+    <updated>2015-05-14T02:51:54.000Z</updated>
+    <content type="html"><![CDATA[<p>一直以来写代码不求甚解，感觉这样不好，从今天开始起读各数据框架的源代码，学习学习再学习  </p>
+<p>今天看的是pyspark里lazy evaluation的处理，python和scala不同不是函数式的。那这是怎么办到的呢？  </p>
+<p>首先所有的数据集在spark内部都叫做rdd，这在pyspark里也有定义：  </p>
+<pre><code><span class="keyword">class</span> RDD(object):
+
+    <span class="string">""</span>"
+    A Resilient Distributed Dataset (RDD), the basic abstraction <span class="keyword">in</span> Spark.
+    Represents <span class="keyword">an</span> immutable, partitioned collection of elements that can be
+    operated <span class="keyword">on</span> <span class="keyword">in</span> parallel.
+</code></pre><p>RDD内部实现了很多函数，有map，filter这类一个集合对一个集合的映射，也有collect，reduce这种一个集合到一个值的映射。</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">map</span><span class="params">(self, f, preservesPartitioning=False)</span>:</span>
+    <span class="string">"""
+    Return a new RDD by applying a function to each element of this RDD.
+
+    &gt;&gt;&gt; rdd = sc.parallelize(["b", "a", "c"])
+    &gt;&gt;&gt; sorted(rdd.map(lambda x: (x, 1)).collect())
+    [('a', 1), ('b', 1), ('c', 1)]
+    """</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">func</span><span class="params">(_, iterator)</span>:</span>
+        <span class="keyword">return</span> imap(f, iterator)
+    <span class="keyword">return</span> self.mapPartitionsWithIndex(func, preservesPartitioning)
+
+<span class="function"><span class="keyword">def</span> <span class="title">mapPartitionsWithIndex</span><span class="params">(self, f, preservesPartitioning=False)</span>:</span>
+    <span class="string">"""
+    Return a new RDD by applying a function to each partition of this RDD,
+    while tracking the index of the original partition.
+
+    &gt;&gt;&gt; rdd = sc.parallelize([1, 2, 3, 4], 4)
+    &gt;&gt;&gt; def f(splitIndex, iterator): yield splitIndex
+    &gt;&gt;&gt; rdd.mapPartitionsWithIndex(f).sum()
+    6
+    """</span>
+    <span class="keyword">return</span> PipelinedRDD(self, f, preservesPartitioning)
+</code></pre><p>对于map filter这类函数来说，他们每次操作都是产生一个叫做PipelinedRDD的对象，那这个PipelinedRDD又是干什么的呢？</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">PipelinedRDD</span><span class="params">(RDD)</span>:</span>
+
+    <span class="string">"""
+    Pipelined maps:
+
+    &gt;&gt;&gt; rdd = sc.parallelize([1, 2, 3, 4])
+    &gt;&gt;&gt; rdd.map(lambda x: 2 * x).cache().map(lambda x: 2 * x).collect()
+    [4, 8, 12, 16]
+    &gt;&gt;&gt; rdd.map(lambda x: 2 * x).map(lambda x: 2 * x).collect()
+    [4, 8, 12, 16]
+
+    Pipelined reduces:
+    &gt;&gt;&gt; from operator import add
+    &gt;&gt;&gt; rdd.map(lambda x: 2 * x).reduce(add)
+    20
+    &gt;&gt;&gt; rdd.flatMap(lambda x: [x, x]).reduce(add)
+    20
+    """</span>
+
+    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, prev, func, preservesPartitioning=False)</span>:</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> isinstance(prev, PipelinedRDD) <span class="keyword">or</span> <span class="keyword">not</span> prev._is_pipelinable():
+            <span class="comment"># This transformation is the first in its stage:</span>
+            self.func = func
+            self.preservesPartitioning = preservesPartitioning
+            self._prev_jrdd = prev._jrdd
+            self._prev_jrdd_deserializer = prev._jrdd_deserializer
+        <span class="keyword">else</span>:
+            prev_func = prev.func
+
+            <span class="function"><span class="keyword">def</span> <span class="title">pipeline_func</span><span class="params">(split, iterator)</span>:</span>
+                <span class="keyword">return</span> func(split, prev_func(split, iterator))
+            self.func = pipeline_func
+            self.preservesPartitioning = \
+                prev.preservesPartitioning <span class="keyword">and</span> preservesPartitioning
+            self._prev_jrdd = prev._prev_jrdd  <span class="comment"># maintain the pipeline</span>
+            self._prev_jrdd_deserializer = prev._prev_jrdd_deserializer
+        self.is_cached = <span class="keyword">False</span>
+        self.is_checkpointed = <span class="keyword">False</span>
+        self.ctx = prev.ctx
+        self.prev = prev
+        self._jrdd_val = <span class="keyword">None</span>
+        self._id = <span class="keyword">None</span>
+        self._jrdd_deserializer = self.ctx.serializer
+        self._bypass_serializer = <span class="keyword">False</span>
+        self.partitioner = prev.partitioner <span class="keyword">if</span> self.preservesPartitioning <span class="keyword">else</span> <span class="keyword">None</span>
+        self._broadcast = <span class="keyword">None</span>
+</code></pre><p>我们可以看到，PipelinedRDD只是记录下当前操作但不执行所以每做一次rdd操作，只是记录下了对应的映射关系，数据集还是在原始状态。只有当使用到了reduce这类函数时才会被执行计算。</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">mean</span><span class="params">(self)</span>:</span>
+    <span class="string">"""
+    Compute the mean of this RDD's elements.
+
+    &gt;&gt;&gt; sc.parallelize([1, 2, 3]).mean()
+    2.0
+    """</span>
+    <span class="keyword">return</span> self.stats().mean()
+
+<span class="function"><span class="keyword">def</span> <span class="title">stats</span><span class="params">(self)</span>:</span>
+    <span class="string">"""
+    Return a L{StatCounter} object that captures the mean, variance
+    and count of the RDD's elements in one operation.
+    """</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">redFunc</span><span class="params">(left_counter, right_counter)</span>:</span>
+        <span class="keyword">return</span> left_counter.mergeStats(right_counter)
+
+    <span class="keyword">return</span> self.mapPartitions(<span class="keyword">lambda</span> i: [StatCounter(i)]).reduce(redFunc)
+</code></pre><p>这里，也是回到了PipelinedRDD，但是这次就不只保存待执行的函数了，而是通过jrdd执行</p>
+<pre><code>@property
+def _jrdd(self):
+    <span class="keyword">if</span> self._jrdd_val:
+        return self._jrdd_val
+    <span class="keyword">if</span> self._bypass_serializer:
+        self._jrdd_deserializer = <span class="function"><span class="title">NoOpSerializer</span><span class="params">()</span></span>
+
+    <span class="keyword">if</span> self<span class="class">.ctx</span><span class="class">.profiler_collector</span>:
+        profiler = self<span class="class">.ctx</span><span class="class">.profiler_collector</span><span class="class">.new_profiler</span>(self.ctx)
+    <span class="keyword">else</span>:
+        profiler = None
+
+    command = (self<span class="class">.func</span>, profiler, self._prev_jrdd_deserializer,
+               self._jrdd_deserializer)
+    pickled_cmd, bvars, env, includes = _prepare_for_python_RDD(self<span class="class">.ctx</span>, command, self)
+    python_rdd = self<span class="class">.ctx</span>._jvm.<span class="function"><span class="title">PythonRDD</span><span class="params">(self._prev_jrdd.rdd()</span></span>,
+                                         <span class="function"><span class="title">bytearray</span><span class="params">(pickled_cmd)</span></span>,
+                                         env, includes, self<span class="class">.preservesPartitioning</span>,
+                                         self<span class="class">.ctx</span><span class="class">.pythonExec</span>,
+                                         bvars, self<span class="class">.ctx</span>._javaAccumulator)
+    self._jrdd_val = python_rdd.<span class="function"><span class="title">asJavaRDD</span><span class="params">()</span></span>
+
+    <span class="keyword">if</span> profiler:
+        self._id = self._jrdd_val.<span class="function"><span class="title">id</span><span class="params">()</span></span>
+        self<span class="class">.ctx</span><span class="class">.profiler_collector</span><span class="class">.add_profiler</span>(self._id, profiler)
+    return self._jrdd_val
+</code></pre>]]></content>
+    <summary type="html">
+    <![CDATA[<p>一直以来写代码不求甚解，感觉这样不好，从今天开始起读各数据框架的源代码，学习学习再学习  </p>
+<p>今天看的是pyspark里lazy evaluation的处理，python和scala不同不是函数式的。那这是怎么办到的呢？  </p>
+<p>首先所有的数据集在sp]]>
+    </summary>
+    
+      <category term="rdd" scheme="http://yoursite.com/tags/rdd/"/>
+    
+      <category term="spark" scheme="http://yoursite.com/tags/spark/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[comparison_between_high_performance_packages_for_python]]></title>
@@ -866,58 +1011,6 @@ markdown-<span class="literal">mode</span>
 
 <p>这里要注意的是，我们在传参数的时候多了一个ret，而这个ret其实是一个函数，函数的作用就是传入一个值并打印他。在实际运行过程中，其实是这样子的</p>
 <p>以fact_cps(3,ret2)求3的阶乘为例，第一步我们是执行fact_cps(3,ret2)，到第五行的地方，我们执行的是fact_cps(2, lambda x:ret2(3*x))，这里的ret即最外层的ret2<br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[haskell中的monad]]></title>
-    <link href="http://yoursite.com/2013/09/23/3335786/"/>
-    <id>http://yoursite.com/2013/09/23/3335786/</id>
-    <published>2013-09-23T14:13:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>monad本意是单子。在haskell中，第一个接触的基本都是IO action，通过把IO动作包装起来我们能很方便的与现实世界进行数据交换。但其实monad的用途不止如此，monad还能讲一系列操作进行序列化，而这一点在通常编程中是非常需要的。而在haskell中，类似的事情则是通过递归来完成了平时需要序列化的工作。但其实haskell中也有能进行顺序操作的方法，那就是monad。一个类似于monad的定义基本是这个样子的。</p>
-<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Computation c where</span><br><span class="line">    success :: <span class="tag">a</span> -&gt; c <span class="tag">a</span></span><br><span class="line">    failure :: String -&gt; c <span class="tag">a</span></span><br><span class="line">    augment :: c <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; c b) -&gt; c <span class="tag">b</span></span><br><span class="line">    combine :: c <span class="tag">a</span> -&gt; c <span class="tag">a</span> -&gt; c a</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>第一个success即是讲一个动作包裹成computation类型，代表一次顺利的操作，第二个failure代表一个失败的操作，取一个字符串返回一个c包裹的a，第三个augment取两个参数，一个是之前的操作，另一个是一个能将a变成c包裹的b的函数，并返回一个c包裹的b。这其实就是将操作序列化。第四个combine就是去两个之前获得的c包裹的a并产生一个新的同类型</p>
-<p>一个完整定义的monad差不多是这个</p>
-<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Monad m where</span><br><span class="line">    return :: <span class="tag">a</span> -&gt; m <span class="tag">a</span></span><br><span class="line">    fail :: String -&gt; m <span class="tag">a</span></span><br><span class="line">    (&gt;&gt;=) :: m <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; m b) -&gt; m <span class="tag">b</span></span><br><span class="line">    (&gt;&gt;) :: m <span class="tag">a</span> -&gt; m <span class="tag">b</span> -&gt; m b</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>第一个success即return，failure即fail， augment即&gt;&gt;=，combine即&gt;&gt;，不同的是，&gt;&gt;中的定义更宽泛点，是&gt;&gt;=的简化版本，省略掉了中间的a</p>
-<p>对于monad一共有三个转义定律<br><a id="more"></a></p>
-<div class="cnblogs_code"><br><figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;<span class="literal">e</span>&#125; → <span class="literal">e</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>讲一个操作用do单独包裹起来等于他自己</p>
-<div class="cnblogs_code"><br><figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;<span class="literal">e</span>;es&#125; → <span class="literal">e</span>&gt;&gt;<span class="keyword">do</span> &#123;es&#125;</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>讲一个序列操作包裹起来等于e执行完以后将结果交给do {es}串起来</p>
-<div class="cnblogs_code"><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;<span class="built_in">let</span> decls; es&#125; → <span class="built_in">let</span> decls <span class="keyword">in</span> <span class="keyword">do</span> &#123;es&#125;</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>在do中有let可以将它提取出来</p>
-<p>&nbsp;</p>
-<p>monad还必须符合三个定义</p>
-<div class="cnblogs_code"><br><figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="literal">a</span> &gt;&gt;= f ≡ f <span class="literal">a</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>将一个a return并赋值给f继续计算恒等于直接对a进行f计算</p>
-<div class="cnblogs_code"><br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">f <span class="prompt">&gt;&gt;= </span>return ≡ f</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>将一个f计算的结果给return返回恒等于直接进行f计算</p>
-<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">f &gt;&gt;= (\x -&gt; <span class="keyword">g</span> x &gt;&gt;= <span class="keyword">h</span>) ≡ (f &gt;&gt;= <span class="keyword">g</span>) &gt;&gt;= <span class="literal">h</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>monad中符合结合律，及f的计算结果给(\x-&gt;g x &gt;&gt;=h)恒等于(f&gt;&gt;=g)的结果给h</p>
-<p>&nbsp;</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>monad本意是单子。在haskell中，第一个接触的基本都是IO action，通过把IO动作包装起来我们能很方便的与现实世界进行数据交换。但其实monad的用途不止如此，monad还能讲一系列操作进行序列化，而这一点在通常编程中是非常需要的。而在haskell中，类似的事情则是通过递归来完成了平时需要序列化的工作。但其实haskell中也有能进行顺序操作的方法，那就是monad。一个类似于monad的定义基本是这个样子的。</p>
-<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Computation c where</span><br><span class="line">    success :: <span class="tag">a</span> -&gt; c <span class="tag">a</span></span><br><span class="line">    failure :: String -&gt; c <span class="tag">a</span></span><br><span class="line">    augment :: c <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; c b) -&gt; c <span class="tag">b</span></span><br><span class="line">    combine :: c <span class="tag">a</span> -&gt; c <span class="tag">a</span> -&gt; c a</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>第一个success即是讲一个动作包裹成computation类型，代表一次顺利的操作，第二个failure代表一个失败的操作，取一个字符串返回一个c包裹的a，第三个augment取两个参数，一个是之前的操作，另一个是一个能将a变成c包裹的b的函数，并返回一个c包裹的b。这其实就是将操作序列化。第四个combine就是去两个之前获得的c包裹的a并产生一个新的同类型</p>
-<p>一个完整定义的monad差不多是这个</p>
-<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Monad m where</span><br><span class="line">    return :: <span class="tag">a</span> -&gt; m <span class="tag">a</span></span><br><span class="line">    fail :: String -&gt; m <span class="tag">a</span></span><br><span class="line">    (&gt;&gt;=) :: m <span class="tag">a</span> -&gt; (<span class="tag">a</span> -&gt; m b) -&gt; m <span class="tag">b</span></span><br><span class="line">    (&gt;&gt;) :: m <span class="tag">a</span> -&gt; m <span class="tag">b</span> -&gt; m b</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>第一个success即return，failure即fail， augment即&gt;&gt;=，combine即&gt;&gt;，不同的是，&gt;&gt;中的定义更宽泛点，是&gt;&gt;=的简化版本，省略掉了中间的a</p>
-<p>对于monad一共有三个转义定律<br>]]>
     
     </summary>
     
