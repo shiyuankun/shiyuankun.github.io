@@ -95,6 +95,53 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-2411421" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/03/22/2411421/" class="article-date">
+  <time datetime="2012-03-22T04:39:00.000Z" itemprop="datePublished">2012-03-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2012/03/22/2411421/">并行编程——MPI/OPENMP混合编程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在大规模节点间的并行时，由于节点间通讯的量是成平方项增长的，所以带宽很快就会显得不够。所以一种思路增加程序效率线性的方法是用MPI/OPENMP混合编写并行部分。这一部分其实在了解了MPI和OPENMP以后相对容易解决点。大致思路是每个节点分配1-2个MPI进程后，每个MPI进程执行多个OPENMP线程。OPENMP部分由于不需要进程间通信，直接通过内存共享方式交换信息，不走网络带宽，所以可以显著减少程序所需通讯的信息。</p>
+<div class="cnblogs_code"><br>```<br>Fortran:Program hello  use mpi  use omp_lib  Implicit None  Integer :: myid,numprocs,rc,ierr  Integer :: i,j,k,tid  Call MPI_INIT(ierr)  Call MPI_COMM_RANK(MPI_COMM_WORLD,myid,ierr)  Call MPI_COMM_SIZE(MPI_COMM_WORLD,numprocs,ierr)!$OMP Parallel private(tid)  tid=OMP_GET_THREAD_NUM()  write(<em>,</em>) ‘hello from’,tid,’of process’,myid!$OMP END PARALLEL  Call MPI_FINALIZE(rc)  StopEnd Program helloC++:# include <cstdlib># include <iostream># include <ctime># include “mpi.h”# include “omp.h”using namespace std;int main ( int argc, char <em>argv[] );//<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>**</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>80int main ( int argc, char </em>argv[] ){    int myid;    int nprocs;    int this_thread;    MPI::Init();    myid=MPI::COMM_WORLD.Get_rank();    nprocs=MPI::COMM_WORLD.Get_size();#pragma omp parallel private(this_thread)    {        this_thread=omp_get_thread_num();        cout &lt;</ctime></iostream></cstdlib><br></div>
+
+<p>这里值得要注意的是，似乎直接用mpif90/mpicxx编译的库会报错，所以需要用</p>
+<p>icc -openmp hello.cpp -o hello -DMPICH_IGNORE_CXX_SEEK -L/Path/to/mpi/lib/ -lmpi_mt -lmpiic -I/path/to/mpi/include<br>其中-DMPICH_IGNORE_CXX_SEEK为防止MPI2协议中一个重复定义问题所使用的选项，为了保证线程安全，必须使用mpi_mt库</p>
+<p>对于intel的mpirun，必须在mpirun后加上-env I_MPI_PIN_DOMAIN omp使得每个mpi进程会启动openmp线程。</p>
+<p>通过export OMP_NUM_THREADS来控制每个MPI产生多少线程。</p>
+        
+          <p class="article-more-link">
+            <a href="/2012/03/22/2411421/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2012/03/22/2411421/" data-id="ci9peip9g002ebrv4voa8ada4" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-2411348" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2012/03/22/2411348/" class="article-date">
@@ -134,7 +181,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/22/2411348/" data-id="ci9p6nfe8002960v47f3h4wsb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/22/2411348/" data-id="ci9peip9h002fbrv4yj0j6cdh" class="article-share-link">Share</a>
       
       
     </footer>
@@ -183,7 +230,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/21/2410769/" data-id="ci9p6nfeo002a60v4rlum5umg" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/21/2410769/" data-id="ci9peip9i002gbrv4kfo7g4ki" class="article-share-link">Share</a>
       
       
     </footer>
@@ -234,7 +281,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/05/2380650/" data-id="ci9p6nfeq002b60v49pfs4hun" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/05/2380650/" data-id="ci9peip9k002hbrv4fmfpuwlp" class="article-share-link">Share</a>
       
       
     </footer>
@@ -283,7 +330,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/10/2318175/" data-id="ci9p6nfer002c60v47awk0slz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/01/10/2318175/" data-id="ci9peip9l002ibrv4f39d7lbn" class="article-share-link">Share</a>
       
       
     </footer>
@@ -325,7 +372,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/08/2316248/" data-id="ci9p6nfet002d60v4tfnhc2i3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/01/08/2316248/" data-id="ci9peip9l002jbrv4lo3yj623" class="article-share-link">Share</a>
       
       
     </footer>
@@ -369,7 +416,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/04/2312532/" data-id="ci9p6nffc002e60v4bifqy1v4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/01/04/2312532/" data-id="ci9peip9n002kbrv4lk36lp00" class="article-share-link">Share</a>
       
       
     </footer>
@@ -420,7 +467,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/03/2311276/" data-id="ci9p6nepf000060v470f0ukzr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/01/03/2311276/" data-id="ci9peip5n0000brv47e8eel21" class="article-share-link">Share</a>
       
       
     </footer>
@@ -445,7 +492,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">3</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -454,7 +501,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 13.33px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 10px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 20px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/spark/" style="font-size: 16.67px;">spark</a>
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 15px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 15px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 10px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 20px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/scala/" style="font-size: 10px;">scala</a><a href="/tags/spark/" style="font-size: 20px;">spark</a>
     </div>
   </div>
 
@@ -463,7 +510,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -473,6 +520,10 @@ ga('send', 'pageview');
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/05/15/explore-spark-RDD-source-code/">expore spark RDD source code</a>
+          </li>
         
           <li>
             <a href="/2015/05/15/spark-machine-learning-lib-for-python/">spark machine learning lib for python</a>
@@ -488,10 +539,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/2015/05/12/comparison-between-high-performance-packages-for-python/">comparison_between_high_performance_packages_for_python</a>
-          </li>
-        
-          <li>
-            <a href="/2015/05/12/把博客迁到github上来了/">把博客迁到github上来了</a>
           </li>
         
       </ul>

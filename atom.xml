@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-05-15T05:46:33.000Z</updated>
+  <updated>2015-05-15T09:26:56.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,277 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[expore spark RDD source code]]></title>
+    <link href="http://yoursite.com/2015/05/15/explore-spark-RDD-source-code/"/>
+    <id>http://yoursite.com/2015/05/15/explore-spark-RDD-source-code/</id>
+    <published>2015-05-15T08:14:17.000Z</published>
+    <updated>2015-05-15T09:26:56.000Z</updated>
+    <content type="html"><![CDATA[<p>一鼓作气再而衰三而竭。<br>开始阅读spark部分的代码，好在之前在coursera上看过一点scala虽然习题没做完但是不至于全忘。在spark里面，RDD的lazy evaluation也是通过和pyspark差不多的方法实现的，定义一个RDD类，每次操作都返回一个MapParitionsRDD，在这个MapParitionsRDD里记下前一个RDD和对应的函数。</p>
+<pre><code>abstract <span class="class"><span class="keyword">class</span> <span class="title">RDD</span>[<span class="title">T</span>:</span> ClassTag](
+    <span class="decorator">@transient private var _sc: SparkContext,</span>
+    <span class="decorator">@transient private var deps: Seq[Dependency[_]]</span>
+  ) extends Serializable <span class="keyword">with</span> Logging {
+
+  <span class="keyword">if</span> (classOf[RDD[_]].isAssignableFrom(elementClassTag.runtimeClass)) {
+    // This <span class="keyword">is</span> a warning instead of an exception <span class="keyword">in</span> order to avoid breaking user programs that
+    // might have defined nested RDDs without running jobs <span class="keyword">with</span> them.
+    logWarning(<span class="string">"Spark does not support nested RDDs (see SPARK-5063)"</span>)
+  }
+
+  private <span class="function"><span class="keyword">def</span> <span class="title">sc</span>:</span> SparkContext = {
+    <span class="keyword">if</span> (_sc == null) {
+      throw new SparkException(
+        <span class="string">"RDD transformations and actions can only be invoked by the driver, not inside of other "</span> +
+        <span class="string">"transformations; for example, rdd1.map(x =&gt; rdd2.values.count() * x) is invalid because "</span> +
+        <span class="string">"the values transformation and count action cannot be performed inside of the rdd1.map "</span> +
+        <span class="string">"transformation. For more information, see SPARK-5063."</span>)
+    }
+    _sc
+  }
+
+
+  <span class="function"><span class="keyword">def</span> <span class="title">map</span>[<span class="title">U</span>:</span> ClassTag](f: T =&gt; U): RDD[U] = {
+    val cleanF = sc.clean(f)
+    new MapPartitionsRDD[U, T](this, (context, pid, iter) =&gt; iter.map(cleanF))
+  }
+
+  <span class="function"><span class="keyword">def</span> <span class="title">filter</span><span class="params">(f: T =&gt; Boolean)</span>:</span> RDD[T] = {
+    val cleanF = sc.clean(f)
+    new MapPartitionsRDD[T, T](
+      this,
+      (context, pid, iter) =&gt; iter.filter(cleanF),
+      preservesPartitioning = true)
+  }
+
+  <span class="function"><span class="keyword">def</span> <span class="title">mapPartitionsWithIndex</span>[<span class="title">U</span>:</span> ClassTag](
+      f: (Int, Iterator[T]) =&gt; Iterator[U], preservesPartitioning: Boolean = false): RDD[U] = {
+    val func = (context: TaskContext, index: Int, iter: Iterator[T]) =&gt; f(index, iter)
+    new MapPartitionsRDD(this, sc.clean(func), preservesPartitioning)
+  }
+</code></pre><p>而MapPartitionsRDD仅仅记录下了动作和父RDD</p>
+<pre><code>private[spark] class <span class="type">MapPartitionsRDD</span>[U: <span class="type">ClassTag</span>, T: <span class="type">ClassTag</span>](
+    prev: <span class="type">RDD</span>[T],
+    f: (<span class="type">TaskContext</span>, <span class="type">Int</span>, <span class="type">Iterator</span>[T]) =&gt; <span class="type">Iterator</span>[U],  // (<span class="type">TaskContext</span>, partition index, <span class="keyword">iterator</span>)
+    preservesPartitioning: <span class="type">Boolean</span> = <span class="literal">false</span>)
+  extends <span class="type">RDD</span>[U](prev) {
+
+  override val partitioner = <span class="keyword">if</span> (preservesPartitioning) firstParent[T].partitioner <span class="keyword">else</span> <span class="type">None</span>
+
+  override def getPartitions: <span class="type">Array</span>[<span class="type">Partition</span>] = firstParent[T].partitions
+
+  override def compute(split: <span class="type">Partition</span>, context: <span class="type">TaskContext</span>) =
+    f(context, split.index, firstParent[T].<span class="keyword">iterator</span>(split, context))
+}
+</code></pre><p>而只有collect和reduce这类函数是例外的，</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">collect</span><span class="params">()</span>:</span> Array[T] = {
+    val results = sc.runJob(this, (iter: Iterator[T]) =&gt; iter.toArray)
+    Array.concat(results: _*)
+  }
+
+<span class="function"><span class="keyword">def</span> <span class="title">reduce</span><span class="params">(f: <span class="params">(T, T)</span> =&gt; T)</span>:</span> T = {
+    val cleanF = sc.clean(f)
+    val reducePartition: Iterator[T] =&gt; Option[T] = iter =&gt; {
+      <span class="keyword">if</span> (iter.hasNext) {
+        Some(iter.reduceLeft(cleanF))
+      } <span class="keyword">else</span> {
+        <span class="keyword">None</span>
+      }
+    }
+    var jobResult: Option[T] = <span class="keyword">None</span>
+    val mergeResult = (index: Int, taskResult: Option[T]) =&gt; {
+      <span class="keyword">if</span> (taskResult.isDefined) {
+        jobResult = jobResult match {
+          case Some(value) =&gt; Some(f(value, taskResult.get))
+          case <span class="keyword">None</span> =&gt; taskResult
+        }
+      }
+    }
+    sc.runJob(this, reducePartition, mergeResult)
+    // Get the final result out of our Option, <span class="keyword">or</span> throw an exception <span class="keyword">if</span> the RDD was empty
+    jobResult.getOrElse(throw new UnsupportedOperationException(<span class="string">"empty collection"</span>))
+  }
+</code></pre><p>看代码可以知道collect这个动作做的时候其实是调用sc.runJob了，不再累积RDD类。而从SparkContext里的runJob里可以看到，scala shell其实是通过调用DAGScheduler.runjob让spark干活的</p>
+<pre><code>def runJob[T, U: ClassTag](
+      rdd: RDD[T],
+      func: (TaskContext, Iterator[T]) =&gt; U,
+      partitions: Seq[<span class="typename">Int</span>],
+      allowLocal: <span class="typename">Boolean</span>,
+      resultHandler: (<span class="typename">Int</span>, U) =&gt; <span class="typename">Unit</span>) {
+    <span class="keyword">if</span> (stopped) {
+      <span class="keyword">throw</span> new IllegalStateException(<span class="string">"SparkContext has been shutdown"</span>)
+    }
+    <span class="variable"><span class="keyword">val</span> callSite</span> = getCallSite
+    <span class="variable"><span class="keyword">val</span> cleanedFunc</span> = clean(func)
+    logInfo(<span class="string">"Starting job: "</span> + callSite.shortForm)
+    <span class="keyword">if</span> (conf.getBoolean(<span class="string">"spark.logLineage"</span>, <span class="literal">false</span>)) {
+      logInfo(<span class="string">"RDD's recursive dependencies:\n"</span> + rdd.toDebugString)
+    }
+    dagScheduler.runJob(rdd, cleanedFunc, partitions, callSite, allowLocal,
+      resultHandler, localProperties.<span class="keyword">get</span>)
+    progressBar.foreach(_.finishAll())
+    rdd.doCheckpoint()
+  }
+</code></pre><p>对于dag调度器，他的runJob是用submitJob来提交的</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">runJob</span>[</span><span class="type">T</span>, <span class="type">U</span>: <span class="type">ClassTag</span>](
+      rdd: <span class="type">RDD</span>[<span class="type">T</span>],
+      func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,
+      partitions: <span class="type">Seq</span>[<span class="type">Int</span>],
+      callSite: <span class="type">CallSite</span>,
+      allowLocal: <span class="type">Boolean</span>,
+      resultHandler: (<span class="type">Int</span>, <span class="type">U</span>) =&gt; <span class="type">Unit</span>,
+      properties: <span class="type">Properties</span>): <span class="type">Unit</span> = {
+    <span class="function"><span class="keyword">val</span> <span class="title">start</span> =</span> <span class="type">System</span>.nanoTime
+    <span class="function"><span class="keyword">val</span> <span class="title">waiter</span> =</span> submitJob(rdd, func, partitions, callSite, allowLocal, resultHandler, properties)
+    waiter.awaitResult() <span class="keyword">match</span> {
+      <span class="keyword">case</span> <span class="type">JobSucceeded</span> =&gt; {
+        logInfo(<span class="string">"Job %d finished: %s, took %f s"</span>.format
+          (waiter.jobId, callSite.shortForm, (<span class="type">System</span>.nanoTime - start) / <span class="number">1e9</span>))
+      }
+      <span class="keyword">case</span> <span class="type">JobFailed</span>(exception: <span class="type">Exception</span>) =&gt;
+        logInfo(<span class="string">"Job %d failed: %s, took %f s"</span>.format
+          (waiter.jobId, callSite.shortForm, (<span class="type">System</span>.nanoTime - start) / <span class="number">1e9</span>))
+        <span class="keyword">throw</span> exception
+    }
+  }
+
+  <span class="function"><span class="keyword">def</span> <span class="title">submitJob</span>[</span><span class="type">T</span>, <span class="type">U</span>](
+      rdd: <span class="type">RDD</span>[<span class="type">T</span>],
+      func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,
+      partitions: <span class="type">Seq</span>[<span class="type">Int</span>],
+      callSite: <span class="type">CallSite</span>,
+      allowLocal: <span class="type">Boolean</span>,
+      resultHandler: (<span class="type">Int</span>, <span class="type">U</span>) =&gt; <span class="type">Unit</span>,
+      properties: <span class="type">Properties</span>): <span class="type">JobWaiter</span>[<span class="type">U</span>] = {
+    <span class="comment">// Check to make sure we are not launching a task on a partition that does not exist.</span>
+    <span class="function"><span class="keyword">val</span> <span class="title">maxPartitions</span> =</span> rdd.partitions.length
+    partitions.find(p =&gt; p &gt;= maxPartitions || p &lt; <span class="number">0</span>).foreach { p =&gt;
+      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(
+        <span class="string">"Attempting to access a non-existent partition: "</span> + p + <span class="string">". "</span> +
+          <span class="string">"Total number of partitions: "</span> + maxPartitions)
+    }
+
+    <span class="function"><span class="keyword">val</span> <span class="title">jobId</span> =</span> nextJobId.getAndIncrement()
+    <span class="keyword">if</span> (partitions.size == <span class="number">0</span>) {
+      <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">JobWaiter</span>[<span class="type">U</span>](<span class="keyword">this</span>, jobId, <span class="number">0</span>, resultHandler)
+    }
+
+    assert(partitions.size &gt; <span class="number">0</span>)
+    <span class="function"><span class="keyword">val</span> <span class="title">func2</span> =</span> func.asInstanceOf[(<span class="type">TaskContext</span>, <span class="type">Iterator</span>[_]) =&gt; _]
+    <span class="function"><span class="keyword">val</span> <span class="title">waiter</span> =</span> <span class="keyword">new</span> <span class="type">JobWaiter</span>(<span class="keyword">this</span>, jobId, partitions.size, resultHandler)
+    eventProcessLoop.post(<span class="type">JobSubmitted</span>(
+      jobId, rdd, func2, partitions.toArray, allowLocal, callSite, waiter, properties))
+    waiter
+  }
+</code></pre><p>做了一系列安全性检查，起了一个jobwaiter等结果，然后继续调用JobSubmitted比把它提交到DAGSchedulerEventProcessLoop类里去，</p>
+<pre><code><span class="keyword">private</span>[scheduler] <span class="class"><span class="keyword">class</span> <span class="title">DAGSchedulerEventProcessLoop</span>(</span>dagScheduler: <span class="type">DAGScheduler</span>)
+  <span class="keyword">extends</span> <span class="type">EventLoop</span>[<span class="type">DAGSchedulerEvent</span>](<span class="string">"dag-scheduler-event-loop"</span>) <span class="keyword">with</span> <span class="type">Logging</span> {
+
+  <span class="comment">/**
+   * The main event loop of the DAG scheduler.
+   */</span>
+  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onReceive</span>(</span>event: <span class="type">DAGSchedulerEvent</span>): <span class="type">Unit</span> = event <span class="keyword">match</span> {
+    <span class="keyword">case</span> <span class="type">JobSubmitted</span>(jobId, rdd, func, partitions, allowLocal, callSite, listener, properties) =&gt;
+      dagScheduler.handleJobSubmitted(jobId, rdd, func, partitions, allowLocal, callSite,
+        listener, properties)
+
+...
+
+  <span class="keyword">private</span>[scheduler] <span class="function"><span class="keyword">def</span> <span class="title">handleJobSubmitted</span>(</span>jobId: <span class="type">Int</span>,
+      finalRDD: <span class="type">RDD</span>[_],
+      func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[_]) =&gt; _,
+      partitions: <span class="type">Array</span>[<span class="type">Int</span>],
+      allowLocal: <span class="type">Boolean</span>,
+      callSite: <span class="type">CallSite</span>,
+      listener: <span class="type">JobListener</span>,
+      properties: <span class="type">Properties</span>) {
+    <span class="keyword">var</span> finalStage: <span class="type">Stage</span> = <span class="literal">null</span>
+    <span class="keyword">try</span> {
+      <span class="comment">// New stage creation may throw an exception if, for example, jobs are run on a</span>
+      <span class="comment">// HadoopRDD whose underlying HDFS files have been deleted.</span>
+      finalStage = newStage(finalRDD, partitions.size, <span class="type">None</span>, jobId, callSite)
+    } <span class="keyword">catch</span> {
+      <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;
+        logWarning(<span class="string">"Creating new stage failed due to exception - job: "</span> + jobId, e)
+        listener.jobFailed(e)
+        <span class="keyword">return</span>
+    }
+    <span class="keyword">if</span> (finalStage != <span class="literal">null</span>) {
+      <span class="function"><span class="keyword">val</span> <span class="title">job</span> =</span> <span class="keyword">new</span> <span class="type">ActiveJob</span>(jobId, finalStage, func, partitions, callSite, listener, properties)
+      clearCacheLocs()
+      logInfo(<span class="string">"Got job %s (%s) with %d output partitions (allowLocal=%s)"</span>.format(
+        job.jobId, callSite.shortForm, partitions.length, allowLocal))
+      logInfo(<span class="string">"Final stage: "</span> + finalStage + <span class="string">"("</span> + finalStage.name + <span class="string">")"</span>)
+      logInfo(<span class="string">"Parents of final stage: "</span> + finalStage.parents)
+      logInfo(<span class="string">"Missing parents: "</span> + getMissingParentStages(finalStage))
+      <span class="function"><span class="keyword">val</span> <span class="title">shouldRunLocally</span> =</span>
+        localExecutionEnabled &amp;&amp; allowLocal &amp;&amp; finalStage.parents.isEmpty &amp;&amp; partitions.length == <span class="number">1</span>
+      <span class="function"><span class="keyword">val</span> <span class="title">jobSubmissionTime</span> =</span> clock.getTimeMillis()
+      <span class="keyword">if</span> (shouldRunLocally) {
+        <span class="comment">// Compute very short actions like first() or take() with no parent stages locally.</span>
+        listenerBus.post(
+          <span class="type">SparkListenerJobStart</span>(job.jobId, jobSubmissionTime, <span class="type">Seq</span>.empty, properties))
+        runLocally(job)
+      } <span class="keyword">else</span> {
+        jobIdToActiveJob(jobId) = job
+        activeJobs += job
+        finalStage.resultOfJob = <span class="type">Some</span>(job)
+        <span class="function"><span class="keyword">val</span> <span class="title">stageIds</span> =</span> jobIdToStageIds(jobId).toArray
+        <span class="function"><span class="keyword">val</span> <span class="title">stageInfos</span> =</span> stageIds.flatMap(id =&gt; stageIdToStage.get(id).map(_.latestInfo))
+        listenerBus.post(
+          <span class="type">SparkListenerJobStart</span>(job.jobId, jobSubmissionTime, stageInfos, properties))
+        submitStage(finalStage)
+      }
+    }
+    submitWaitingStages()
+  }
+</code></pre><p>包装了一大堆东西，然后扔到listenerBus里准备运行（这次是真的要运行了吧？）</p>
+<pre><code><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">LiveListenerBus</span>
+</span>  <span class="keyword">extends</span> <span class="type">AsynchronousListenerBus</span>[<span class="type">SparkListener</span>, <span class="type">SparkListenerEvent</span>](<span class="string">"SparkListenerBus"</span>)
+  <span class="keyword">with</span> <span class="type">SparkListenerBus</span> {
+
+  <span class="keyword">private</span> <span class="function"><span class="keyword">val</span> <span class="title">logDroppedEvent</span> =</span> <span class="keyword">new</span> <span class="type">AtomicBoolean</span>(<span class="literal">false</span>)
+
+  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onDropEvent</span>(</span>event: <span class="type">SparkListenerEvent</span>): <span class="type">Unit</span> = {
+    <span class="keyword">if</span> (logDroppedEvent.compareAndSet(<span class="literal">false</span>, <span class="literal">true</span>)) {
+      <span class="comment">// Only log the following message once to avoid duplicated annoying logs.</span>
+      logError(<span class="string">"Dropping SparkListenerEvent because no remaining room in event queue. "</span> +
+        <span class="string">"This likely means one of the SparkListeners is too slow and cannot keep up with "</span> +
+        <span class="string">"the rate at which tasks are being started by the scheduler."</span>)
+    }
+  }
+
+}
+
+<span class="keyword">private</span>[spark] <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AsynchronousListenerBus</span>[</span><span class="type">L</span> &lt;: <span class="type">AnyRef</span>, <span class="type">E</span>](name: <span class="type">String</span>)
+  <span class="keyword">extends</span> <span class="type">ListenerBus</span>[<span class="type">L</span>, <span class="type">E</span>] {
+  <span class="function"><span class="keyword">def</span> <span class="title">post</span>(</span>event: <span class="type">E</span>) {
+    <span class="keyword">if</span> (stopped.get) {
+      <span class="comment">// Drop further events to make `listenerThread` exit ASAP</span>
+      logError(s<span class="string">"$name has already stopped! Dropping event $event"</span>)
+      <span class="keyword">return</span>
+    }
+    <span class="function"><span class="keyword">val</span> <span class="title">eventAdded</span> =</span> eventQueue.offer(event)
+    <span class="keyword">if</span> (eventAdded) {
+      eventLock.release()
+    } <span class="keyword">else</span> {
+      onDropEvent(event)
+    }
+  }
+</code></pre><p>扔完以后开始submitStage把最后状态提交开始运行<br>所以跳到最后就是把作业提交完事，胸闷，还是没有看到RDD是怎么在不同节点间交互的代码。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>一鼓作气再而衰三而竭。<br>开始阅读spark部分的代码，好在之前在coursera上看过一点scala虽然习题没做完但是不至于全忘。在spark里面，RDD的lazy evaluation也是通过和pyspark差不多的方法实现的，定义一个RDD类，每次操作都返回一个M]]>
+    </summary>
+    
+      <category term="RDD" scheme="http://yoursite.com/tags/RDD/"/>
+    
+      <category term="scala" scheme="http://yoursite.com/tags/scala/"/>
+    
+      <category term="spark" scheme="http://yoursite.com/tags/spark/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[spark machine learning lib for python]]></title>
@@ -1068,40 +1339,6 @@ markdown-<span class="literal">mode</span>
 <div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>coherency_line_size</span><br></pre></td></tr></table></figure><br><br></div>
 
 <p>查看1级缓存cache set的数目<br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[oprofile 安装使用]]></title>
-    <link href="http://yoursite.com/2013/11/08/3413801/"/>
-    <id>http://yoursite.com/2013/11/08/3413801/</id>
-    <published>2013-11-08T02:32:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>ubuntu上要编译安装oprofile。现在版本（0.9.9）的oprofile的编译需要binutil-dev libpopt-dev</p>
-<p><span style="font-size: medium;"><span lang="en-US">apt-get install binutil-dev</span></span> <span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">libpopt-dev</span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">然后./configure make make install</span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">安装完以后</span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">1.执行<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —init</span></span></span>启动加载oprofile模块</span></span></span><br><a id="more"></a></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">2.<span style="font-size: large;"><span style="font-size: medium;"><strong><span lang="en-US"><span style="font-weight: normal;">opcontrol —no-vmlinux</span></span></strong></span></span></span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">3.（可选）<span style="font-size: medium;"><span lang="en-US">opcontrol —event=L2_CACHE_MISS:500</span></span> 查看cache miss率，增加监听事件</span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">4.<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —start</span> </span></span>启动op</span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">5.运行待检测程序（必须用-g选项编译，不然没有源代码）</span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">6.<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol &ndash;dump取出数据</span> </span></span></span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">7.<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —stop</span></span></span> 停止检测</span></span></span></span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">8.<span style="font-size: medium;"><span lang="en-US">opannotate —source 待检测程序</span></span></span></span></span></span></span></span></p>
-<p>&nbsp;</p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: medium;"><span lang="en-US">参考</span></span></span></span></span></span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: medium;"><span lang="en-US"><a href="http://www.ibm.com/developerworks/cn/linux/l-pow-oprofile/index.html" target="_blank" rel="external">http://www.ibm.com/developerworks/cn/linux/l-pow-oprofile/index.html</a></span></span></span></span></span></span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US"><span style="font-size: medium;"><span lang="en-US"><a href="http://www.ibm.com/developerworks/cn/linux/l-oprof/index.html" target="_blank" rel="external">http://www.ibm.com/developerworks/cn/linux/l-oprof/index.html</a></span></span></span></span></span></span></span></span></p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>ubuntu上要编译安装oprofile。现在版本（0.9.9）的oprofile的编译需要binutil-dev libpopt-dev</p>
-<p><span style="font-size: medium;"><span lang="en-US">apt-get install binutil-dev</span></span> <span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">libpopt-dev</span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">然后./configure make make install</span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">安装完以后</span></span></span></p>
-<p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">1.执行<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —init</span></span></span>启动加载oprofile模块</span></span></span><br>]]>
     
     </summary>
     
