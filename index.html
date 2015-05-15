@@ -95,6 +95,119 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-spark-machine-learning-lib-for-python" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/15/spark-machine-learning-lib-for-python/" class="article-date">
+  <time datetime="2015-05-15T05:29:26.000Z" itemprop="datePublished">2015-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/15/spark-machine-learning-lib-for-python/">spark machine learning lib for python</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>今天看了一下pyspark的mllib这个库。作为一个大数据计算平台，spark这点比hadoop向前走了一大步。提供了种类繁多的数据计算的模型，从随机数生成到线性代数到回归聚类。<br>粗粗的看了一下，pyspark在做这个mllib的时候实现有两种，一种是spark原生型的api调用，比如刚才提到的回归聚类，都是直接输入rdd然后不断迭代返回结果，比如</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">LogisticRegressionWithSGD</span><span class="params">(object)</span>:</span>
+
+    <span class="decorator">@classmethod</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">train</span><span class="params">(cls, data, iterations=<span class="number">100</span>, step=<span class="number">1.0</span>, miniBatchFraction=<span class="number">1.0</span>,
+              initialWeights=None, regParam=<span class="number">0.01</span>, regType=<span class="string">"l2"</span>, intercept=False)</span>:</span>
+        <span class="string">"""
+        Train a logistic regression model on the given data.
+
+        :param data:              The training data, an RDD of LabeledPoint.
+        :param iterations:        The number of iterations (default: 100).
+        :param step:              The step parameter used in SGD
+                                  (default: 1.0).
+        :param miniBatchFraction: Fraction of data to be used for each SGD
+                                  iteration.
+        :param initialWeights:    The initial weights (default: None).
+        :param regParam:          The regularizer parameter (default: 0.01).
+        :param regType:           The type of regularizer used for training
+                                  our model.
+
+                                  :Allowed values:
+                                     - "l1" for using L1 regularization
+                                     - "l2" for using L2 regularization
+                                     - None for no regularization
+
+                                     (default: "l2")
+
+        :param intercept:         Boolean parameter which indicates the use
+                                  or not of the augmented representation for
+                                  training data (i.e. whether bias features
+                                  are activated or not).
+        """</span>
+        <span class="function"><span class="keyword">def</span> <span class="title">train</span><span class="params">(rdd, i)</span>:</span>
+            <span class="keyword">return</span> callMLlibFunc(<span class="string">"trainLogisticRegressionModelWithSGD"</span>, rdd, int(iterations),
+                                 float(step), float(miniBatchFraction), i, float(regParam), regType,
+                                 bool(intercept))
+
+        <span class="keyword">return</span> _regression_train_wrapper(train, LogisticRegressionModel, data, initialWeights)
+
+
+<span class="function"><span class="keyword">def</span> <span class="title">callMLlibFunc</span><span class="params">(name, *args)</span>:</span>
+    <span class="string">""" Call API in PythonMLLibAPI """</span>
+    sc = SparkContext._active_spark_context
+    api = getattr(sc._jvm.PythonMLLibAPI(), name)
+    <span class="keyword">return</span> callJavaFunc(sc, api, *args)
+</code></pre><p>第一类api全都把工作丢给了spark去做，也就是其实是跨节点并行计算。<br>第二类api就比较奇怪了，linalg里面全是这类函数，如</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">DenseVector</span><span class="params">(Vector)</span>:</span>
+    <span class="string">"""
+    A dense vector represented by a value array. We use numpy array for
+    storage and arithmetics will be delegated to the underlying numpy
+    array.
+
+    def dot(self, other):
+        """</span>
+        Compute the dot product of two Vectors. We support
+        (Numpy array, list, SparseVector, <span class="keyword">or</span> SciPy sparse)
+        <span class="keyword">and</span> a target NumPy array that <span class="keyword">is</span> either <span class="number">1</span>- <span class="keyword">or</span> <span class="number">2</span>-dimensional.
+        Equivalent to calling numpy.dot of the two vectors.
+        <span class="keyword">if</span> type(other) == np.ndarray:
+            <span class="keyword">if</span> other.ndim &gt; <span class="number">1</span>:
+                <span class="keyword">assert</span> len(self) == other.shape[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
+            <span class="keyword">return</span> np.dot(self.array, other)
+        <span class="keyword">elif</span> _have_scipy <span class="keyword">and</span> scipy.sparse.issparse(other):
+            <span class="keyword">assert</span> len(self) == other.shape[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
+            <span class="keyword">return</span> other.transpose().dot(self.toArray())
+        <span class="keyword">else</span>:
+            <span class="keyword">assert</span> len(self) == _vector_size(other), <span class="string">"dimension mismatch"</span>
+            <span class="keyword">if</span> isinstance(other, SparseVector):
+                <span class="keyword">return</span> other.dot(self)
+            <span class="keyword">elif</span> isinstance(other, Vector):
+                <span class="keyword">return</span> np.dot(self.toArray(), other.toArray())
+            <span class="keyword">else</span>:
+                <span class="keyword">return</span> np.dot(self.toArray(), other)
+</code></pre><p>居然全部都是丢给numpy去做，虽然numpy做这类计算的效率很高不假但这样就没有spark的跨节点并行的优势了，在计算的时候要注意。另外听说spark的运行效率首先于带宽，根据我有限的hpc经验来看，网络的延迟影响可能也会很大。而spark所在的网络最多也就是万兆网络，在做矩阵并行计算这类对网络延迟依赖很大的计算的时候可能会很慢，开发人员会不会因此考虑将不少矩阵计算本地化呢？不得而知，我很好奇下一个版本如果他们给出矩阵求逆以及对焦化或者svd是不是依然也使用本地计算。如果这个问题不解决可能对spark要称霸大数据平台有点影响。</p>
+<p>好了，pyspark的代码看的差不多了，接下去就是用scala写的spark了，cross fingers</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/05/15/spark-machine-learning-lib-for-python/" data-id="ci9p6nev6000i60v4wjyjmynk" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-explore-the-source-of-pyspark-dataframe" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/" class="article-date">
@@ -201,7 +314,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/" data-id="ci9nvv1gs000r1nv4lc3oigbh" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/" data-id="ci9p6newd000w60v48mr2rvrl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dataframe/">dataframe</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -365,7 +478,7 @@ def _jrdd(self):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/" data-id="ci9nvv1fu00091nv49rvf0s4d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/" data-id="ci9p6nev2000960v4gt620cqt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pyspark/">pyspark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rdd/">rdd</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -525,7 +638,7 @@ def sum2djit(arr):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/" data-id="ci9nvv1gz000w1nv4eyfmxbge" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/" data-id="ci9p6nexa001160v4ns2ug4ze" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/benchmark/">benchmark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cython/">cython</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/f2py/">f2py</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numba/">numba</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numpy/">numpy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
@@ -564,7 +677,7 @@ def sum2djit(arr):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="ci9nvv1fp00021nv4671126m9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="ci9p6neul000260v406ppoovw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cnblogs/">cnblogs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/migrate/">migrate</a></li></ul>
@@ -646,7 +759,7 @@ hexo <span class="keyword">server</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="ci9nvv1fx000i1nv41pvovska" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="ci9p6nev8000n60v4em04sev0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/github/">github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
@@ -693,7 +806,7 @@ hexo <span class="keyword">server</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="ci9nvv1g0000o1nv4spvyloiz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="ci9p6nevt000t60v4km4ik8ju" class="article-share-link">Share</a>
       
       
     </footer>
@@ -752,7 +865,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="ci9nvv1g2000p1nv47axid44n" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="ci9p6new9000u60v4o43kmo7u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li></ul>
@@ -799,7 +912,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/08/4488876/" data-id="ci9nvv1ha00181nv4eb5kx0xk" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/08/4488876/" data-id="ci9p6neyg001d60v45blhejj7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -846,52 +959,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/19/4439945/" data-id="ci9nvv1hg00191nv41i49f5cs" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-4415746" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/04/10/4415746/" class="article-date">
-  <time datetime="2015-04-10T13:46:00.000Z" itemprop="datePublished">2015-04-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/04/10/4415746/">opencl初体验</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>总结一下，opencl的步骤差不多是这些</p>
-<p>先要获取平台的id clGetPlatformIDs(nPlatforms, platform_id, &amp;num_of_platforms)</p>
-<p>然后获取设备id clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_GPU, 1, %device_id &amp;num_of_devices)</p>
-<p>////这里要注意的是，如果有多个设备（如cpu和gpu）platform_id必须使用数组形式传入</p>
-<p>然后是创建上下文clCreateContext（properties, 1, &amp;device_id, NULL, NULL, &amp;err)<br>
-        
-          <p class="article-more-link">
-            <a href="/2015/04/10/4415746/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/10/4415746/" data-id="ci9nvv1hj001a1nv4oekkprcu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/04/19/4439945/" data-id="ci9p6neyj001e60v4od8s9gph" class="article-share-link">Share</a>
       
       
     </footer>
@@ -916,7 +984,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">3</span></li></ul>
     </div>
   </div>
 
@@ -925,7 +993,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 15px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 15px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 20px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/spark/" style="font-size: 15px;">spark</a>
+      <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 13.33px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 10px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 20px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/spark/" style="font-size: 16.67px;">spark</a>
     </div>
   </div>
 
@@ -934,7 +1002,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -944,6 +1012,10 @@ markdown-<span class="literal">mode</span>
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/05/15/spark-machine-learning-lib-for-python/">spark machine learning lib for python</a>
+          </li>
         
           <li>
             <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/">pyspark dataframe的实现</a>
@@ -959,10 +1031,6 @@ markdown-<span class="literal">mode</span>
         
           <li>
             <a href="/2015/05/12/把博客迁到github上来了/">把博客迁到github上来了</a>
-          </li>
-        
-          <li>
-            <a href="/2015/05/11/hexoblog/">hexoblog</a>
           </li>
         
       </ul>

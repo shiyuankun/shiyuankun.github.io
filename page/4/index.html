@@ -95,6 +95,55 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-3010528" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/04/09/3010528/" class="article-date">
+  <time datetime="2013-04-09T09:20:00.000Z" itemprop="datePublished">2013-04-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/04/09/3010528/">xCAT 2.7.6 dns解析</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>之前一直遇到这个问题</p>
+<div class="cnblogs_code"><br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr_selector">[root@mgmt3 ~]</span><span class="tag">host</span> <span class="tag">node01</span></span><br><span class="line"></span><br><span class="line">;; <span class="tag">connection</span> <span class="tag">timed</span> <span class="tag">out</span>; <span class="tag">trying</span> <span class="tag">next</span> <span class="tag">origin</span></span><br><span class="line"></span><br><span class="line">;; <span class="tag">connection</span> <span class="tag">timed</span> <span class="tag">out</span>; <span class="tag">no</span> <span class="tag">servers</span> <span class="tag">could</span> <span class="tag">be</span> <span class="tag">reached</span></span><br><span class="line"></span><br><span class="line"><span class="attr_selector">[root@mgmt3 ~]</span><span class="tag">nslookup</span> <span class="tag">node01</span></span><br><span class="line"></span><br><span class="line">;; <span class="tag">connection</span> <span class="tag">timed</span> <span class="tag">out</span>; <span class="tag">trying</span> <span class="tag">next</span> <span class="tag">origin</span></span><br><span class="line"></span><br><span class="line"><span class="attr_selector">[root@mgmt3 ~]</span><span class="tag">dig</span> <span class="at_rule">@<span class="keyword">192.168.10.254</span> node01</span><br><span class="line"></span><br><span class="line"></span>; &lt;&lt;&gt;&gt; <span class="tag">DiG</span> 9<span class="class">.8</span><span class="class">.2rc1-RedHat-9</span><span class="class">.8</span><span class="class">.2-0</span><span class="class">.10</span><span class="class">.rc1</span><span class="class">.el6</span> &lt;&lt;&gt;&gt; <span class="at_rule">@<span class="keyword">192.168.10.254</span> node01</span><br><span class="line"></span><br><span class="line"></span>; (1 <span class="tag">server</span> <span class="tag">found</span>)</span><br><span class="line"></span><br><span class="line">;; <span class="tag">global</span> <span class="rule"><span class="attribute">options</span>:<span class="value"> +cmd</span><br><span class="line"></span><br><span class="line"></span></span>;; <span class="tag">connection</span> <span class="tag">timed</span> <span class="tag">out</span>; <span class="tag">no</span> <span class="tag">servers</span> <span class="tag">could</span> <span class="tag">be</span> <span class="tag">reached</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>还有就是在makedns时候，会在Getting reverse zones, this may take several minutes in scaling cluster. Updating DNS records, this may take several minutes in scaling cluster.停留很久。</p>
+<p>最后cat /var/named/db.cluster.com</p>
+<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@mgmt3 ~]# <span class="keyword">cat</span> /<span class="keyword">var</span>/named/<span class="keyword">db</span>.<span class="keyword">cluster</span>.com</span><br><span class="line"><span class="label">$TTL</span> 86400</span><br><span class="line">@<span class="keyword">IN</span> SOA  mgmt3.<span class="keyword">cluster</span>.com. root.mgmt3.<span class="keyword">cluster</span>.com. (2013040901 10800 3600 604800  86400 )</span><br><span class="line"><span class="keyword">IN</span> NS      mgmt3.<span class="keyword">cluster</span>.com.</span><br><span class="line">mgmt3                   A       192.168.10.254</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>之前一直遇到这个问题，发现这个问题已经在2.8中被修复了</p>
+<p><a href="http://sourceforge.net/p/xcat/bugs/3202/">http://sourceforge.net/p/xcat/bugs/3202/</a><br>
+        
+          <p class="article-more-link">
+            <a href="/2013/04/09/3010528/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/04/09/3010528/" data-id="ci9p6nfag001z60v4segj7gpr" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-2538546" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2012/06/06/2538546/" class="article-date">
@@ -144,7 +193,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/06/06/2538546/" data-id="ci9nvv1lm001v1nv4t1c8r07c" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/06/06/2538546/" data-id="ci9p6nfcq002060v46j5l2be6" class="article-share-link">Share</a>
       
       
     </footer>
@@ -189,7 +238,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/19/2457006/" data-id="ci9nvv1lo001w1nv4lf1b0798" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/19/2457006/" data-id="ci9p6nfcr002160v4szk6bbw3" class="article-share-link">Share</a>
       
       
     </footer>
@@ -234,7 +283,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/18/2455540/" data-id="ci9nvv1lp001x1nv4xpuibj04" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/18/2455540/" data-id="ci9p6nfct002260v4y6ty1zyf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -279,7 +328,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/17/2453630/" data-id="ci9nvv1lq001y1nv4zngzip4a" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/17/2453630/" data-id="ci9p6nfcv002360v44yy097ua" class="article-share-link">Share</a>
       
       
     </footer>
@@ -326,7 +375,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/12/2444656/" data-id="ci9nvv1lt001z1nv4ypkei9i8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/12/2444656/" data-id="ci9p6nfda002460v4gasaiwki" class="article-share-link">Share</a>
       
       
     </footer>
@@ -373,7 +422,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/10/2440667/" data-id="ci9nvv1lv00201nv474riyzvo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/10/2440667/" data-id="ci9p6nfdl002560v4kysathxf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -418,7 +467,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/09/2439300/" data-id="ci9nvv1lw00211nv4m5d2o4a8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/09/2439300/" data-id="ci9p6nfe4002660v4uxi08jgb" class="article-share-link">Share</a>
       
       
     </footer>
@@ -467,7 +516,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/07/2436061/" data-id="ci9nvv1mu00221nv4n3xg1f83" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/07/2436061/" data-id="ci9p6nfe5002760v4wkqeukvf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -514,56 +563,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/22/2411421/" data-id="ci9nvv1mv00231nv4zfkc0yvo" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-2411348" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2012/03/22/2411348/" class="article-date">
-  <time datetime="2012-03-22T03:33:00.000Z" itemprop="datePublished">2012-03-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2012/03/22/2411348/">并行编程——OPENMP</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>和MPI支持在分布式内存机器上运行不一样，OPENMP只能在共享内存机器上运行。这一局限性带来的好处就是编程时相对好处理一点。对于天然并行的代码可以不做过多处理就能并行，而MPI则需要消息传递。另外，MPI的消息传递会带来带宽（系统和网络）上的要求，一旦并行节点数增多则会阻塞。这点也是OPENMP的一个优势。</p>
-<p>并行开始及结束声明：</p>
-<div class="cnblogs_code"><br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">Fortran</span> <span class="number">77</span>/<span class="number">90</span>:!<span class="variable">$OMP</span> PARALLEL  代码区!<span class="variable">$OMP</span> END PARALLELC/C++:<span class="comment">#pragma omp parallel  &#123;    代码区  &#125;</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>某个循环区块的并行</p>
-<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Fortran 77/90:!<span class="label">$OMP</span> <span class="keyword">DO</span> [clause ...]          SCHEDULE (<span class="keyword">type</span> [,chunk])          ORDERED          PRIVATE (<span class="keyword">list</span>)          FIRSTPRIVATE (<span class="keyword">list</span>)          LASTPRIVATE (<span class="keyword">list</span>)          SHARED (<span class="keyword">list</span>)          REDUCTION (operator | intrinsic : <span class="keyword">list</span>)          <span class="keyword">COLLAPSE</span> (<span class="keyword">n</span>)    <span class="keyword">do</span>循环!<span class="label">$OMP</span> END <span class="keyword">DO</span>  [ NOWAIT ]C/C++:#pragma omp <span class="keyword">for</span> [clause ...]  newline                 schedule (<span class="keyword">type</span> [,chunk])                 ordered                private (<span class="keyword">list</span>)                 firstprivate (<span class="keyword">list</span>)                 lastprivate (<span class="keyword">list</span>)                 shared (<span class="keyword">list</span>)                 reduction (operator: <span class="keyword">list</span>)                 <span class="keyword">collapse</span> (<span class="keyword">n</span>)                 nowait    <span class="keyword">for</span>循环</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>schedule方法里有不同调度模式，一般性对于简单循环，由于任务大小都是一致的，static方法分配就很好。对于任务大小不一致的，可以考虑dynamic或者guided。</p>
-<p>另外，在变量访问上有private和shared两种方式，第一种是将变量设置为某个thread独有的，这对于循环变量i,j,k这种是必需的。即使不设定，程序也会自动默认循环变量为private，其他变量为shared方式。<br>
-        
-          <p class="article-more-link">
-            <a href="/2012/03/22/2411348/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/22/2411348/" data-id="ci9nvv1mx00241nv4smp5k1hp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/22/2411421/" data-id="ci9p6nfe7002860v4sfh3dyti" class="article-share-link">Share</a>
       
       
     </footer>
@@ -588,7 +588,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">3</span></li></ul>
     </div>
   </div>
 
@@ -597,7 +597,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 15px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 15px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 20px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/spark/" style="font-size: 15px;">spark</a>
+      <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 13.33px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 13.33px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 10px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 20px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/spark/" style="font-size: 16.67px;">spark</a>
     </div>
   </div>
 
@@ -606,7 +606,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -616,6 +616,10 @@ ga('send', 'pageview');
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/05/15/spark-machine-learning-lib-for-python/">spark machine learning lib for python</a>
+          </li>
         
           <li>
             <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/">pyspark dataframe的实现</a>
@@ -631,10 +635,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/2015/05/12/把博客迁到github上来了/">把博客迁到github上来了</a>
-          </li>
-        
-          <li>
-            <a href="/2015/05/11/hexoblog/">hexoblog</a>
           </li>
         
       </ul>

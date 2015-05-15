@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-05-14T07:56:38.000Z</updated>
+  <updated>2015-05-15T05:46:33.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,100 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[spark machine learning lib for python]]></title>
+    <link href="http://yoursite.com/2015/05/15/spark-machine-learning-lib-for-python/"/>
+    <id>http://yoursite.com/2015/05/15/spark-machine-learning-lib-for-python/</id>
+    <published>2015-05-15T05:29:26.000Z</published>
+    <updated>2015-05-15T05:46:33.000Z</updated>
+    <content type="html"><![CDATA[<p>今天看了一下pyspark的mllib这个库。作为一个大数据计算平台，spark这点比hadoop向前走了一大步。提供了种类繁多的数据计算的模型，从随机数生成到线性代数到回归聚类。<br>粗粗的看了一下，pyspark在做这个mllib的时候实现有两种，一种是spark原生型的api调用，比如刚才提到的回归聚类，都是直接输入rdd然后不断迭代返回结果，比如</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">LogisticRegressionWithSGD</span><span class="params">(object)</span>:</span>
+
+    <span class="decorator">@classmethod</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">train</span><span class="params">(cls, data, iterations=<span class="number">100</span>, step=<span class="number">1.0</span>, miniBatchFraction=<span class="number">1.0</span>,
+              initialWeights=None, regParam=<span class="number">0.01</span>, regType=<span class="string">"l2"</span>, intercept=False)</span>:</span>
+        <span class="string">"""
+        Train a logistic regression model on the given data.
+
+        :param data:              The training data, an RDD of LabeledPoint.
+        :param iterations:        The number of iterations (default: 100).
+        :param step:              The step parameter used in SGD
+                                  (default: 1.0).
+        :param miniBatchFraction: Fraction of data to be used for each SGD
+                                  iteration.
+        :param initialWeights:    The initial weights (default: None).
+        :param regParam:          The regularizer parameter (default: 0.01).
+        :param regType:           The type of regularizer used for training
+                                  our model.
+
+                                  :Allowed values:
+                                     - "l1" for using L1 regularization
+                                     - "l2" for using L2 regularization
+                                     - None for no regularization
+
+                                     (default: "l2")
+
+        :param intercept:         Boolean parameter which indicates the use
+                                  or not of the augmented representation for
+                                  training data (i.e. whether bias features
+                                  are activated or not).
+        """</span>
+        <span class="function"><span class="keyword">def</span> <span class="title">train</span><span class="params">(rdd, i)</span>:</span>
+            <span class="keyword">return</span> callMLlibFunc(<span class="string">"trainLogisticRegressionModelWithSGD"</span>, rdd, int(iterations),
+                                 float(step), float(miniBatchFraction), i, float(regParam), regType,
+                                 bool(intercept))
+
+        <span class="keyword">return</span> _regression_train_wrapper(train, LogisticRegressionModel, data, initialWeights)
+
+
+<span class="function"><span class="keyword">def</span> <span class="title">callMLlibFunc</span><span class="params">(name, *args)</span>:</span>
+    <span class="string">""" Call API in PythonMLLibAPI """</span>
+    sc = SparkContext._active_spark_context
+    api = getattr(sc._jvm.PythonMLLibAPI(), name)
+    <span class="keyword">return</span> callJavaFunc(sc, api, *args)
+</code></pre><p>第一类api全都把工作丢给了spark去做，也就是其实是跨节点并行计算。<br>第二类api就比较奇怪了，linalg里面全是这类函数，如</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">DenseVector</span><span class="params">(Vector)</span>:</span>
+    <span class="string">"""
+    A dense vector represented by a value array. We use numpy array for
+    storage and arithmetics will be delegated to the underlying numpy
+    array.
+
+    def dot(self, other):
+        """</span>
+        Compute the dot product of two Vectors. We support
+        (Numpy array, list, SparseVector, <span class="keyword">or</span> SciPy sparse)
+        <span class="keyword">and</span> a target NumPy array that <span class="keyword">is</span> either <span class="number">1</span>- <span class="keyword">or</span> <span class="number">2</span>-dimensional.
+        Equivalent to calling numpy.dot of the two vectors.
+        <span class="keyword">if</span> type(other) == np.ndarray:
+            <span class="keyword">if</span> other.ndim &gt; <span class="number">1</span>:
+                <span class="keyword">assert</span> len(self) == other.shape[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
+            <span class="keyword">return</span> np.dot(self.array, other)
+        <span class="keyword">elif</span> _have_scipy <span class="keyword">and</span> scipy.sparse.issparse(other):
+            <span class="keyword">assert</span> len(self) == other.shape[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
+            <span class="keyword">return</span> other.transpose().dot(self.toArray())
+        <span class="keyword">else</span>:
+            <span class="keyword">assert</span> len(self) == _vector_size(other), <span class="string">"dimension mismatch"</span>
+            <span class="keyword">if</span> isinstance(other, SparseVector):
+                <span class="keyword">return</span> other.dot(self)
+            <span class="keyword">elif</span> isinstance(other, Vector):
+                <span class="keyword">return</span> np.dot(self.toArray(), other.toArray())
+            <span class="keyword">else</span>:
+                <span class="keyword">return</span> np.dot(self.toArray(), other)
+</code></pre><p>居然全部都是丢给numpy去做，虽然numpy做这类计算的效率很高不假但这样就没有spark的跨节点并行的优势了，在计算的时候要注意。另外听说spark的运行效率首先于带宽，根据我有限的hpc经验来看，网络的延迟影响可能也会很大。而spark所在的网络最多也就是万兆网络，在做矩阵并行计算这类对网络延迟依赖很大的计算的时候可能会很慢，开发人员会不会因此考虑将不少矩阵计算本地化呢？不得而知，我很好奇下一个版本如果他们给出矩阵求逆以及对焦化或者svd是不是依然也使用本地计算。如果这个问题不解决可能对spark要称霸大数据平台有点影响。</p>
+<p>好了，pyspark的代码看的差不多了，接下去就是用scala写的spark了，cross fingers</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>今天看了一下pyspark的mllib这个库。作为一个大数据计算平台，spark这点比hadoop向前走了一大步。提供了种类繁多的数据计算的模型，从随机数生成到线性代数到回归聚类。<br>粗粗的看了一下，pyspark在做这个mllib的时候实现有两种，一种是spark原生]]>
+    </summary>
+    
+      <category term="mllib" scheme="http://yoursite.com/tags/mllib/"/>
+    
+      <category term="python" scheme="http://yoursite.com/tags/python/"/>
+    
+      <category term="spark" scheme="http://yoursite.com/tags/spark/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[pyspark dataframe的实现]]></title>
@@ -1008,49 +1102,6 @@ markdown-<span class="literal">mode</span>
 <p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">然后./configure make make install</span></span></span></p>
 <p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">安装完以后</span></span></span></p>
 <p><span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">1.执行<span style="font-size: large;"><span style="font-size: medium;"><span lang="en-US">opcontrol —init</span></span></span>启动加载oprofile模块</span></span></span><br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[gromacs, quake III和vrsqrtps]]></title>
-    <link href="http://yoursite.com/2013/10/27/3391235/"/>
-    <id>http://yoursite.com/2013/10/27/3391235/</id>
-    <published>2013-10-27T13:16:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>看标题大家可能觉得三个词汇风马牛不相及，第一个是解蛋白质分子动力学的软件，第二个是上三代宅男最爱雷神之锤，第三个则是一个存在于IntelSSE及AVX中的一个指令，他的作用是快速求平方根的倒数。</p>
-<p>起因是这样子的。某天闲着没事，跑去benchmarksgame.alioth.debian.org上看到了万年被压在fortran身体下蹂躏的c++居然翻身了。最不可思议的是，在fortran长项上的多体运算nbody居然被c++拉了一大截性能下来（2倍,5千万步，fortran用时19秒，C++用时9.59秒）。本着fortran居然能被c++搞倒根本是不可能的事情的信念，我开始出发了。</p>
-<p>好在他们提供了nbody的f90代码。装好ifort就开始优化，初一眼看过去就好多问题，&ldquo;怪不得那么慢&rdquo;，看来现在fortran培训太少了以至于部分不合格码农直接拿java代码改改就过来用了。内存不对齐，行列优先搞混，没有写成向量化，这类错误比比皆是。改了改，差不多跑快了10秒，感觉差不多了，把c++的代码拉下来一编译，瞬间崩溃，在本机上只跑了6秒！</p>
-<p>接下去是苦逼的两天，我绞尽脑汁改代码，向量化，发现部分代码无法向量化，然后手工指定，变更慢了&hellip;&hellip;终于，在现实面前，终于低下头，想想是不是c++里用了什么新技术导致比fortran快呢？或许人家也有新的算法呢？（可喜可贺）</p>
-<p>跑去看c++的代码部分。就发现他将多体问题中常见的求出距离求倒数r^(-1)=(1/sqrt(x<em>x+y</em>y+z*z))的那一步用了很简明的方法写了一下<br><a id="more"></a></p>
-<p>distance<span>=</span><span>_mm_cvtps_pd</span><span>(</span><span>_mm_rsqrt_ps</span><span>(</span><span>_mm_cvtpd_ps</span><span>(</span>dsquared<span>)));</span></p>
-<p><span>这里给不是很了解这段代码的人解释一下，dsquared是一个双精度浮点数，_mm_cvtpd_ps是把一个双精度浮点数变成了单精度浮点数。<span>_mm_cvtps_pd</span>是把一个单精度浮点数变成双精度浮点数。_mm_rsqrt_ps就难倒我了，</span>不懂c++的人表示很不解：这是什么东西啊？拿去搜了一把发现这其实是调用SSE指令集vrsqrtps的一个函数，好高端！居然能在C++里直接实现SSE/AVX指令集的调用。再一搜索，差点笑喷出来，搞了半天敢情这个算法就是QuakeIII中开用的快速求平方根倒数的那个算法。也就是传说中的超快算法，利用泰勒展开来求解。所以在intel官网上，关于这一指令的介绍是这么写的&ldquo;(V)RSQRT[P/S]SComputeapproximatereciprocalofsquarerootofpacked/scalarsingleprecision&rdquo;</p>
-<p>关于这个fastinversesquareroot的具体步骤可以看wiki：<a href="http://en.wikipedia.org/wiki/Fast_inverse_square_root" target="_blank" rel="external">http://en.wikipedia.org/wiki/Fast_inverse_square_root</a></p>
-<p>但很遗憾的是，这只是一种近似算法。在大多数情况下一次迭代能收敛到单精度准确值。但二次迭代就变慢了，所以很多人不使用二次迭代。雷神之锤里用的也是一次迭代，而对于一个3d游戏来说这个精度足够了。在浏览之余，我看到了某个小论坛上表明GROMACS其实也是使用这个算法的，于是就去搜了一下，在最新版本4.6.3中也发现了类似代码（以下只是专门为avx指令集编写的头文件中的一个，有兴趣的人可以自己在gromacs源代码目录中用grep-IRn_mm_rsqrt_ps*看一下）</p>
-<div class="cnblogs_code"><br><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">include/gmx_math_x86_avx_128_fma_double.h:70</span><br><span class="line"></span><br><span class="line">/* 1.0/sqrt(x) */</span><br><span class="line"><span class="keyword">static</span> gmx_inline __m128d</span><br><span class="line">gmx_mm_invsqrt_pd(__m128d x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">const</span> __m128d half  = _mm_set1_pd(<span class="number">0.5</span>);</span><br><span class="line">    <span class="keyword">const</span> __m128d three = _mm_set1_pd(<span class="number">3.0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Lookup instruction only exists in single precision, convert back and forth... */</span></span><br><span class="line">    __m128d lu = _mm_cvtps_pd(_mm_rsqrt_ps( _mm_cvtpd_ps(x)));</span><br><span class="line"></span><br><span class="line">    lu = _mm_mul_pd(_mm_mul_pd(half, lu), _mm_nmacc_pd(_mm_mul_pd(lu, lu), x, three));</span><br><span class="line">    <span class="keyword">return</span> _mm_mul_pd(_mm_mul_pd(half, lu), _mm_nmacc_pd(_mm_mul_pd(lu, lu), x, three));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>不同之处在于，这个算法是完整的fastinversesquareroot算法（做了一步迭代以保证收敛到单精度），而nbody中的那个fastinverseSquareroot算法则没有做这一步迭代。这里要提醒诸位注意。这一函数对于双精度程序也会降低精度到单精度。由于_mm_cvtpd_ps已经把一个双精度数值降低到单精度了，所以_mm_cvtps_pd拿到的是一个单精度值，而对于单精度数值变成双精度数值，计算机的做法就是剩余位数用随机数填充。所以无论是gromacs编译时如何指定单双精度。拿到距离矩阵已经是单精度了。</p>
-<p>接下去做一个比较</p>
-<p>双精度1/sqrt</p>
-<p>~$./nbody2f50000000<br>初始能量-0.1690751638285244717874178377<br>终态能量-0.16905990678<strong>77010530658310472</strong></p>
-<p>单精度1/sqrt<br>~$./nbodyc50000000<br>初始能量-0.1690751638285244717874178377<br>终态能量-0.16905990678<strong>81611849983869433</strong></p>
-<p>加黑部分就是误差了。而且这个体系非常小，只有5体运动，而对于一般性蛋白质模拟，可能牵涉到几百万个原子，这个误差积累就相当大了</p>
-<p>然后，这里测试了5亿个数，从0开始步长0.0001的1/sqrt测试（也就是0.0001,0.0002,0.0003…..到50000）。我发现在不迭代时，最大误差能达过8.5e-3。当计算3e-4的1/sqrt时，误差能达到8.5e-3，平均误差则在3.57e-7，IEEE允许的单精度误差是1.17e-7，而双精度允许误差则是2.22e-16。所以说不包含一次迭代的误差已经超过单精度允许误差了。</p>
-<p>而包含一次迭代的算法，最大误差在2.7e-13，高于双精度允许误差但低于单精度允许误差，有问题的是2.1e-3的1/sqrt(2.1e-3)。平均误差8.67e-19。</p>
-<p>从误差分布来，1/sqrt(x)的快速算法中，x与误差是成反比的，x越靠近0，误差越大，x越大误差则越小。</p>
-<p>到这里。谜底揭晓了，alioth上那个速度超快的c++程序和gromacs都是通过降低精度来达到高速的，fortran的王者地位依然无法动摇（偷笑）。</p>
-<p>Reference</p>
-<p><a href="http://software.intel.com/en-us/articles/introduction-to-intel-advanced-vector-extensions" target="_blank" rel="external">http://software.intel.com/en-us/articles/introduction-to-intel-advanced-vector-extensions</a></p>
-<p>ftp://ftp.gromacs.org/pub/manual/manual-4.5.6.pdf AppendixB.3，我猜没人会看到附录B.3的&hellip;&hellip;</p>
-<p><a href="http://scicomp.stackexchange.com/questions/2168/what-is-the-computational-cost-of-sqrtx-in-standard-libraries" target="_blank" rel="external">http://scicomp.stackexchange.com/questions/2168/what-is-the-computational-cost-of-sqrtx-in-standard-libraries</a></p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>看标题大家可能觉得三个词汇风马牛不相及，第一个是解蛋白质分子动力学的软件，第二个是上三代宅男最爱雷神之锤，第三个则是一个存在于IntelSSE及AVX中的一个指令，他的作用是快速求平方根的倒数。</p>
-<p>起因是这样子的。某天闲着没事，跑去benchmarksgame.alioth.debian.org上看到了万年被压在fortran身体下蹂躏的c++居然翻身了。最不可思议的是，在fortran长项上的多体运算nbody居然被c++拉了一大截性能下来（2倍,5千万步，fortran用时19秒，C++用时9.59秒）。本着fortran居然能被c++搞倒根本是不可能的事情的信念，我开始出发了。</p>
-<p>好在他们提供了nbody的f90代码。装好ifort就开始优化，初一眼看过去就好多问题，&ldquo;怪不得那么慢&rdquo;，看来现在fortran培训太少了以至于部分不合格码农直接拿java代码改改就过来用了。内存不对齐，行列优先搞混，没有写成向量化，这类错误比比皆是。改了改，差不多跑快了10秒，感觉差不多了，把c++的代码拉下来一编译，瞬间崩溃，在本机上只跑了6秒！</p>
-<p>接下去是苦逼的两天，我绞尽脑汁改代码，向量化，发现部分代码无法向量化，然后手工指定，变更慢了&hellip;&hellip;终于，在现实面前，终于低下头，想想是不是c++里用了什么新技术导致比fortran快呢？或许人家也有新的算法呢？（可喜可贺）</p>
-<p>跑去看c++的代码部分。就发现他将多体问题中常见的求出距离求倒数r^(-1)=(1/sqrt(x<em>x+y</em>y+z*z))的那一步用了很简明的方法写了一下<br>]]>
     
     </summary>
     

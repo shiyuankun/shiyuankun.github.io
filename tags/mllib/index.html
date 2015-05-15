@@ -3,23 +3,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>并行编程——OPENMP | 彼格海德的笔记空间</title>
+  <title>Tag: mllib | 彼格海德的笔记空间</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="和MPI支持在分布式内存机器上运行不一样，OPENMP只能在共享内存机器上运行。这一局限性带来的好处就是编程时相对好处理一点。对于天然并行的代码可以不做过多处理就能并行，而MPI则需要消息传递。另外，MPI的消息传递会带来带宽（系统和网络）上的要求，一旦并行节点数增多则会阻塞。这点也是OPENMP的一个优势。
-并行开始及结束声明：
-1Fortran 77/90:!$OMP PARALLEL  代码">
-<meta property="og:type" content="article">
-<meta property="og:title" content="并行编程——OPENMP">
-<meta property="og:url" content="http://yoursite.com/2012/03/22/2411348/index.html">
+  <meta name="description" content="python">
+<meta property="og:type" content="website">
+<meta property="og:title" content="彼格海德的笔记空间">
+<meta property="og:url" content="http://yoursite.com/tags/mllib/index.html">
 <meta property="og:site_name" content="彼格海德的笔记空间">
-<meta property="og:description" content="和MPI支持在分布式内存机器上运行不一样，OPENMP只能在共享内存机器上运行。这一局限性带来的好处就是编程时相对好处理一点。对于天然并行的代码可以不做过多处理就能并行，而MPI则需要消息传递。另外，MPI的消息传递会带来带宽（系统和网络）上的要求，一旦并行节点数增多则会阻塞。这点也是OPENMP的一个优势。
-并行开始及结束声明：
-1Fortran 77/90:!$OMP PARALLEL  代码">
+<meta property="og:description" content="python">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="并行编程——OPENMP">
-<meta name="twitter:description" content="和MPI支持在分布式内存机器上运行不一样，OPENMP只能在共享内存机器上运行。这一局限性带来的好处就是编程时相对好处理一点。对于天然并行的代码可以不做过多处理就能并行，而MPI则需要消息传递。另外，MPI的消息传递会带来带宽（系统和网络）上的要求，一旦并行节点数增多则会阻塞。这点也是OPENMP的一个优势。
-并行开始及结束声明：
-1Fortran 77/90:!$OMP PARALLEL  代码">
+<meta name="twitter:title" content="彼格海德的笔记空间">
+<meta name="twitter:description" content="python">
   
     <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
   
@@ -99,85 +93,39 @@ ga('send', 'pageview');
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-2411348" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2012/03/22/2411348/" class="article-date">
-  <time datetime="2012-03-22T03:33:00.000Z" itemprop="datePublished">2012-03-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
+        <section id="main">
   
-    <h1 class="article-title" itemprop="name">
-      并行编程——OPENMP
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2015" class="archive-year">2015</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      <a href="/2015/05/15/spark-machine-learning-lib-for-python/" class="archive-article-date">
+  <time datetime="2015-05-15T05:29:26.000Z" itemprop="datePublished">May 15</time>
+</a>
+      
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2015/05/15/spark-machine-learning-lib-for-python/">spark machine learning lib for python</a>
     </h1>
   
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>和MPI支持在分布式内存机器上运行不一样，OPENMP只能在共享内存机器上运行。这一局限性带来的好处就是编程时相对好处理一点。对于天然并行的代码可以不做过多处理就能并行，而MPI则需要消息传递。另外，MPI的消息传递会带来带宽（系统和网络）上的要求，一旦并行节点数增多则会阻塞。这点也是OPENMP的一个优势。</p>
-<p>并行开始及结束声明：</p>
-<div class="cnblogs_code"><br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">Fortran</span> <span class="number">77</span>/<span class="number">90</span>:!<span class="variable">$OMP</span> PARALLEL  代码区!<span class="variable">$OMP</span> END PARALLELC/C++:<span class="comment">#pragma omp parallel  &#123;    代码区  &#125;</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>某个循环区块的并行</p>
-<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Fortran 77/90:!<span class="label">$OMP</span> <span class="keyword">DO</span> [clause ...]          SCHEDULE (<span class="keyword">type</span> [,chunk])          ORDERED          PRIVATE (<span class="keyword">list</span>)          FIRSTPRIVATE (<span class="keyword">list</span>)          LASTPRIVATE (<span class="keyword">list</span>)          SHARED (<span class="keyword">list</span>)          REDUCTION (operator | intrinsic : <span class="keyword">list</span>)          <span class="keyword">COLLAPSE</span> (<span class="keyword">n</span>)    <span class="keyword">do</span>循环!<span class="label">$OMP</span> END <span class="keyword">DO</span>  [ NOWAIT ]C/C++:#pragma omp <span class="keyword">for</span> [clause ...]  newline                 schedule (<span class="keyword">type</span> [,chunk])                 ordered                private (<span class="keyword">list</span>)                 firstprivate (<span class="keyword">list</span>)                 lastprivate (<span class="keyword">list</span>)                 shared (<span class="keyword">list</span>)                 reduction (operator: <span class="keyword">list</span>)                 <span class="keyword">collapse</span> (<span class="keyword">n</span>)                 nowait    <span class="keyword">for</span>循环</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>schedule方法里有不同调度模式，一般性对于简单循环，由于任务大小都是一致的，static方法分配就很好。对于任务大小不一致的，可以考虑dynamic或者guided。</p>
-<p>另外，在变量访问上有private和shared两种方式，第一种是将变量设置为某个thread独有的，这对于循环变量i,j,k这种是必需的。即使不设定，程序也会自动默认循环变量为private，其他变量为shared方式。<br><a id="more"></a></p>
-<p>对于fortran来说，还有一个独有的方式叫做workshare</p>
-<div class="cnblogs_code"><br><figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="subst">!</span><span class="variable">$OMP</span> WORKSHARE  FORALL statements  FORALL constructs  <span class="keyword">WHERE</span> statements  <span class="keyword">WHERE</span> constructs等等 <span class="subst">!</span><span class="variable">$OMP</span> END WORKSHARE <span class="preprocessor">[</span> NOWAIT <span class="preprocessor">]</span><span class="markup"></span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>在不能多线程计算的程序代码块，可以用这种方式声明只能有一个thread进行计算</p>
-<div class="cnblogs_code"><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Fortran <span class="number">77</span>/<span class="number">90</span>:!<span class="variable">$OMP</span> SINGLE [clause ...]              <span class="keyword">PRIVATE</span> (<span class="keyword">list</span>)              FIRSTPRIVATE (<span class="keyword">list</span>)    代码区!<span class="variable">$OMP</span> END SINGLE [ NOWAIT ]C/C++:  <span class="comment">#pragma omp single [clause ...]  newline                    private (list)                    firstprivate (list)                    nowait     &#123;代码区&#125;</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>代码编译的时候，需要加上-openmp(ifort)或者-fopenmp(gfortran)，并且需要通过OMP_NUM_THREADS控制线程数目，对于存在大数组的程序，需要ulimit -s unlimited;export OMP_STACKSIZE=200000调大栈大小来消除segment fault （gfortran是GOMP_STACKSIZE，intel fortran是KMP_STACKSIZE）要彻底消除这个问题，可以通过将所有数组改成allocatable放到堆上来解决。</p>
-<p>例子</p>
-<div class="cnblogs_code"><br>```<br>Fortran 77/90:     PROGRAM HELLO      use omp_lib      integer tid!$OMP PARALLEL PRIVATE(TID)      TID = OMP_GET_THREAD_NUM()      PRINT <em>, ‘Hello World from thread = ‘, TID!$OMP END PARALLEL      ENDC/C++:# include <cstdlib># include <iostream># include <ctime># include “omp.h”using namespace std;int main ( int argc, char </ctime></iostream></cstdlib></em>argv[] );int main ( int argc, char *argv[] ){    int this_thread;#pragma omp parallel private(this_thread){    this_thread=omp_get_thread_num();    cout &lt;<br></div>
-
-<p>教程</p>
-<p><a href="https://computing.llnl.gov/tutorials/openMP/" target="_blank" rel="external">https://computing.llnl.gov/tutorials/openMP/</a></p>
-<p><a href="http://bisqwit.iki.fi/story/howto/openmp/" target="_blank" rel="external">http://bisqwit.iki.fi/story/howto/openmp/</a></p>
-<p>手册<br><a href="http://openmp.org/mp-documents/OpenMP3.1-CCard.pdf" target="_blank" rel="external">http://openmp.org/mp-documents/OpenMP3.1-CCard.pdf</a></p>
-<p><a href="http://openmp.org/mp-documents/OpenMP3.1-FortranCard.pdf" target="_blank" rel="external">http://openmp.org/mp-documents/OpenMP3.1-FortranCard.pdf</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/22/2411348/" data-id="ci9p6nfe8002960v47f3h4wsb" class="article-share-link">Share</a>
-      
-      
-    </footer>
+    </header>
   </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2012/03/22/2411421/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          并行编程——MPI/OPENMP混合编程
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2012/03/21/2410769/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">并行编程——MPI</div>
-    </a>
-  
-</nav>
-
-  
 </article>
-
+  
+  
+    </div></section>
+  
 </section>
         
           <aside id="sidebar">
