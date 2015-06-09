@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-05-15T09:26:56.000Z</updated>
+  <updated>2015-06-09T13:53:54.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,93 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[spark 的调度和任务]]></title>
+    <link href="http://yoursite.com/2015/06/09/spark-task-and-scheduler/"/>
+    <id>http://yoursite.com/2015/06/09/spark-task-and-scheduler/</id>
+    <published>2015-06-09T13:27:45.000Z</published>
+    <updated>2015-06-09T13:53:54.000Z</updated>
+    <content type="html"><![CDATA[<p>一晃快一个月过去了，这个月有点小忙做了很多项目一直都没空闲重新研究spark的代码。今天晚上下决心看完。花了一点时间追了一下代码。基本算是搞清楚了spark的调度。<br>上次说到，spark会把记录了操作的rdd提交交给调度器等待运行。那调度器具体是怎么执行计算的呢？随手提交了一个作业，有如下日志</p>
+<pre><code><span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">DAGScheduler:</span> Submitting <span class="number">1</span> missing tasks from Stage <span class="number">1</span> (MapPartitionsRDD[<span class="number">2</span>] at map at Task2a.<span class="string">scala:</span><span class="number">8</span>)
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">TaskSchedulerImpl:</span> Adding task set <span class="number">1.0</span> with <span class="number">1</span> tasks
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">TaskSetManager:</span> Starting task <span class="number">0.0</span> <span class="keyword">in</span> stage <span class="number">1.0</span> (TID <span class="number">1</span>, localhost, PROCESS_LOCAL, <span class="number">1348</span> bytes)
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">Executor:</span> Running task <span class="number">0.0</span> <span class="keyword">in</span> stage <span class="number">1.0</span> (TID <span class="number">1</span>)
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">HadoopRDD:</span> Input <span class="string">split:</span> <span class="string">file:</span><span class="regexp">/home/</span>cloudera/<span class="number">1</span>millionTweets.<span class="string">tsv:</span><span class="number">0</span>+<span class="number">28775886</span>
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">10</span> INFO <span class="string">BlockManager:</span> Removing broadcast <span class="number">1</span>
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">10</span> INFO <span class="string">BlockManager:</span> Removing block broadcast_1_piece0
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">10</span> INFO <span class="string">MemoryStore:</span> Block broadcast_1_piece0 of size <span class="number">2039</span> dropped from memory (free <span class="number">280032800</span>)
+</code></pre><p>我们可以看到，DAGScheduler将任务提交了以后其实是TaskSetManager执行任务的</p>
+<pre><code>logInfo(<span class="string">"Starting <span class="variable">%s</span> (TID <span class="variable">%d</span>, <span class="variable">%s</span>, <span class="variable">%s</span>, <span class="variable">%d</span> bytes)"</span>.<span class="keyword">format</span>(
+taskName, taskId, host, taskLocality, serializedTask.limit))
+sched.dagScheduler.taskStarted(task, info)
+<span class="keyword">return</span> Some(new TaskDescription(taskId = taskId, attemptNumber = attemptNum, execId,
+taskName, <span class="keyword">index</span>, serializedTask))
+</code></pre><p>这里调用了dagScheduler的taskstarted开始任务的而最后到了Executor执行，也就是这一段</p>
+<pre><code><span class="comment">// Run the actual task and measure its runtime.</span>
+taskStart = System.<span class="function"><span class="title">currentTimeMillis</span><span class="params">()</span></span>
+val value = task.<span class="function"><span class="title">run</span><span class="params">(taskAttemptId = taskId, attemptNumber = attemptNumber)</span></span>
+val taskFinish = System.<span class="function"><span class="title">currentTimeMillis</span><span class="params">()</span></span>
+</code></pre><p>这里调用的是task.run来执行</p>
+<pre><code>final <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(taskAttemptId: Long, attemptNumber: Int)</span>:</span> T = {
+  context = new TaskContextImpl(stageId = stageId, partitionId = partitionId,
+    taskAttemptId = taskAttemptId, attemptNumber = attemptNumber, runningLocally = false)
+  TaskContextHelper.setTaskContext(context)
+  context.taskMetrics.setHostname(Utils.localHostName())
+  taskThread = Thread.currentThread()
+  <span class="keyword">if</span> (_killed) {
+    kill(interruptThread = false)
+  }
+  <span class="keyword">try</span> {
+    runTask(context)
+  } <span class="keyword">finally</span> {
+    context.markTaskCompleted()
+    TaskContextHelper.unset()
+  }
+ }
+</code></pre><p>这是一个抽象类的final方法，基本可以看出大致的逻辑，调用自己的runTask执行任务完事。<br>例如，对于shuffle任务有一个</p>
+<pre><code><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">ShuffleMapTask</span>(</span>
+  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">runTask</span>(</span>context: <span class="type">TaskContext</span>): <span class="type">MapStatus</span> = {
+    <span class="comment">// Deserialize the RDD using the broadcast variable.</span>
+    <span class="function"><span class="keyword">val</span> <span class="title">ser</span> =</span> <span class="type">SparkEnv</span>.get.closureSerializer.newInstance()
+    <span class="function"><span class="keyword">val</span> (</span>rdd, dep) = ser.deserialize[(<span class="type">RDD</span>[_], <span class="type">ShuffleDependency</span>[_, _, _])](
+      <span class="type">ByteBuffer</span>.wrap(taskBinary.value), <span class="type">Thread</span>.currentThread.getContextClassLoader)
+
+    metrics = <span class="type">Some</span>(context.taskMetrics)
+    <span class="keyword">var</span> writer: <span class="type">ShuffleWriter</span>[<span class="type">Any</span>, <span class="type">Any</span>] = <span class="literal">null</span>
+    <span class="keyword">try</span> {
+      <span class="function"><span class="keyword">val</span> <span class="title">manager</span> =</span> <span class="type">SparkEnv</span>.get.shuffleManager
+      writer = manager.getWriter[<span class="type">Any</span>, <span class="type">Any</span>](dep.shuffleHandle, partitionId, context)
+      writer.write(rdd.iterator(partition, context).asInstanceOf[<span class="type">Iterator</span>[_ &lt;: <span class="type">Product2</span>[<span class="type">Any</span>, <span class="type">Any</span>]]])
+      <span class="keyword">return</span> writer.stop(success = <span class="literal">true</span>).get
+    } <span class="keyword">catch</span> {
+      <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;
+        <span class="keyword">try</span> {
+          <span class="keyword">if</span> (writer != <span class="literal">null</span>) {
+            writer.stop(success = <span class="literal">false</span>)
+          }
+        } <span class="keyword">catch</span> {
+          <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;
+            log.debug(<span class="string">"Could not stop writer"</span>, e)
+        }
+        <span class="keyword">throw</span> e
+    }
+  }
+</code></pre><p>每一个Task子类都有自己的衍生的Runtask方法，取决于各自的目的。<br>终于算是找到了核心运算单元了，继续看mllib和dataframe的代码</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>一晃快一个月过去了，这个月有点小忙做了很多项目一直都没空闲重新研究spark的代码。今天晚上下决心看完。花了一点时间追了一下代码。基本算是搞清楚了spark的调度。<br>上次说到，spark会把记录了操作的rdd提交交给调度器等待运行。那调度器具体是怎么执行计算的呢？随手]]>
+    </summary>
+    
+      <category term="scala" scheme="http://yoursite.com/tags/scala/"/>
+    
+      <category term="scheduler" scheme="http://yoursite.com/tags/scheduler/"/>
+    
+      <category term="spark" scheme="http://yoursite.com/tags/spark/"/>
+    
+      <category term="task" scheme="http://yoursite.com/tags/task/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[expore spark RDD source code]]></title>
@@ -1288,57 +1375,6 @@ markdown-<span class="literal">mode</span>
 <p>yum install ypserv</p>
 <p>安装ypserv的包</p>
 <p>然后是设置<br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[如何查看cache信息]]></title>
-    <link href="http://yoursite.com/2013/11/13/3420705/"/>
-    <id>http://yoursite.com/2013/11/13/3420705/</id>
-    <published>2013-11-13T01:28:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>很多时候查不到本机cpu的cache信息。而了解这些信息，对于调优很有帮助</p>
-<p>查看1级缓存cache大小</p>
-<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span><span class="keyword">size</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>查看能访问这个1级缓存的cpu编号</p>
-<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>shared_cpu_list</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>查看1级缓存cache line的大小</p>
-<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>coherency_line_size</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>查看1级缓存cache set的数目<br><a id="more"></a></p>
-<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>number_of_sets</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>查看2级缓存大小</p>
-<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index2/</span><span class="keyword">size</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>查看其他级别的缓存可以更改index后的数字</p>
-<p>cache_size = number_of_sets <em> cache_line_size </em> line_per_set</p>
-<p>会导致cache miss率提高的vector size</p>
-<p>criticalStride = number_of_sets * cache_line_size</p>
-<p>参考：</p>
-<p><a href="http://stackoverflow.com/questions/11413855/why-is-transposing-a-matrix-of-512x512-much-slower-than-transposing-a-matrix-of" target="_blank" rel="external">http://stackoverflow.com/questions/11413855/why-is-transposing-a-matrix-of-512x512-much-slower-than-transposing-a-matrix-of</a></p>
-<p><a href="http://www.7-cpu.com/cpu/SandyBridge.html" target="_blank" rel="external">http://www.7-cpu.com/cpu/SandyBridge.html</a></p>
-<p><a href="http://www.7-cpu.com/cpu/Westmere.html" target="_blank" rel="external">http://www.7-cpu.com/cpu/Westmere.html</a></p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>很多时候查不到本机cpu的cache信息。而了解这些信息，对于调优很有帮助</p>
-<p>查看1级缓存cache大小</p>
-<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span><span class="keyword">size</span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>查看能访问这个1级缓存的cpu编号</p>
-<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>shared_cpu_list</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>查看1级缓存cache line的大小</p>
-<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/sys/</span>devices<span class="regexp">/system/</span>cpu<span class="regexp">/cpu0/</span>cache<span class="regexp">/index1/</span>coherency_line_size</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>查看1级缓存cache set的数目<br>]]>
     
     </summary>
     

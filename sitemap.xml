@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2015/06/09/spark-task-and-scheduler/</loc>
+    <lastmod>2015-06-09T13:53:54.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2015/05/15/explore-spark-RDD-source-code/</loc>
     <lastmod>2015-05-15T09:26:56.000Z</lastmod>
   </url>
