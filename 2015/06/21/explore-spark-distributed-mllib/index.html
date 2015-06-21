@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>spark的mllib到底是不是分布式的 | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="端午节，群里有个人问了一个spark关于mllib扩展性的问题，不太确定，继续看代码。正好上周1.4也发布了，也把代码下下来比较了一下。比较以后才知道，原来scala版本的计算和pyspark差了好多，pyspark关于linalg的计算都是直接调用numpy，也就是非并行的。例如linalg.py里随处可见的np.dot
+assert len(self) == other.shape[0], &quot;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spark的mllib到底是不是分布式的">
+<meta property="og:url" content="http://yoursite.com/2015/06/21/explore-spark-distributed-mllib/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="端午节，群里有个人问了一个spark关于mllib扩展性的问题，不太确定，继续看代码。正好上周1.4也发布了，也把代码下下来比较了一下。比较以后才知道，原来scala版本的计算和pyspark差了好多，pyspark关于linalg的计算都是直接调用numpy，也就是非并行的。例如linalg.py里随处可见的np.dot
+assert len(self) == other.shape[0], &quot;">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spark的mllib到底是不是分布式的">
+<meta name="twitter:description" content="端午节，群里有个人问了一个spark关于mllib扩展性的问题，不太确定，继续看代码。正好上周1.4也发布了，也把代码下下来比较了一下。比较以后才知道，原来scala版本的计算和pyspark差了好多，pyspark关于linalg的计算都是直接调用numpy，也就是非并行的。例如linalg.py里随处可见的np.dot
+assert len(self) == other.shape[0], &quot;">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-62861406-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+<!-- Baidu Statistics -->
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+<!-- End Baidu Statistics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-explore-spark-distributed-mllib" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/06/21/explore-spark-distributed-mllib/" class="article-date">
+  <time datetime="2015-06-21T04:26:50.000Z" itemprop="datePublished">2015-06-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      spark的mllib到底是不是分布式的
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>端午节，群里有个人问了一个spark关于mllib扩展性的问题，不太确定，继续看代码。正好上周1.4也发布了，也把代码下下来比较了一下。<br>比较以后才知道，原来scala版本的计算和pyspark差了好多，pyspark关于linalg的计算都是直接调用numpy，也就是非并行的。例如linalg.py里随处可见的np.dot</p>
+<pre><code>assert <span class="function"><span class="title">len</span><span class="params">(self)</span></span> == other<span class="class">.shape</span>[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
+             return other.<span class="function"><span class="title">transpose</span><span class="params">()</span></span>.<span class="function"><span class="title">dot</span><span class="params">(self.toArray()</span></span>)
+         <span class="keyword">else</span>:
+             assert <span class="function"><span class="title">len</span><span class="params">(self)</span></span> == _vector_size(other), <span class="string">"dimension mismatch"</span>
+             <span class="keyword">if</span> <span class="function"><span class="title">isinstance</span><span class="params">(other, SparseVector)</span></span>:
+                 return other.<span class="function"><span class="title">dot</span><span class="params">(self)</span></span>
+             elif <span class="function"><span class="title">isinstance</span><span class="params">(other, Vector)</span></span>:
+                 return np.<span class="function"><span class="title">dot</span><span class="params">(self.toArray()</span></span>, other.<span class="function"><span class="title">toArray</span><span class="params">()</span></span>)
+             <span class="keyword">else</span>:
+                 return np.<span class="function"><span class="title">dot</span><span class="params">(self.toArray()</span></span>, other)
+</code></pre><p>但scala版本的linalg多了一个distributed的目录，下面就定义了好几种分布式矩阵</p>
+<pre><code>:~/spark-<span class="number">1.4</span>.<span class="number">0</span>$ ls mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/*
+mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Block</span>Matrix.scala
+mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Coordinate</span>Matrix.scala
+mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Distributed</span>Matrix.scala
+mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Indexed</span>RowMatrix.scala
+mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Row</span>Matrix.scala
+</code></pre><p>除此以外还多了SVD，PCA一些常见矩阵运算。当然，在linalg中的BLAS.scala里面，依旧是调用了本地的blas库来计算矩阵乘法</p>
+<pre><code>private <span class="function"><span class="keyword">def</span> <span class="title">dot</span><span class="params">(x: DenseVector, y: DenseVector)</span>:</span> Double = {
+  val n = x.size
+  f2jBLAS.ddot(n, x.values, <span class="number">1</span>, y.values, <span class="number">1</span>)
+}     
+</code></pre><p>这里仅限于非稀疏矩阵，spark中所有的稀疏矩阵都是自己写的没有调用额外的库</p>
+<pre><code><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">dot</span>(</span>x: <span class="type">SparseVector</span>, y: <span class="type">SparseVector</span>): <span class="type">Double</span> = {
+     <span class="function"><span class="keyword">val</span> <span class="title">xValues</span> =</span> x.values
+     <span class="function"><span class="keyword">val</span> <span class="title">xIndices</span> =</span> x.indices
+     <span class="function"><span class="keyword">val</span> <span class="title">yValues</span> =</span> y.values
+     <span class="function"><span class="keyword">val</span> <span class="title">yIndices</span> =</span> y.indices
+     <span class="function"><span class="keyword">val</span> <span class="title">nnzx</span> =</span> xIndices.size
+     <span class="function"><span class="keyword">val</span> <span class="title">nnzy</span> =</span> yIndices.size
+
+     <span class="keyword">var</span> kx = <span class="number">0</span>
+     <span class="keyword">var</span> ky = <span class="number">0</span>
+     <span class="keyword">var</span> sum = <span class="number">0.0</span>
+     <span class="comment">// y catching x</span>
+     <span class="keyword">while</span> (kx &lt; nnzx &amp;&amp; ky &lt; nnzy) {
+       <span class="function"><span class="keyword">val</span> <span class="title">ix</span> =</span> xIndices(kx)
+       <span class="keyword">while</span> (ky &lt; nnzy &amp;&amp; yIndices(ky) &lt; ix) {
+         ky += <span class="number">1</span>
+       }
+       <span class="keyword">if</span> (ky &lt; nnzy &amp;&amp; yIndices(ky) == ix) {
+         sum += xValues(kx) * yValues(ky)
+         ky += <span class="number">1</span>
+       }
+       kx += <span class="number">1</span>
+     }
+     sum
+   }
+</code></pre><p>矩阵乘法也是一样处理，都是牵涉到稀疏矩阵计算的就用自己写的方法</p>
+<pre><code>private def gemm(
+       alpha: Double,
+       A: DenseMatrix,
+       B: DenseMatrix,
+       beta: Double,
+       C: DenseMatrix): <span class="variable">Unit =</span> {
+     val <span class="variable">tAstr =</span> <span class="keyword">if</span> (A.isTransposed) <span class="string">"T"</span> <span class="keyword">else</span> <span class="string">"N"</span>
+     val <span class="variable">tBstr =</span> <span class="keyword">if</span> (B.isTransposed) <span class="string">"T"</span> <span class="keyword">else</span> <span class="string">"N"</span>
+     val <span class="variable">lda =</span> <span class="keyword">if</span> (!A.isTransposed) A.numRows <span class="keyword">else</span> A.numCols
+     val <span class="variable">ldb =</span> <span class="keyword">if</span> (!B.isTransposed) B.numRows <span class="keyword">else</span> B.numCols
+
+     require(A.<span class="variable">numCols =</span>= B.numRows,
+       s<span class="string">"The columns of A don't match the rows of B. A: <span class="subst">${A.numCols}</span>, B: <span class="subst">${B.numRows}</span>"</span>)
+     require(A.<span class="variable">numRows =</span>= C.numRows,
+       s<span class="string">"The rows of C don't match the rows of A. C: <span class="subst">${C.numRows}</span>, A: <span class="subst">${A.numRows}</span>"</span>)
+     require(B.<span class="variable">numCols =</span>= C.numCols,
+       s<span class="string">"The columns of C don't match the columns of B. C: <span class="subst">${C.numCols}</span>, A: <span class="subst">${B.numCols}</span>"</span>)
+     nativeBLAS.dgemm(tAstr, tBstr, A.numRows, B.numCols, A.numCols, alpha, A.values, lda,
+       B.values, ldb, beta, C.values, C.numRows)
+   }
+</code></pre><p>然后，我们回到spark的分布式矩阵，分布式矩阵的好处是直接利用rdd就能将对应的值转化为矩阵，例如这样</p>
+<pre><code>val rows = sc.textFile(args(<span class="number">0</span>)).<span class="built_in">map</span> { <span class="built_in">line</span> =&gt;
+       val values = <span class="built_in">line</span>.<span class="built_in">split</span>(<span class="string">' '</span>).<span class="built_in">map</span>(_.toDouble)
+       Vectors.dense(values)
+     }
+     val mat = <span class="keyword">new</span> RowMatrix(rows)
+</code></pre><p>这样，mat就是一个分布式的RowMatrix了，所做的就是赋值一个rdd。对于做SVD这类计算来说，RowMatrix定义了三种方法LocalARPACK，LocalLAPACK和DistARPACK，根据m，n的大小来自动决定到底用哪个计算</p>
+<pre><code><span class="keyword">if</span> (n &lt; <span class="number">100</span> || (k &gt; n / <span class="number">2</span> &amp;&amp; n &lt;= <span class="number">15000</span>)) {
+          <span class="regexp">//</span> If n <span class="keyword">is</span> small <span class="keyword">or</span> k <span class="keyword">is</span> large compared <span class="reserved">with</span> n, we better compute the Gramian matrix first
+          <span class="regexp">//</span> <span class="keyword">and</span> <span class="keyword">then</span> compute its eigenvalues locally, instead <span class="keyword">of</span> making multiple passes.
+          <span class="keyword">if</span> (k &lt; n / <span class="number">3</span>) {
+            SVDMode.LocalARPACK
+          } <span class="keyword">else</span> {
+            SVDMode.LocalLAPACK
+          }
+        } <span class="keyword">else</span> {
+          <span class="regexp">//</span> If k <span class="keyword">is</span> small compared <span class="reserved">with</span> n, we use ARPACK <span class="reserved">with</span> distributed multiplication.
+          SVDMode.DistARPACK
+        }
+</code></pre><p>基本上矩阵尺寸不大的时候就用local的方法来计算了，似乎作者认为ARPACK在计算方阵的时候效率不如lapack。所以当k&gt;n/3的时候选择了lapack。选完了以后就开始计算对角化矩阵</p>
+<pre><code><span class="function"><span class="keyword">val</span> (</span>sigmaSquares: <span class="type">BDV</span>[<span class="type">Double</span>], u: <span class="type">BDM</span>[<span class="type">Double</span>]) = computeMode <span class="keyword">match</span> {
+       <span class="keyword">case</span> <span class="type">SVDMode</span>.<span class="type">LocalARPACK</span> =&gt;
+         require(k &lt; n, s<span class="string">"k must be smaller than n in local-eigs mode but got k=$k and n=$n."</span>)
+         <span class="function"><span class="keyword">val</span> <span class="title">G</span> =</span> computeGramianMatrix().toBreeze.asInstanceOf[<span class="type">BDM</span>[<span class="type">Double</span>]]
+         <span class="type">EigenValueDecomposition</span>.symmetricEigs(v =&gt; <span class="type">G</span> * v, n, k, tol, maxIter)
+       <span class="keyword">case</span> <span class="type">SVDMode</span>.<span class="type">LocalLAPACK</span> =&gt;
+         <span class="comment">// breeze (v0.10) svd latent constraint, 7 * n * n + 4 * n &lt; Int.MaxValue</span>
+         require(n &lt; <span class="number">17515</span>, s<span class="string">"$n exceeds the breeze svd capability"</span>)
+         <span class="function"><span class="keyword">val</span> <span class="title">G</span> =</span> computeGramianMatrix().toBreeze.asInstanceOf[<span class="type">BDM</span>[<span class="type">Double</span>]]
+         <span class="function"><span class="keyword">val</span> <span class="title">brzSvd</span>.<span class="title">SVD</span>(</span>uFull: <span class="type">BDM</span>[<span class="type">Double</span>], sigmaSquaresFull: <span class="type">BDV</span>[<span class="type">Double</span>], _) = brzSvd(<span class="type">G</span>)
+         (sigmaSquaresFull, uFull)
+       <span class="keyword">case</span> <span class="type">SVDMode</span>.<span class="type">DistARPACK</span> =&gt;
+         <span class="keyword">if</span> (rows.getStorageLevel == <span class="type">StorageLevel</span>.<span class="type">NONE</span>) {
+           logWarning(<span class="string">"The input data is not directly cached, which may hurt performance if its"</span>
+             + <span class="string">" parent RDDs are also uncached."</span>)
+         }
+         require(k &lt; n, s<span class="string">"k must be smaller than n in dist-eigs mode but got k=$k and n=$n."</span>)
+         <span class="type">EigenValueDecomposition</span>.symmetricEigs(multiplyGramianMatrixBy, n, k, tol, maxIter)
+         }
+</code></pre><p>这里不管lapack怎么算（其实两者最后都是调用了brzSvd去计算的），ARPACK是调用了EigenValueDecomposition去计算的，并且要求一个Gramian矩阵</p>
+<pre><code><span class="keyword">private</span>[mllib] <span class="function"><span class="keyword">def</span> <span class="title">multiplyGramianMatrixBy</span>(</span>v: <span class="type">BDV</span>[<span class="type">Double</span>]): <span class="type">BDV</span>[<span class="type">Double</span>] = {
+     <span class="function"><span class="keyword">val</span> <span class="title">n</span> =</span> numCols().toInt
+     <span class="function"><span class="keyword">val</span> <span class="title">vbr</span> =</span> rows.context.broadcast(v)
+     rows.treeAggregate(<span class="type">BDV</span>.zeros[<span class="type">Double</span>](n))(
+       seqOp = (<span class="type">U</span>, r) =&gt; {
+         <span class="function"><span class="keyword">val</span> <span class="title">rBrz</span> =</span> r.toBreeze
+         <span class="function"><span class="keyword">val</span> <span class="title">a</span> =</span> rBrz.dot(vbr.value)
+         rBrz <span class="keyword">match</span> {
+           <span class="comment">// use specialized axpy for better performance</span>
+           <span class="keyword">case</span> _: <span class="type">BDV</span>[_] =&gt; brzAxpy(a, rBrz.asInstanceOf[<span class="type">BDV</span>[<span class="type">Double</span>]], <span class="type">U</span>)
+           <span class="keyword">case</span> _: <span class="type">BSV</span>[_] =&gt; brzAxpy(a, rBrz.asInstanceOf[<span class="type">BSV</span>[<span class="type">Double</span>]], <span class="type">U</span>)
+           <span class="keyword">case</span> _ =&gt; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">UnsupportedOperationException</span>(
+             s<span class="string">"Do not support vector operation from type ${rBrz.getClass.getName}."</span>)
+         }
+         <span class="type">U</span>
+       }, combOp = (<span class="type">U1</span>, <span class="type">U2</span>) =&gt; <span class="type">U1</span> += <span class="type">U2</span>)
+   }
+</code></pre><p>这个计算用到了broadcast，头一次看到将数据分发出去-_-bb。然后就在各自本地机器上计算。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/06/21/explore-spark-distributed-mllib/" data-id="cib610ix90019yjv4enejb0ci" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/06/09/spark-task-and-scheduler/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">spark 的调度和任务</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/06/21/explore-spark-distributed-mllib/">spark的mllib到底是不是分布式的</a>
+          </li>
+        
+          <li>
+            <a href="/2015/06/09/spark-task-and-scheduler/">spark 的调度和任务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/15/explore-spark-RDD-source-code/">expore spark RDD source code</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/15/spark-machine-learning-lib-for-python/">spark machine learning lib for python</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/">pyspark dataframe的实现</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>
