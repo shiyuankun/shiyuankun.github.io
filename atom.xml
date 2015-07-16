@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-07-16T06:43:26.000Z</updated>
+  <updated>2015-07-16T06:44:54.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://yoursite.com/2015/07/16/learning-rust-part-I/"/>
     <id>http://yoursite.com/2015/07/16/learning-rust-part-I/</id>
     <published>2015-07-16T01:49:38.000Z</published>
-    <updated>2015-07-16T06:43:26.000Z</updated>
+    <updated>2015-07-16T06:44:54.000Z</updated>
     <content type="html"><![CDATA[<p>rust今年来发布了1.0版本，很火，一直想学可惜一直太懒，最近有空正好学习一下，写一点笔记。<br>初次关注rust的时候还是1.0版本，等到现在想学了，已经是1.1版本了……所以我是有多懒惰啊。  </p>
 <h2 id="安装">安装</h2><pre><code>$ curl -<span class="keyword">sf</span> -L http<span class="variable">s:</span>//static.rust-lang.org/rustup.<span class="keyword">sh</span> | <span class="keyword">sh</span>
 </code></pre><h2 id="卸载">卸载</h2><pre><code>$ sudo <span class="regexp">/usr/</span>local<span class="regexp">/lib/</span>rustlib<span class="regexp">/uninstall.sh</span>
@@ -121,7 +121,7 @@ src/main.<span class="string">rs:</span><span class="number">7</span> }
     x.push(<span class="string">"foo"</span>);
 }
 </code></pre><p>前者给y做了一个x的备份，这样很自然的就将同一内存的操作分开了。后者在一个scope内新建了一个引用，离开这个scope这个引用就消失了，所以也能对x进行可变操作。<br>先写到这里，继续看书明天更新</p>
-<h2 id="参考">参考</h2><p>[<a href="https://doc.rust-lang.org/stable/book/hello-cargo.html][https://doc.rust-lang.org/stable/book/hello-cargo.html" target="_blank" rel="external">https://doc.rust-lang.org/stable/book/hello-cargo.html][https://doc.rust-lang.org/stable/book/hello-cargo.html</a>]</p>
+<h2 id="参考">参考</h2><p><a href="https://doc.rust-lang.org/stable/book/hello-cargo.html" target="_blank" rel="external">https://doc.rust-lang.org/stable/book/hello-cargo.html</a></p>
 ]]></content>
     <summary type="html">
     <![CDATA[<p>rust今年来发布了1.0版本，很火，一直想学可惜一直太懒，最近有空正好学习一下，写一点笔记。<br>初次关注rust的时候还是1.0版本，等到现在想学了，已经是1.1版本了……所以我是有多懒惰啊。  </p>
