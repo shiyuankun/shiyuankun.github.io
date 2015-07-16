@@ -118,18 +118,13 @@ ga('send', 'pageview');
     <div class="article-entry" itemprop="articleBody">
       
         <p>rust今年来发布了1.0版本，很火，一直想学可惜一直太懒，最近有空正好学习一下，写一点笔记。<br>初次关注rust的时候还是1.0版本，等到现在想学了，已经是1.1版本了……所以我是有多懒惰啊。  </p>
-<p>安装</p>
-<pre><code>$ curl -<span class="keyword">sf</span> -L http<span class="variable">s:</span>//static.rust-lang.org/rustup.<span class="keyword">sh</span> | <span class="keyword">sh</span>
-</code></pre><p>卸载</p>
-<pre><code>$ sudo <span class="regexp">/usr/</span>local<span class="regexp">/lib/</span>rustlib<span class="regexp">/uninstall.sh</span>
+<h2 id="安装">安装</h2><pre><code>$ curl -<span class="keyword">sf</span> -L http<span class="variable">s:</span>//static.rust-lang.org/rustup.<span class="keyword">sh</span> | <span class="keyword">sh</span>
+</code></pre><h2 id="卸载">卸载</h2><pre><code>$ sudo <span class="regexp">/usr/</span>local<span class="regexp">/lib/</span>rustlib<span class="regexp">/uninstall.sh</span>
 </code></pre><p>rust自带一个叫做cargo的项目管理器，可以很方便的新建、编译、运行项目</p>
-<p>新建</p>
-<pre><code><span class="variable">$ </span>cargo new hello_world --bin
+<h2 id="新建">新建</h2><pre><code><span class="variable">$ </span>cargo new hello_world --bin
 <span class="variable">$ </span>cd hello_world
-</code></pre><p>编译</p>
-<pre><code><span class="variable">$ </span>cargo build
-</code></pre><p>运行</p>
-<pre><code>$ cargo <span class="command">run</span>
+</code></pre><h2 id="编译">编译</h2><pre><code><span class="variable">$ </span>cargo build
+</code></pre><h2 id="运行">运行</h2><pre><code>$ cargo <span class="command">run</span>
 </code></pre><p>新建一个项目以后，这个项目的目录下会有一个Cargo.toml的文件，对项目内容做了一些必要的描述，例如，版本号，名字。rust和c++/c一样，需要编译运行。所以导入一些依赖库需要在Cargo.toml中指明，例如</p>
 <pre><code><span class="title">[dependencies]</span>
 
@@ -223,6 +218,7 @@ src/main.<span class="string">rs:</span><span class="number">7</span> }
     x.push(<span class="string">"foo"</span>);
 }
 </code></pre><p>前者给y做了一个x的备份，这样很自然的就将同一内存的操作分开了。后者在一个scope内新建了一个引用，离开这个scope这个引用就消失了，所以也能对x进行可变操作。<br>先写到这里，继续看书明天更新</p>
+<h2 id="参考">参考</h2><p>[<a href="https://doc.rust-lang.org/stable/book/hello-cargo.html][https://doc.rust-lang.org/stable/book/hello-cargo.html" target="_blank" rel="external">https://doc.rust-lang.org/stable/book/hello-cargo.html][https://doc.rust-lang.org/stable/book/hello-cargo.html</a>]</p>
 
       
     </div>
