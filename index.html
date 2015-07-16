@@ -95,6 +95,150 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-learning-rust-part-I" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/16/learning-rust-part-I/" class="article-date">
+  <time datetime="2015-07-16T01:49:38.000Z" itemprop="datePublished">2015-07-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/16/learning-rust-part-I/">rust学习笔记(一)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>rust今年来发布了1.0版本，很火，一直想学可惜一直太懒，最近有空正好学习一下，写一点笔记。<br>初次关注rust的时候还是1.0版本，等到现在想学了，已经是1.1版本了……所以我是有多懒惰啊。  </p>
+<p>安装</p>
+<pre><code>$ curl -<span class="keyword">sf</span> -L http<span class="variable">s:</span>//static.rust-lang.org/rustup.<span class="keyword">sh</span> | <span class="keyword">sh</span>
+</code></pre><p>卸载</p>
+<pre><code>$ sudo <span class="regexp">/usr/</span>local<span class="regexp">/lib/</span>rustlib<span class="regexp">/uninstall.sh</span>
+</code></pre><p>rust自带一个叫做cargo的项目管理器，可以很方便的新建、编译、运行项目</p>
+<p>新建</p>
+<pre><code><span class="variable">$ </span>cargo new hello_world --bin
+<span class="variable">$ </span>cd hello_world
+</code></pre><p>编译</p>
+<pre><code><span class="variable">$ </span>cargo build
+</code></pre><p>运行</p>
+<pre><code>$ cargo <span class="command">run</span>
+</code></pre><p>新建一个项目以后，这个项目的目录下会有一个Cargo.toml的文件，对项目内容做了一些必要的描述，例如，版本号，名字。rust和c++/c一样，需要编译运行。所以导入一些依赖库需要在Cargo.toml中指明，例如</p>
+<pre><code><span class="title">[dependencies]</span>
+
+<span class="setting">rand=<span class="value"><span class="string">"0.3.0"</span></span></span>
+</code></pre><p>cargo会自动去github上寻找这个包在编译时链接。以下贴一个官方的例子简要介绍rust的语法</p>
+<pre><code><span class="keyword">extern</span> <span class="keyword">crate</span> rand; <span class="comment">//指明rand是一个外部包，crate在rust中即包</span>
+
+<span class="keyword">use</span> std::io; <span class="comment">//指明需要使用的库</span>
+<span class="keyword">use</span> std::cmp::Ordering;
+<span class="keyword">use</span> rand::Rng;
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() { <span class="comment">//定义一个main函数，fn是定义函数的关键字</span>
+    <span class="built_in">println!</span>(<span class="string">"Guess the number!"</span>);<span class="comment">//println!是宏</span>
+
+    <span class="keyword">let</span> secret_number = rand::thread_rng().gen_range(<span class="number">1</span>, <span class="number">101</span>);<span class="comment">//let是一个绑定，将secret_number绑定到随机数上，rust里默认的变量是不可变的</span>
+
+    <span class="keyword">loop</span> {<span class="comment">//loop代表一个循环</span>
+        <span class="built_in">println!</span>(<span class="string">"Please input your guess."</span>);
+
+        <span class="keyword">let</span> <span class="keyword">mut</span> guess = String::new();<span class="comment">//mut代表将guess设定为mutable(可变的)</span>
+
+        io::stdin().read_line(&amp;<span class="keyword">mut</span> guess)<span class="comment">//这里&amp;guess代表的是guess的reference，默认是不可变的，但mut指定为可变（我在想是不是其实就是读了一个字符串得到一个指向这个字符串的地址A，然后直接将A复制到guess这个指针所在的地址，相当于将guess指向了另一个字符串。）</span>
+            .ok()<span class="comment">//io会返回io::Result，必须写代码处理，不然编译器会鄙视你，这里ok代表io成功运行什么代码</span>
+            .expect(<span class="string">"failed to read line"</span>);<span class="comment">//ok也会返回一个需要处理的值需要expect处理，如果失败就打印这句话并退出</span>
+
+        <span class="keyword">let</span> guess: <span class="keyword">u32</span> = <span class="keyword">match</span> guess.trim().parse() {<span class="comment">//字符转换成数字，并对结果进行模式匹配</span>
+            Ok(num) =&gt; num,<span class="comment">//如果成功，就返回数值</span>
+            Err(_) =&gt; <span class="keyword">continue</span>,<span class="comment">//如果失败就继续，不出错</span>
+        };
+
+        <span class="built_in">println!</span>(<span class="string">"You guessed: {}"</span>, guess);
+
+        <span class="keyword">match</span> guess.cmp(&amp;secret_number) {<span class="comment">//guess和secret_number进行比较，并且进行模式匹配</span>
+            Ordering::Less    =&gt; <span class="built_in">println!</span>(<span class="string">"Too small!"</span>),
+            Ordering::Greater =&gt; <span class="built_in">println!</span>(<span class="string">"Too big!"</span>),
+            Ordering::Equal   =&gt; {
+                <span class="built_in">println!</span>(<span class="string">"You win!"</span>);
+                <span class="keyword">break</span>;<span class="comment">//退出循环</span>
+            }
+        }
+    }
+}
+</code></pre><p>这是官方教程的第一个例子。来一个复杂一点的</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> <span class="keyword">mut</span> x = <span class="built_in">vec!</span>[<span class="string">"Hello"</span>, <span class="string">"world"</span>];
+
+    <span class="keyword">let</span> y = &amp;x[<span class="number">0</span>];
+
+    x.push(<span class="string">"foo"</span>);
+}
+</code></pre><p>这段代码会报错</p>
+<pre><code>src/main.<span class="string">rs:</span><span class="number">6</span>:<span class="number">5</span>: <span class="number">6</span>:<span class="number">6</span> <span class="string">error:</span> cannot borrow `x` <span class="keyword">as</span> mutable because it is also borrowed <span class="keyword">as</span> immutable
+src/main.<span class="string">rs:</span><span class="number">6</span>     x.push(<span class="string">"foo"</span>);
+                  ^
+src/main.<span class="string">rs:</span><span class="number">4</span>:<span class="number">14</span>: <span class="number">4</span>:<span class="number">15</span> <span class="string">note:</span> previous borrow of `x` occurs here; the immutable borrow prevents subsequent moves or mutable borrows of `x` until the borrow ends
+src/main.<span class="string">rs:</span><span class="number">4</span>     let y = &amp;x[<span class="number">0</span>];
+                           ^
+src/main.<span class="string">rs:</span><span class="number">7</span>:<span class="number">2</span>: <span class="number">7</span>:<span class="number">2</span> <span class="string">note:</span> previous borrow ends here
+src/main.<span class="string">rs:</span><span class="number">1</span> fn main() {
+...
+src/main.<span class="string">rs:</span><span class="number">7</span> }
+</code></pre><p>大意就是 x的第一个元素被immutable的引用了一次，所以x就不能被更改，如果我们把他的引用改为mutable呢？</p>
+<pre><code>src/main.<span class="string">rs:</span><span class="number">6</span>:<span class="number">5</span>: <span class="number">6</span>:<span class="number">6</span> <span class="string">error:</span> cannot borrow `x` <span class="keyword">as</span> mutable more than once at a time
+src/main.<span class="string">rs:</span><span class="number">6</span>     x.push(<span class="string">"foo"</span>);
+                  ^
+src/main.<span class="string">rs:</span><span class="number">4</span>:<span class="number">19</span>: <span class="number">4</span>:<span class="number">20</span> <span class="string">note:</span> previous borrow of `x` occurs here; the mutable borrow prevents subsequent moves, borrows, or modification of `x` until the borrow ends
+src/main.<span class="string">rs:</span><span class="number">4</span>     let y = &amp; mut x[<span class="number">0</span>];
+                                ^
+src/main.<span class="string">rs:</span><span class="number">7</span>:<span class="number">2</span>: <span class="number">7</span>:<span class="number">2</span> <span class="string">note:</span> previous borrow ends here
+src/main.<span class="string">rs:</span><span class="number">1</span> fn main() {
+...
+src/main.<span class="string">rs:</span><span class="number">7</span> }
+</code></pre><p>又报错了，说x不能被多次mutable引用<br>所以rust通过控制引用的可变和不可变以及可变应用次数来达到不需要gc也能自动释放占用内存。要想达到刚才的效果，只能这么做。</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> <span class="keyword">mut</span> x = <span class="built_in">vec!</span>[<span class="string">"Hello"</span>, <span class="string">"world"</span>];
+
+    <span class="keyword">let</span> y = x[<span class="number">0</span>].clone();
+
+    x.push(<span class="string">"foo"</span>);
+}
+
+或者
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> <span class="keyword">mut</span> x = <span class="built_in">vec!</span>[<span class="string">"Hello"</span>, <span class="string">"world"</span>];
+
+    {
+        <span class="keyword">let</span> y = &amp;x[<span class="number">0</span>];
+    }
+
+    x.push(<span class="string">"foo"</span>);
+}
+</code></pre><p>前者给y做了一个x的备份，这样很自然的就将同一内存的操作分开了。后者在一个scope内新建了一个引用，离开这个scope这个引用就消失了，所以也能对x进行可变操作。<br>先写到这里，继续看书明天更新</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/16/learning-rust-part-I/" data-id="cic5myivf000vi2v4mmqdj73u" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-explore-spark-distributed-mllib" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/06/21/explore-spark-distributed-mllib/" class="article-date">
@@ -380,7 +524,7 @@ mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/06/21/explore-spark-distributed-mllib/" data-id="cib610ix90019yjv4enejb0ci" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/06/21/explore-spark-distributed-mllib/" data-id="cic5myivs001ci2v4u1z30f6a" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -484,7 +628,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/06/09/spark-task-and-scheduler/" data-id="cib610is30009yjv4aekjq81n" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/06/09/spark-task-and-scheduler/" data-id="cic5myiv60009i2v47qde9zjb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scheduler/">scheduler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/task/">task</a></li></ul>
@@ -774,7 +918,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/15/explore-spark-RDD-source-code/" data-id="cib610ixj001dyjv4f8zjgbwy" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/15/explore-spark-RDD-source-code/" data-id="cic5myivv001gi2v476zvy21p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RDD/">RDD</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -887,7 +1031,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/15/spark-machine-learning-lib-for-python/" data-id="cib610iue000qyjv4zlrx98mz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/15/spark-machine-learning-lib-for-python/" data-id="cic5myivc000qi2v4f4iwaeff" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -1005,7 +1149,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/" data-id="cib610iwu0014yjv4esxfujwa" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/" data-id="cic5myivq0017i2v4m2demxgi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dataframe/">dataframe</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -1169,7 +1313,7 @@ def _jrdd(self):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/" data-id="cib610ith000iyjv4yqfuzg8b" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/" data-id="cic5myiv9000ii2v4jmaagl73" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pyspark/">pyspark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rdd/">rdd</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -1329,7 +1473,7 @@ def sum2djit(arr):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/" data-id="cib610ixt001iyjv4g3amwxnc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/" data-id="cic5myivx001li2v46o9wj2dl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/benchmark/">benchmark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cython/">cython</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/f2py/">f2py</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numba/">numba</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numpy/">numpy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
@@ -1368,7 +1512,7 @@ def sum2djit(arr):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="cib610iqy0002yjv4zwsqrt0c" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="cic5myiv20002i2v4ztyhmuo6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cnblogs/">cnblogs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/migrate/">migrate</a></li></ul>
@@ -1450,7 +1594,7 @@ hexo <span class="keyword">server</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="cib610iup000vyjv48ese4rz3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="cic5myivi000yi2v4dfwal7wz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/github/">github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
@@ -1462,54 +1606,9 @@ hexo <span class="keyword">server</span>
 
 
   
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/11/hello-world/" class="article-date">
-  <time datetime="2015-05-11T08:07:27.000Z" itemprop="datePublished">2015-05-11</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/11/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick_Start">Quick Start</h2><h3 id="Create_a_new_post">Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run_server">Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate_static_files">Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy_to_remote_sites">Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="cib610ivr0011yjv4it5e8so2" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -1522,7 +1621,7 @@ hexo <span class="keyword">server</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -1531,7 +1630,7 @@ hexo <span class="keyword">server</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 10px;">rust</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
     </div>
   </div>
 
@@ -1540,7 +1639,7 @@ hexo <span class="keyword">server</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1550,6 +1649,10 @@ hexo <span class="keyword">server</span>
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/07/16/learning-rust-part-I/">rust学习笔记(一)</a>
+          </li>
         
           <li>
             <a href="/2015/06/21/explore-spark-distributed-mllib/">spark的mllib到底是不是分布式的</a>
@@ -1565,10 +1668,6 @@ hexo <span class="keyword">server</span>
         
           <li>
             <a href="/2015/05/15/spark-machine-learning-lib-for-python/">spark machine learning lib for python</a>
-          </li>
-        
-          <li>
-            <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/">pyspark dataframe的实现</a>
           </li>
         
       </ul>

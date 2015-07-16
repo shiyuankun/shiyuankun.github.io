@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-06-21T07:32:43.000Z</updated>
+  <updated>2015-07-16T03:26:57.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,129 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[rust学习笔记(一)]]></title>
+    <link href="http://yoursite.com/2015/07/16/learning-rust-part-I/"/>
+    <id>http://yoursite.com/2015/07/16/learning-rust-part-I/</id>
+    <published>2015-07-16T01:49:38.000Z</published>
+    <updated>2015-07-16T03:26:57.000Z</updated>
+    <content type="html"><![CDATA[<p>rust今年来发布了1.0版本，很火，一直想学可惜一直太懒，最近有空正好学习一下，写一点笔记。<br>初次关注rust的时候还是1.0版本，等到现在想学了，已经是1.1版本了……所以我是有多懒惰啊。  </p>
+<p>安装</p>
+<pre><code>$ curl -<span class="keyword">sf</span> -L http<span class="variable">s:</span>//static.rust-lang.org/rustup.<span class="keyword">sh</span> | <span class="keyword">sh</span>
+</code></pre><p>卸载</p>
+<pre><code>$ sudo <span class="regexp">/usr/</span>local<span class="regexp">/lib/</span>rustlib<span class="regexp">/uninstall.sh</span>
+</code></pre><p>rust自带一个叫做cargo的项目管理器，可以很方便的新建、编译、运行项目</p>
+<p>新建</p>
+<pre><code><span class="variable">$ </span>cargo new hello_world --bin
+<span class="variable">$ </span>cd hello_world
+</code></pre><p>编译</p>
+<pre><code><span class="variable">$ </span>cargo build
+</code></pre><p>运行</p>
+<pre><code>$ cargo <span class="command">run</span>
+</code></pre><p>新建一个项目以后，这个项目的目录下会有一个Cargo.toml的文件，对项目内容做了一些必要的描述，例如，版本号，名字。rust和c++/c一样，需要编译运行。所以导入一些依赖库需要在Cargo.toml中指明，例如</p>
+<pre><code><span class="title">[dependencies]</span>
+
+<span class="setting">rand=<span class="value"><span class="string">"0.3.0"</span></span></span>
+</code></pre><p>cargo会自动去github上寻找这个包在编译时链接。以下贴一个官方的例子简要介绍rust的语法</p>
+<pre><code><span class="keyword">extern</span> <span class="keyword">crate</span> rand; <span class="comment">//指明rand是一个外部包，crate在rust中即包</span>
+
+<span class="keyword">use</span> std::io; <span class="comment">//指明需要使用的库</span>
+<span class="keyword">use</span> std::cmp::Ordering;
+<span class="keyword">use</span> rand::Rng;
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() { <span class="comment">//定义一个main函数，fn是定义函数的关键字</span>
+    <span class="built_in">println!</span>(<span class="string">"Guess the number!"</span>);<span class="comment">//println!是宏</span>
+
+    <span class="keyword">let</span> secret_number = rand::thread_rng().gen_range(<span class="number">1</span>, <span class="number">101</span>);<span class="comment">//let是一个绑定，将secret_number绑定到随机数上，rust里默认的变量是不可变的</span>
+
+    <span class="keyword">loop</span> {<span class="comment">//loop代表一个循环</span>
+        <span class="built_in">println!</span>(<span class="string">"Please input your guess."</span>);
+
+        <span class="keyword">let</span> <span class="keyword">mut</span> guess = String::new();<span class="comment">//mut代表将guess设定为mutable(可变的)</span>
+
+        io::stdin().read_line(&amp;<span class="keyword">mut</span> guess)<span class="comment">//这里&amp;guess代表的是guess的reference，默认是不可变的，但mut指定为可变（我在想是不是其实就是读了一个字符串得到一个指向这个字符串的地址A，然后直接将A复制到guess这个指针所在的地址，相当于将guess指向了另一个字符串。）</span>
+            .ok()<span class="comment">//io会返回io::Result，必须写代码处理，不然编译器会鄙视你，这里ok代表io成功运行什么代码</span>
+            .expect(<span class="string">"failed to read line"</span>);<span class="comment">//ok也会返回一个需要处理的值需要expect处理，如果失败就打印这句话并退出</span>
+
+        <span class="keyword">let</span> guess: <span class="keyword">u32</span> = <span class="keyword">match</span> guess.trim().parse() {<span class="comment">//字符转换成数字，并对结果进行模式匹配</span>
+            Ok(num) =&gt; num,<span class="comment">//如果成功，就返回数值</span>
+            Err(_) =&gt; <span class="keyword">continue</span>,<span class="comment">//如果失败就继续，不出错</span>
+        };
+
+        <span class="built_in">println!</span>(<span class="string">"You guessed: {}"</span>, guess);
+
+        <span class="keyword">match</span> guess.cmp(&amp;secret_number) {<span class="comment">//guess和secret_number进行比较，并且进行模式匹配</span>
+            Ordering::Less    =&gt; <span class="built_in">println!</span>(<span class="string">"Too small!"</span>),
+            Ordering::Greater =&gt; <span class="built_in">println!</span>(<span class="string">"Too big!"</span>),
+            Ordering::Equal   =&gt; {
+                <span class="built_in">println!</span>(<span class="string">"You win!"</span>);
+                <span class="keyword">break</span>;<span class="comment">//退出循环</span>
+            }
+        }
+    }
+}
+</code></pre><p>这是官方教程的第一个例子。来一个复杂一点的</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> <span class="keyword">mut</span> x = <span class="built_in">vec!</span>[<span class="string">"Hello"</span>, <span class="string">"world"</span>];
+
+    <span class="keyword">let</span> y = &amp;x[<span class="number">0</span>];
+
+    x.push(<span class="string">"foo"</span>);
+}
+</code></pre><p>这段代码会报错</p>
+<pre><code>src/main.<span class="string">rs:</span><span class="number">6</span>:<span class="number">5</span>: <span class="number">6</span>:<span class="number">6</span> <span class="string">error:</span> cannot borrow `x` <span class="keyword">as</span> mutable because it is also borrowed <span class="keyword">as</span> immutable
+src/main.<span class="string">rs:</span><span class="number">6</span>     x.push(<span class="string">"foo"</span>);
+                  ^
+src/main.<span class="string">rs:</span><span class="number">4</span>:<span class="number">14</span>: <span class="number">4</span>:<span class="number">15</span> <span class="string">note:</span> previous borrow of `x` occurs here; the immutable borrow prevents subsequent moves or mutable borrows of `x` until the borrow ends
+src/main.<span class="string">rs:</span><span class="number">4</span>     let y = &amp;x[<span class="number">0</span>];
+                           ^
+src/main.<span class="string">rs:</span><span class="number">7</span>:<span class="number">2</span>: <span class="number">7</span>:<span class="number">2</span> <span class="string">note:</span> previous borrow ends here
+src/main.<span class="string">rs:</span><span class="number">1</span> fn main() {
+...
+src/main.<span class="string">rs:</span><span class="number">7</span> }
+</code></pre><p>大意就是 x的第一个元素被immutable的引用了一次，所以x就不能被更改，如果我们把他的引用改为mutable呢？</p>
+<pre><code>src/main.<span class="string">rs:</span><span class="number">6</span>:<span class="number">5</span>: <span class="number">6</span>:<span class="number">6</span> <span class="string">error:</span> cannot borrow `x` <span class="keyword">as</span> mutable more than once at a time
+src/main.<span class="string">rs:</span><span class="number">6</span>     x.push(<span class="string">"foo"</span>);
+                  ^
+src/main.<span class="string">rs:</span><span class="number">4</span>:<span class="number">19</span>: <span class="number">4</span>:<span class="number">20</span> <span class="string">note:</span> previous borrow of `x` occurs here; the mutable borrow prevents subsequent moves, borrows, or modification of `x` until the borrow ends
+src/main.<span class="string">rs:</span><span class="number">4</span>     let y = &amp; mut x[<span class="number">0</span>];
+                                ^
+src/main.<span class="string">rs:</span><span class="number">7</span>:<span class="number">2</span>: <span class="number">7</span>:<span class="number">2</span> <span class="string">note:</span> previous borrow ends here
+src/main.<span class="string">rs:</span><span class="number">1</span> fn main() {
+...
+src/main.<span class="string">rs:</span><span class="number">7</span> }
+</code></pre><p>又报错了，说x不能被多次mutable引用<br>所以rust通过控制引用的可变和不可变以及可变应用次数来达到不需要gc也能自动释放占用内存。要想达到刚才的效果，只能这么做。</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> <span class="keyword">mut</span> x = <span class="built_in">vec!</span>[<span class="string">"Hello"</span>, <span class="string">"world"</span>];
+
+    <span class="keyword">let</span> y = x[<span class="number">0</span>].clone();
+
+    x.push(<span class="string">"foo"</span>);
+}
+
+或者
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> <span class="keyword">mut</span> x = <span class="built_in">vec!</span>[<span class="string">"Hello"</span>, <span class="string">"world"</span>];
+
+    {
+        <span class="keyword">let</span> y = &amp;x[<span class="number">0</span>];
+    }
+
+    x.push(<span class="string">"foo"</span>);
+}
+</code></pre><p>前者给y做了一个x的备份，这样很自然的就将同一内存的操作分开了。后者在一个scope内新建了一个引用，离开这个scope这个引用就消失了，所以也能对x进行可变操作。<br>先写到这里，继续看书明天更新</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>rust今年来发布了1.0版本，很火，一直想学可惜一直太懒，最近有空正好学习一下，写一点笔记。<br>初次关注rust的时候还是1.0版本，等到现在想学了，已经是1.1版本了……所以我是有多懒惰啊。  </p>
+<p>安装</p>
+<pre><code>$ curl -<s]]>
+    </summary>
+    
+      <category term="rust" scheme="http://yoursite.com/tags/rust/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[spark的mllib到底是不是分布式的]]></title>
@@ -1579,34 +1702,6 @@ markdown-<span class="literal">mode</span>
 <p>第二步安装hadoop，去</p>
 <p><a href="http://hadoop.apache.org/上下一个">http://hadoop.apache.org/上下一个</a></p>
 <p><a href="http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz">http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz</a><br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[矩阵对角化]]></title>
-    <link href="http://yoursite.com/2014/06/23/3804254/"/>
-    <id>http://yoursite.com/2014/06/23/3804254/</id>
-    <published>2014-06-23T08:21:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>numerical&nbsp;recipe&nbsp;里一共讲了两种实数对称矩阵的对角化，</p>
-<p>jacobi法</p>
-<p>tred2生成上三角阵以后用tqli对角化</p>
-<p>前者稳定但慢易并行，后者较快但疑似不稳定，串行。</p>
-<p>花了一下午，一点点调试终于知道了第二种方法不稳定的原因在哪里<br><a id="more"></a></p>
-<div class="cnblogs_code"><br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"> 1         SUBROUTINE tred2(a,<span class="keyword">d</span>,<span class="keyword">e</span>,novectors)</span><br><span class="line"> 2         <span class="keyword">USE</span> nrtype; <span class="keyword">USE</span> nrutil, ONLY : assert_eq,outerprod</span><br><span class="line"> 3         IMPLICIT NONE</span><br><span class="line"> 4         <span class="literal">REAL</span>(SP), DIMENSION(:,:), INTENT(INOUT) :: a</span><br><span class="line"> 5         <span class="literal">REAL</span>(SP), DIMENSION(:), INTENT(<span class="keyword">OUT</span>) :: <span class="keyword">d</span>,<span class="literal">e</span></span><br><span class="line"> 6         LOGICAL(LGT), OPTIONAL, INTENT(<span class="keyword">IN</span>) :: novectors</span><br><span class="line"> 7         INTEGER(I4B) :: i,j,<span class="keyword">l</span>,<span class="keyword">n</span></span><br><span class="line"> 8         <span class="literal">REAL</span>(SP) :: f,<span class="keyword">g</span>,<span class="keyword">h</span>,hh,scale</span><br><span class="line"> 9         <span class="literal">REAL</span>(SP), DIMENSION(size(a,1)) :: gg</span><br><span class="line">10         LOGICAL(LGT) :: yesvec</span><br><span class="line">11         <span class="keyword">n</span>=assert_eq(size(a,1),size(a,2),size(<span class="keyword">d</span>),size(<span class="keyword">e</span>),'tred2')</span><br><span class="line">12         <span class="keyword">if</span> (present(novectors)) then</span><br><span class="line">13                 yesvec=.not. novectors</span><br><span class="line">14         <span class="keyword">else</span></span><br><span class="line">15                 yesvec=.true.</span><br><span class="line">16         end <span class="keyword">if</span></span><br><span class="line">17         <span class="keyword">do</span> i=<span class="keyword">n</span>,2,-1</span><br><span class="line">18                 <span class="keyword">l</span>=i-1</span><br><span class="line">19                 <span class="keyword">h</span>=0.0</span><br><span class="line">20                 <span class="keyword">if</span> (<span class="keyword">l</span> &gt; 1) then</span><br><span class="line">21                         scale=<span class="literal">sum</span>(<span class="literal">abs</span>(a(i,1:<span class="keyword">l</span>)))</span><br><span class="line">22                         <span class="keyword">if</span> (scale == 0.0) then</span><br><span class="line">23                                 <span class="literal">e</span>(i)=a(i,<span class="keyword">l</span>)</span><br><span class="line">24                         <span class="keyword">else</span></span><br><span class="line">25                                 a(i,1:<span class="keyword">l</span>)=a(i,1:<span class="keyword">l</span>)/scale</span><br><span class="line">26                                 <span class="keyword">h</span>=<span class="literal">sum</span>(a(i,1:<span class="keyword">l</span>)**2)</span><br><span class="line">27                                 f=a(i,<span class="keyword">l</span>)</span><br><span class="line">28                                 <span class="keyword">g</span>=-<span class="literal">sign</span>(<span class="literal">sqrt</span>(<span class="keyword">h</span>),f)</span><br><span class="line">29                                 <span class="literal">e</span>(i)=scale*<span class="keyword">g</span></span><br><span class="line">30                                 <span class="keyword">h</span>=<span class="keyword">h</span>-f*<span class="keyword">g</span></span><br><span class="line">31                                 a(i,<span class="keyword">l</span>)=f-<span class="keyword">g</span></span><br><span class="line">32                                 <span class="keyword">if</span> (yesvec) a(1:<span class="keyword">l</span>,i)=a(i,1:<span class="keyword">l</span>)/<span class="literal">h</span></span><br><span class="line">33                                 <span class="keyword">do</span> j=1,<span class="keyword">l</span></span><br><span class="line">34                                         <span class="literal">e</span>(j)=(dot_product(a(j,1:j),a(i,1:j)) &amp;</span><br><span class="line">35                                         +dot_product(a(j+1:<span class="keyword">l</span>,j),a(i,j+1:<span class="keyword">l</span>)))/<span class="literal">h</span></span><br><span class="line">36                                 end <span class="keyword">do</span></span><br><span class="line">37                                 f=dot_product(<span class="literal">e</span>(1:<span class="keyword">l</span>),a(i,1:<span class="keyword">l</span>))</span><br><span class="line">38                                 hh=f/(<span class="keyword">h</span>+<span class="keyword">h</span>)</span><br><span class="line">39                                 <span class="literal">e</span>(1:<span class="keyword">l</span>)=<span class="literal">e</span>(1:<span class="keyword">l</span>)-hh*a(i,1:<span class="keyword">l</span>)</span><br><span class="line">40                                 <span class="keyword">do</span> j=1,<span class="keyword">l</span></span><br><span class="line">41                                         a(j,1:j)=a(j,1:j)-a(i,j)*<span class="literal">e</span>(1:j)-<span class="literal">e</span>(j)*a(i,1:j)</span><br><span class="line">42                                 end <span class="keyword">do</span></span><br><span class="line">43                         end <span class="keyword">if</span></span><br><span class="line">44                 <span class="keyword">else</span></span><br><span class="line">45                         <span class="literal">e</span>(i)=a(i,<span class="keyword">l</span>)</span><br><span class="line">46                 end <span class="keyword">if</span></span><br><span class="line">47                 <span class="literal">d</span>(i)=<span class="literal">h</span></span><br><span class="line">48         end <span class="keyword">do</span></span><br><span class="line">49         <span class="keyword">if</span> (yesvec) <span class="literal">d</span>(1)=0.0</span><br><span class="line">50         <span class="literal">e</span>(1)=0.0</span><br><span class="line">51         <span class="keyword">do</span> i=1,<span class="keyword">n</span></span><br><span class="line">52                 <span class="keyword">if</span> (yesvec) then</span><br><span class="line">53                         <span class="keyword">l</span>=i-1</span><br><span class="line">54                         <span class="keyword">if</span> (<span class="literal">d</span>(i) /= 0.0) then</span><br><span class="line">55                                 gg(1:<span class="keyword">l</span>)=matmul(a(i,1:<span class="keyword">l</span>),a(1:<span class="keyword">l</span>,1:<span class="keyword">l</span>))</span><br><span class="line">56                                 a(1:<span class="keyword">l</span>,1:<span class="keyword">l</span>)=a(1:<span class="keyword">l</span>,1:<span class="keyword">l</span>)-outerprod(a(1:<span class="keyword">l</span>,i),gg(1:<span class="keyword">l</span>))</span><br><span class="line">57                         end <span class="keyword">if</span></span><br><span class="line">58                         <span class="literal">d</span>(i)=a(i,i)</span><br><span class="line">59                         a(i,i)=1.0</span><br><span class="line">60                         a(i,1:<span class="keyword">l</span>)=0.0</span><br><span class="line">61                         a(1:<span class="keyword">l</span>,i)=0.0</span><br><span class="line">62                 <span class="keyword">else</span></span><br><span class="line">63                         <span class="literal">d</span>(i)=a(i,i)</span><br><span class="line">64                 end <span class="keyword">if</span></span><br><span class="line">65         end <span class="keyword">do</span></span><br><span class="line">66         END SUBROUTINE tred2</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>问题出在22行,scale==0.0的判断上。稍微有点常识的人都知道，计算机里做浮点数判断不能用==，必须用abs(scale-0.0)&lt;episilon episilon为一个很小的数。没想到numerical&nbsp;recipe第三版的这本书里还有这样子的代码。</p>
-<p>鉴于scale&gt;=0.0，所以改成scale&lt;=episilon就行了，结果就很稳定了。</p>
-<p>吐槽一下，怪不得我总觉得结果怎么那么随机，原来是这里出的问题，这可是真随机啊！</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>numerical&nbsp;recipe&nbsp;里一共讲了两种实数对称矩阵的对角化，</p>
-<p>jacobi法</p>
-<p>tred2生成上三角阵以后用tqli对角化</p>
-<p>前者稳定但慢易并行，后者较快但疑似不稳定，串行。</p>
-<p>花了一下午，一点点调试终于知道了第二种方法不稳定的原因在哪里<br>]]>
     
     </summary>
     
