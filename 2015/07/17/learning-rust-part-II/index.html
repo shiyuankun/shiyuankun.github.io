@@ -253,7 +253,38 @@ lib.<span class="function"><span class="title">process</span><span class="params
 <span class="function"><span class="keyword">fn</span> <span class="title">it_works</span></span>(){
     <span class="built_in">assert_eq!</span>(<span class="number">4</span>, adder::add_two(<span class="number">2</span>));
 }
-</code></pre><p>大致了解了一下，接下去继续看详细的语法</p>
+</code></pre><h2 id="条件编译">条件编译</h2><p>rust也支持条件编译，例如</p>
+<pre><code>#[<span class="function"><span class="title">cfg</span><span class="params">(foo)</span></span>]
+
+#[<span class="function"><span class="title">cfg</span><span class="params">(bar = <span class="string">"baz"</span>)</span></span>]
+
+#[<span class="function"><span class="title">cfg</span><span class="params">(any(unix, windows)</span></span>)]
+
+#[<span class="function"><span class="title">cfg</span><span class="params">(all(unix, target_pointer_width = <span class="string">"32"</span>)</span></span>)]
+
+#[<span class="function"><span class="title">cfg</span><span class="params">(not(foo)</span></span>)]
+</code></pre><p>在函数定义的上一行写下这些字段，能帮助cargo决定这个函数是不是要在当前条件下编译。<br>在Cargo.toml中</p>
+<pre><code>[features]
+<span class="preprocessor"># no features by default</span>
+<span class="default"><span class="keyword">default</span> = []</span>
+</code></pre><h2 id="文档">文档</h2><p>刚才已经提到过，需要用///来注释文档，但需要注意的是，文档需要写成这样</p>
+<pre><code><span class="dartdoc"><span class="markdown">/// The <span class="code">`Option`</span> type. See [<span class="link_label">the module level documentation</span>](<span class="link_url">../</span>) for more.</span></span>
+<span class="keyword">enum</span> Option&lt;T&gt; {
+    <span class="dartdoc"><span class="markdown">/// No value</span></span>
+    None,
+    <span class="dartdoc"><span class="markdown">/// Some value <span class="code">`T`</span></span></span>
+    Some(T),
+}
+</code></pre><p>而不是这样</p>
+<pre><code><span class="dartdoc"><span class="markdown">/// The <span class="code">`Option`</span> type. See [<span class="link_label">the module level documentation</span>](<span class="link_url">../</span>) for more.</span></span>
+<span class="keyword">enum</span> Option&lt;T&gt; {
+    None, <span class="dartdoc"><span class="markdown">/// No value</span></span>
+    Some(T), <span class="dartdoc"><span class="markdown">/// Some value <span class="code">`T`</span></span></span>
+}
+</code></pre><p>使用</p>
+<pre><code><span class="title">cargo</span> doc
+</code></pre><p>生成文档</p>
+<p>大致了解了一下，接下去继续看详细的语法</p>
 
       
     </div>

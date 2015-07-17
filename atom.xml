@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-07-17T07:11:03.000Z</updated>
+  <updated>2015-07-17T07:21:46.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://yoursite.com/2015/07/17/learning-rust-part-II/"/>
     <id>http://yoursite.com/2015/07/17/learning-rust-part-II/</id>
     <published>2015-07-17T03:04:24.000Z</published>
-    <updated>2015-07-17T07:11:03.000Z</updated>
+    <updated>2015-07-17T07:21:46.000Z</updated>
     <content type="html"><![CDATA[<h2 id="多线程">多线程</h2><p>继续学习rust，今天看的是一个怎么利用rust写多线程的例子。这个问题叫做哲学家吃饭，一张圆桌子五个哲学家，每人吃饭都要先拿起左手的筷子再拿右手的筷子，吃完放回去。但如果统一拿左手的筷子，必然会发生线程死锁:每个人都拿了左手的筷子并且等右手的筷子。</p>
 <pre><code><span class="keyword">use</span> std::thread;<span class="comment">//引入线程</span>
 <span class="keyword">use</span> std::sync::{Mutex, Arc};<span class="comment">//引入锁和原子操作</span>
@@ -146,7 +146,38 @@ lib.<span class="function"><span class="title">process</span><span class="params
 <span class="function"><span class="keyword">fn</span> <span class="title">it_works</span></span>(){
     <span class="built_in">assert_eq!</span>(<span class="number">4</span>, adder::add_two(<span class="number">2</span>));
 }
-</code></pre><p>大致了解了一下，接下去继续看详细的语法</p>
+</code></pre><h2 id="条件编译">条件编译</h2><p>rust也支持条件编译，例如</p>
+<pre><code>#[<span class="function"><span class="title">cfg</span><span class="params">(foo)</span></span>]
+
+#[<span class="function"><span class="title">cfg</span><span class="params">(bar = <span class="string">"baz"</span>)</span></span>]
+
+#[<span class="function"><span class="title">cfg</span><span class="params">(any(unix, windows)</span></span>)]
+
+#[<span class="function"><span class="title">cfg</span><span class="params">(all(unix, target_pointer_width = <span class="string">"32"</span>)</span></span>)]
+
+#[<span class="function"><span class="title">cfg</span><span class="params">(not(foo)</span></span>)]
+</code></pre><p>在函数定义的上一行写下这些字段，能帮助cargo决定这个函数是不是要在当前条件下编译。<br>在Cargo.toml中</p>
+<pre><code>[features]
+<span class="preprocessor"># no features by default</span>
+<span class="default"><span class="keyword">default</span> = []</span>
+</code></pre><h2 id="文档">文档</h2><p>刚才已经提到过，需要用///来注释文档，但需要注意的是，文档需要写成这样</p>
+<pre><code><span class="dartdoc"><span class="markdown">/// The <span class="code">`Option`</span> type. See [<span class="link_label">the module level documentation</span>](<span class="link_url">../</span>) for more.</span></span>
+<span class="keyword">enum</span> Option&lt;T&gt; {
+    <span class="dartdoc"><span class="markdown">/// No value</span></span>
+    None,
+    <span class="dartdoc"><span class="markdown">/// Some value <span class="code">`T`</span></span></span>
+    Some(T),
+}
+</code></pre><p>而不是这样</p>
+<pre><code><span class="dartdoc"><span class="markdown">/// The <span class="code">`Option`</span> type. See [<span class="link_label">the module level documentation</span>](<span class="link_url">../</span>) for more.</span></span>
+<span class="keyword">enum</span> Option&lt;T&gt; {
+    None, <span class="dartdoc"><span class="markdown">/// No value</span></span>
+    Some(T), <span class="dartdoc"><span class="markdown">/// Some value <span class="code">`T`</span></span></span>
+}
+</code></pre><p>使用</p>
+<pre><code><span class="title">cargo</span> doc
+</code></pre><p>生成文档</p>
+<p>大致了解了一下，接下去继续看详细的语法</p>
 ]]></content>
     <summary type="html">
     <![CDATA[<h2 id="多线程">多线程</h2><p>继续学习rust，今天看的是一个怎么利用rust写多线程的例子。这个问题叫做哲学家吃饭，一张圆桌子五个哲学家，每人吃饭都要先拿起左手的筷子再拿右手的筷子，吃完放回去。但如果统一拿左手的筷子，必然会发生线程死锁:每个人都拿了左手的筷子]]>
