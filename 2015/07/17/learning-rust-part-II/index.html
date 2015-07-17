@@ -3,17 +3,29 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Archives: 2014 | 彼格海德的笔记空间</title>
+  <title>rust学习笔记(二) | 彼格海德的笔记空间</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="python">
-<meta property="og:type" content="website">
-<meta property="og:title" content="彼格海德的笔记空间">
-<meta property="og:url" content="http://yoursite.com/archives/2014/index.html">
+  <meta name="description" content="多线程继续学习rust，今天看的是一个怎么利用rust写多线程的例子。这个问题叫做哲学家吃饭，一张圆桌子五个哲学家，每人吃饭都要先拿起左手的筷子再拿右手的筷子，吃完放回去。但如果统一拿左手的筷子，必然会发生线程死锁:每个人都拿了左手的筷子并且等右手的筷子。
+use std::thread;//引入线程
+use std::sync::{Mutex, Arc};//引入锁和原子操作
+
+struct T">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rust学习笔记(二)">
+<meta property="og:url" content="http://yoursite.com/2015/07/17/learning-rust-part-II/index.html">
 <meta property="og:site_name" content="彼格海德的笔记空间">
-<meta property="og:description" content="python">
+<meta property="og:description" content="多线程继续学习rust，今天看的是一个怎么利用rust写多线程的例子。这个问题叫做哲学家吃饭，一张圆桌子五个哲学家，每人吃饭都要先拿起左手的筷子再拿右手的筷子，吃完放回去。但如果统一拿左手的筷子，必然会发生线程死锁:每个人都拿了左手的筷子并且等右手的筷子。
+use std::thread;//引入线程
+use std::sync::{Mutex, Arc};//引入锁和原子操作
+
+struct T">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="彼格海德的笔记空间">
-<meta name="twitter:description" content="python">
+<meta name="twitter:title" content="rust学习笔记(二)">
+<meta name="twitter:description" content="多线程继续学习rust，今天看的是一个怎么利用rust写多线程的例子。这个问题叫做哲学家吃饭，一张圆桌子五个哲学家，每人吃饭都要先拿起左手的筷子再拿右手的筷子，吃完放回去。但如果统一拿左手的筷子，必然会发生线程死锁:每个人都拿了左手的筷子并且等右手的筷子。
+use std::thread;//引入线程
+use std::sync::{Mutex, Arc};//引入锁和原子操作
+
+struct T">
   
     <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
   
@@ -93,58 +105,144 @@ ga('send', 'pageview');
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2014" class="archive-year">2014</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2014/09/05/3958082/" class="archive-article-date">
-  <time datetime="2014-09-05T06:51:00.000Z" itemprop="datePublished">Sep 5</time>
+        <section id="main"><article id="post-learning-rust-part-II" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/17/learning-rust-part-II/" class="article-date">
+  <time datetime="2015-07-17T03:04:24.000Z" itemprop="datePublished">2015-07-17</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2014/09/05/3958082/">spark on centos6.5 安装</a>
+    <h1 class="article-title" itemprop="name">
+      rust学习笔记(二)
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2014/06/23/3804254/" class="archive-article-date">
-  <time datetime="2014-06-23T08:21:00.000Z" itemprop="datePublished">Jun 23</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2014/06/23/3804254/">矩阵对角化</a>
-    </h1>
-  
+        <h2 id="多线程">多线程</h2><p>继续学习rust，今天看的是一个怎么利用rust写多线程的例子。这个问题叫做哲学家吃饭，一张圆桌子五个哲学家，每人吃饭都要先拿起左手的筷子再拿右手的筷子，吃完放回去。但如果统一拿左手的筷子，必然会发生线程死锁:每个人都拿了左手的筷子并且等右手的筷子。</p>
+<pre><code><span class="keyword">use</span> std::thread;<span class="comment">//引入线程</span>
+<span class="keyword">use</span> std::sync::{Mutex, Arc};<span class="comment">//引入锁和原子操作</span>
 
-    </header>
+<span class="keyword">struct</span> Table{
+    forks: Vec&lt;Mutex&lt;()&gt;&gt;,<span class="comment">//这是个锁组成的数组，数组的每个元素代表一双筷子</span>
+}
+
+<span class="keyword">struct</span> Philosopher{
+    name: String,
+    left: usize,<span class="comment">//哲学家的左右手代表了锁在数组中的相应位置</span>
+    right: usize,
+}
+
+<span class="keyword">impl</span> Philosopher{
+    <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>(name: &amp;<span class="keyword">str</span>, left: usize, right: usize)-&gt;Philosopher{
+        Philosopher{
+            name :name.to_string(),
+            left: left,
+            right: right,
+        }
+    }
+    <span class="function"><span class="keyword">fn</span> <span class="title">eat</span></span>(&amp;<span class="keyword">self</span>, table: &amp;Table){
+        <span class="keyword">let</span> _left = table.forks[<span class="keyword">self</span>.left].lock().unwrap();<span class="comment">//获取锁，_left前的_代表不对起不使用进行报警</span>
+        <span class="keyword">let</span> _right=table.forks[<span class="keyword">self</span>.right].lock().unwrap();<span class="comment">//unwrap代表当获取锁失败时无视失败</span>
+        <span class="built_in">println!</span>(<span class="string">"{} is eating."</span>,<span class="keyword">self</span>.name);
+        thread::sleep_ms(<span class="number">1000</span>);
+        <span class="built_in">println!</span>(<span class="string">"{} is done eating."</span>, <span class="keyword">self</span>.name);
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> table = Arc::new(Table {forks: <span class="built_in">vec!</span>[
+            Mutex::new(()),
+            Mutex::new(()),
+            Mutex::new(()),
+            Mutex::new(()),
+            Mutex::new(()),
+            ]});<span class="comment">//(Table {...})是建立了一个Table对象，由于我们没有给Table绑一个new函数所以需要这种方法新建对象。</span>
+            <span class="comment">//Arc(Atomic reference count)代表这个Table是支持原子引用计数的，每在一个线程中分享，就加一，这个线程退出就减一。</span>
+
+    <span class="keyword">let</span> philosophers=<span class="built_in">vec!</span>[
+        Philosopher::new(<span class="string">"Baruch Spinoza"</span>,<span class="number">0</span>,<span class="number">1</span>),
+        Philosopher::new(<span class="string">"Gilles Deleuze"</span>,<span class="number">1</span>,<span class="number">2</span>),
+        Philosopher::new(<span class="string">"Karl Marx"</span>,<span class="number">2</span>,<span class="number">3</span>),
+        Philosopher::new(<span class="string">"Friedrich Nietzsche"</span>,<span class="number">3</span>,<span class="number">4</span>),
+        Philosopher::new(<span class="string">"Michel Foucault"</span>,<span class="number">0</span>,<span class="number">4</span>),<span class="comment">//防止死锁的小技巧，先获取0再获取4</span>
+    ];
+    <span class="keyword">let</span> handles: Vec&lt;_&gt;=philosophers.into_iter().map(|p|{<span class="comment">//into_iter将数组转换为迭代器(iterator)</span>
+            <span class="keyword">let</span> table = table.clone();<span class="comment">//这里将原始引用复制一份</span>
+            thread::spawn(move||{<span class="comment">//起一个线程执行对应的p.eat, move用于维持闭包，获得eat的返回值</span>
+                p.eat(&amp;table);
+                })}).collect();
+    <span class="keyword">for</span> h <span class="keyword">in</span> handles{
+        h.join().unwrap();<span class="comment">//等每个线程结束</span>
+    }
+}
+</code></pre><h2 id="FFI">FFI</h2><p>rust还很好的支持了FFI(foreign function interface)，能够在别的语言中调用rust写的库，例如<br>新建一个项目</p>
+<pre><code><span class="variable">$ </span>cargo new embed
+<span class="variable">$ </span>cd embed
+</code></pre><p>里面填这些代码</p>
+<pre><code><span class="keyword">use</span> std::thread;
+
+<span class="preprocessor">#[no_mangle]</span><span class="comment">//产生外部能辨认的symbol</span>
+<span class="keyword">pub</span> <span class="keyword">extern</span> <span class="function"><span class="keyword">fn</span> <span class="title">process</span></span>(){<span class="comment">//pub 和extern代表将process函数公开，外部可调用</span>
+    <span class="keyword">let</span> handles: Vec&lt;_&gt;=(<span class="number">0</span>..<span class="number">10</span>).map(|_|{
+        thread::spawn(||{
+            <span class="keyword">let</span> <span class="keyword">mut</span> _x=<span class="number">0</span>;
+            <span class="keyword">for</span> _ <span class="keyword">in</span> (<span class="number">0</span>..<span class="number">5_000_001</span>){
+                _x+=<span class="number">1</span>
+            }
+        })
+    }).collect();
+    <span class="keyword">for</span> h <span class="keyword">in</span> handles{
+        h.join().ok().expect(<span class="string">"Could not join a thread!"</span>);
+    }
+}
+</code></pre><p>更改配置文件</p>
+<pre><code>vi Cargo.toml
+[lib]
+name = <span class="string">"embed"</span>
+<span class="keyword">crate</span>-<span class="keyword">type</span> = [<span class="string">"dylib"</span>]<span class="comment">//标准动态链接库，不然默认是rlib</span>
+</code></pre><p>编译</p>
+<pre><code>$ cargo build <span class="comment">--release</span>
+</code></pre><p>python中调用</p>
+<pre><code>from ctypes import cdll
+lib = cdll.<span class="function"><span class="title">LoadLibrary</span><span class="params">(<span class="string">"target/release/libembed.so"</span>)</span></span>
+lib.<span class="function"><span class="title">process</span><span class="params">()</span></span>
+<span class="function"><span class="title">print</span><span class="params">(<span class="string">"done!"</span>)</span></span>
+</code></pre><p>大致了解了一下，接下去继续看详细的语法</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-II/" data-id="cic72l9ke000v0iv4m0ng5heu" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/07/16/learning-rust-part-I/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rust学习笔记(一)</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
+
 </section>
         
           <aside id="sidebar">
