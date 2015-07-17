@@ -216,6 +216,43 @@ name = <span class="string">"embed"</span>
 lib = cdll.<span class="function"><span class="title">LoadLibrary</span><span class="params">(<span class="string">"target/release/libembed.so"</span>)</span></span>
 lib.<span class="function"><span class="title">process</span><span class="params">()</span></span>
 <span class="function"><span class="title">print</span><span class="params">(<span class="string">"done!"</span>)</span></span>
+</code></pre><h2 id="测试">测试</h2><p>大致看了一下rust里的测试部分，感觉做的还很贴心方便，和python里的unittest不一样的是，rust直接将测试整合了进来，一共三种测试：和每个function一起的单元测试，整合（integration）测试，文档测试。</p>
+<pre><code><span class="variable">$ </span>cargo new adder
+<span class="variable">$ </span>cd adder
+</code></pre><p>打开src/lib.rs</p>
+<pre><code><span class="comment">//! The `adder` crate provides functions that add numbers to other numbers.</span>
+<span class="comment">//!</span>
+<span class="comment">//! # Examples</span>
+<span class="comment">//!</span>
+<span class="comment">//! <figure class="highlight erlang-repl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//<span class="exclamation_mark">!</span> <span class="function_or_atom">assert_eq</span><span class="exclamation_mark">!</span>(<span class="number">4</span>, <span class="function_or_atom">adder</span>::<span class="function_or_atom">add_two</span>(<span class="number">2</span>));</span><br><span class="line">//<span class="exclamation_mark">!</span></span><br></pre></td></tr></table></figure></span>
+
+
+<span class="comment">/// This function adds two to its argument.</span>
+<span class="comment">///</span>
+<span class="comment">/// # Examples</span>
+<span class="comment">///</span>
+<span class="comment">/// <figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// use adder::add_two;</span></span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="comment">/// assert_eq!(4, add_two(2));</span></span><br><span class="line"><span class="comment">///</span></span><br></pre></td></tr></table></figure></span>
+
+<span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">add_two</span></span>(a:<span class="keyword">i32</span>) -&gt; <span class="keyword">i32</span>{
+    a+<span class="number">2</span>
+}
+
+<span class="preprocessor">#[cfg(test)]</span>
+<span class="keyword">mod</span> tests {
+    <span class="keyword">use</span> super::*;
+
+    <span class="preprocessor">#[test]</span>
+    <span class="function"><span class="keyword">fn</span> <span class="title">it_works</span></span>() {  
+        <span class="built_in">assert_eq!</span>(<span class="number">4</span>, add_two(<span class="number">2</span>));
+    }
+}
+</code></pre><p>斜杠开头的那几行是文档测试，测试内容用<code>xxxx</code>包围起来，支持markdown。///开头的是函数级别的测试，//!是模块级别的测试。#[cfg(test)]那里是单元测试。可以很方便的写一些辅助函数帮助测试，在非cargo test的时候这一部分代码不会编译。还有一种就是另建一个tests目录，tests/lib.rs，做整合测试。</p>
+<pre><code><span class="keyword">extern</span> <span class="keyword">crate</span> adder;
+
+<span class="preprocessor">#[test]</span>
+<span class="function"><span class="keyword">fn</span> <span class="title">it_works</span></span>(){
+    <span class="built_in">assert_eq!</span>(<span class="number">4</span>, adder::add_two(<span class="number">2</span>));
+}
 </code></pre><p>大致了解了一下，接下去继续看详细的语法</p>
 
       
