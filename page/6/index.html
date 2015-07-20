@@ -95,6 +95,48 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-2316248" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/01/08/2316248/" class="article-date">
+  <time datetime="2012-01-07T17:45:00.000Z" itemprop="datePublished">2012-01-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2012/01/08/2316248/">sina微博的动态载入</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近写的爬虫就是为了抓取sina微薄的内容，结果发现11月份以后微薄改版了，改版之后一页并不是一次性现实的，而是分三次显示。第一次访问获取的内容只有1/3，其余的内容分两次，通过新浪自己的STK库中的lazy_load来完成动态加载的。本来以为很难解决，抓了一下包以后发现其实挺简单。</p>
+<div class="cnblogs_code"><br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">body=&#123;<span class="string">'__rnd'</span>:访问这一页面的时间，以秒表示的<span class="number">13</span>位整数<span class="string">'_k'</span>:本次登录第一次访问此微薄的时间，<span class="number">16</span>位整数<span class="string">'_t'</span>:<span class="number">0</span><span class="string">'count'</span>:第二次和第二次访问时都是<span class="number">15</span>，第一次访问时是<span class="number">50</span><span class="string">'end_id'</span>:最新的这一项微博的<span class="keyword">mid</span><span class="string">'max_id'</span>:已经访问到的，也就是lazyload上面的这一项最旧的微博的<span class="keyword">mid</span><span class="string">'page'</span>:要访问的页码<span class="string">'pagebar'</span>:第二次是<span class="number">0</span>，第三次是<span class="number">1</span>，第一次没有这项<span class="string">'pre_page'</span>:第二次和第三次都是本页页码，第一次访问是上页页码<span class="string">'uid'</span>:博主的uid&#125;url=<span class="string">'http://weibo.com/aj/mblog/mbloglist?'</span>+urllib.urlencode(body)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>其中，第一次访问该博主主页是不需要这些参数的，从访问第二页开始需要。</p>
+<p>end_id和_k在接连浏览同一博主的不同页面时，都是不需要更新的</p>
+<p>评论的加载也是类似思路。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2012/01/08/2316248/" data-id="cicbcsmia0031pov4vpovhdux" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-2312532" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2012/01/04/2312532/" class="article-date">
@@ -129,7 +171,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/04/2312532/" data-id="cic75vj1x0030clv4b4puaiyg" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/01/04/2312532/" data-id="cicbcsmic0032pov48j7r6b61" class="article-share-link">Share</a>
       
       
     </footer>
@@ -180,7 +222,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/03/2311276/" data-id="cic75viy20000clv4kqpgf1v3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/01/03/2311276/" data-id="cicbcsm9o0000pov46wmr19qt" class="article-share-link">Share</a>
       
       
     </footer>
@@ -205,7 +247,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -214,7 +256,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 12.5px;">rust</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 15px;">rust</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
     </div>
   </div>
 
@@ -223,7 +265,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -233,6 +275,10 @@ ga('send', 'pageview');
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/07/17/learning-rust-part-III/">rust学习笔记(三)</a>
+          </li>
         
           <li>
             <a href="/2015/07/17/learning-rust-part-II/">rust学习笔记(二)</a>
@@ -248,10 +294,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/2015/06/09/spark-task-and-scheduler/">spark 的调度和任务</a>
-          </li>
-        
-          <li>
-            <a href="/2015/05/15/explore-spark-RDD-source-code/">expore spark RDD source code</a>
           </li>
         
       </ul>

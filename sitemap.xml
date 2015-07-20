@@ -2,8 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2015/07/17/learning-rust-part-III/</loc>
+    <lastmod>2015-07-20T03:28:52.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2015/07/17/learning-rust-part-II/</loc>
-    <lastmod>2015-07-17T07:21:46.000Z</lastmod>
+    <lastmod>2015-07-20T02:46:41.000Z</lastmod>
   </url>
   
   <url>

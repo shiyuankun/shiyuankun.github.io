@@ -95,6 +95,151 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-learning-rust-part-III" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/17/learning-rust-part-III/" class="article-date">
+  <time datetime="2015-07-17T07:38:28.000Z" itemprop="datePublished">2015-07-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/17/learning-rust-part-III/">rust学习笔记(三)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="迭代器(Iterator)">迭代器(Iterator)</h2><p>rust带了迭代器，而其似乎特别推崇使用迭代器(这点倒是和python很像)，例如：</p>
+<pre><code><span class="keyword">let</span> nums = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">0</span>..nums.len() {
+    <span class="built_in">println!</span>(<span class="string">"{}"</span>, nums[i]);
+}
+</code></pre><p>这种写法远比</p>
+<pre><code><span class="keyword">let</span> nums = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="keyword">for</span> num <span class="keyword">in</span> &amp;nums {
+    <span class="built_in">println!</span>(<span class="string">"{}"</span>, num);
+}
+</code></pre><p>要差，原因有二，1,第二种更直观，2,第二种不需要做数组的边界检查。与之相关的概念还有两个，迭代器适配器以及消费者，先讲消费者</p>
+<h2 id="消费者(Consumer)">消费者(Consumer)</h2><p>消费者很简单，就是一个collect()，collect消费迭代器产生的数据返回一个集合，例如</p>
+<pre><code><span class="keyword">let</span> <span class="variable">one_to_one_hundred =</span> (<span class="number">1</span>..<span class="number">101</span>).collect();
+</code></pre><p>但这个代码是有问题的，因为collect不知道返回什么样的集合，例如，在以下例子中</p>
+<pre><code><span class="keyword">let</span> x = <span class="string">"hello"</span>.chars<span class="literal">()</span>.rev<span class="literal">()</span>.collect<span class="literal">()</span>;
+</code></pre><p>编译器不知道是应该返回char组成的数组Vec<char>还是一个字符串String，为了避免这种情况的发生，就必须用指定一下类型。</char></p>
+<pre><code>let x = <span class="string">"hello"</span>.chars().rev().<span class="symbol">collect:</span><span class="symbol">:&lt;Vec&lt;char&gt;&gt;</span>();
+let one_to_one_hundred = (<span class="number">1</span>..<span class="number">101</span>).<span class="symbol">collect:</span><span class="symbol">:&lt;Vec&lt;u32&gt;&gt;</span>();
+</code></pre><p>也可以这么写</p>
+<pre><code>let <span class="symbol">x:</span> <span class="constant">Vec&lt;</span>char&gt; = <span class="string">"hello"</span>.chars().rev().<span class="symbol">collect:</span><span class="symbol">:&lt;Vec&lt;char&gt;&gt;</span>();
+let one_to_one_hundred = (<span class="number">1</span>..<span class="number">101</span>).<span class="symbol">collect:</span><span class="symbol">:&lt;Vec&lt;_&gt;&gt;</span>();
+</code></pre><p>find也是一种消费者，拿一个匿名函数，返回一个Option，Option里面可能有东西Some(_)，也可能什么都没有(None)，这里看着好像haskell里的Maybe，果然好东西大家都会拿来用。</p>
+<pre><code><span class="keyword">let</span> greater_than_forty_two = (<span class="number">0.</span>.<span class="number">100</span>)
+                             .find(|x| *x &gt; <span class="number">42</span>);
+
+<span class="keyword">match</span> greater_than_forty_two {
+    <span class="type">Some</span>(_) =&gt; println!(<span class="string">"We got some numbers!"</span>),
+    <span class="type">None</span> =&gt; println!(<span class="string">"No numbers found :("</span>),
+}
+</code></pre><p>fold也是一种消费者，需要两个参数，第一个是累加器(accumulator)，第二个是闭包</p>
+<pre><code><span class="keyword">let</span> <span class="keyword">sum</span> <span class="subst">=</span> (<span class="number">1.</span><span class="built_in">.</span><span class="number">4</span>)<span class="built_in">.</span>fold(<span class="number">0</span>, <span class="subst">|</span><span class="keyword">sum</span>, x<span class="subst">|</span> <span class="keyword">sum</span> <span class="subst">+</span> x);
+</code></pre><p>累加器的初始值是0,闭包的参数是sum和x，闭包内容就是sum+x，sum的初始值是0,x从迭代器里获取值。</p>
+<h2 id="迭代器适配器">迭代器适配器</h2><p>最简单的迭代器适配器就是map了，从一个迭代器出发，通过对每个迭代器施加一个函数(闭包)获取另一个迭代器。但是要注意，大多数迭代器适配器都是懒惰的，他们不会主动求值</p>
+<pre><code>(<span class="number">1</span>..<span class="number">100</span>).map(|x| x + <span class="number">1</span>);
+
+ <span class="number">18</span>:<span class="number">29</span> warning: unused <span class="literal">result</span> which must be used: <span class="keyword">iterator</span> adaptors are lazy <span class="keyword">and</span> <span class="keyword">do</span> nothing unless consumed, <span class="comment">#[warn(unused_must_use)] on by default</span>
+    (<span class="number">1</span>..<span class="number">100</span>).map(|x| x + <span class="number">1</span>);
+</code></pre><p>take也是一种适配器</p>
+<pre><code>(<span class="number">1</span>..).<span class="function"><span class="title">take</span><span class="params">(<span class="number">5</span>)</span></span>
+</code></pre><p>filter也是一种适配器</p>
+<pre><code>(<span class="number">1</span>..<span class="number">100</span>).<span class="function"><span class="title">filter</span><span class="params">(|&amp;x| x % <span class="number">2</span> == <span class="number">0</span>)</span></span>
+</code></pre><p>值得注意的是，所有的适配器都不会主动求值，包括有副作用的函数，比如</p>
+<pre><code>(<span class="number">1.</span>.<span class="number">100</span>).<span class="keyword">map</span>(|x| <span class="built_in">println</span>!(<span class="string">"{}"</span>, x));
+</code></pre><p>如果想要他们主动求值，必须套在for里面</p>
+<pre><code>for i in (<span class="number">1</span>..<span class="number">100</span>).map(|x| println!(<span class="string">"{}"</span>, x)).take(<span class="number">5</span>){
+    println!(<span class="string">"a"</span>)<span class="comment">;</span>
+}
+<span class="number">1</span>
+<span class="literal">a</span>
+<span class="number">2</span>
+<span class="literal">a</span>
+<span class="number">3</span>
+<span class="literal">a</span>
+<span class="number">4</span>
+<span class="literal">a</span>
+<span class="number">5</span>
+<span class="literal">a</span>
+</code></pre><p>这点和haskell很不一样(也有可能我记错了)</p>
+<h2 id="并发(Concurrency)">并发(Concurrency)</h2><p>并发这一块暂时没看懂回头再来补</p>
+<h2 id="错误处理">错误处理</h2><p>rust有两种错误，一种叫做failure，一种叫做panic。前者可以通过代码处理继续运行，而后者则直接停止程序运行。例如</p>
+<pre><code><span class="preprocessor">#[derive(Debug)]</span>
+<span class="keyword">enum</span> <span class="title">Version</span>{Version1, Version2}
+
+<span class="preprocessor">#[derive(Debug)]</span>
+<span class="keyword">enum</span> <span class="title">ParseError</span>{InvalidHeaderLength, InvalidVersion}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">parse_version</span></span>(header: &amp;[<span class="keyword">u8</span>])-&gt;Result&lt;Version, ParseError&gt;{
+    <span class="keyword">if</span> header.len()&lt;<span class="number">1</span>{
+        <span class="keyword">return</span> Err(ParseError::InvalidHeaderLength);
+    }
+    <span class="keyword">match</span> header[<span class="number">0</span>]{
+        <span class="number">1</span>=&gt;Ok(Version::Version1),
+        <span class="number">2</span>=&gt;Ok(Version::Version2),
+        _=&gt;Err(ParseError::InvalidVersion)
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>(){
+
+    <span class="keyword">let</span> version=parse_version(&amp;[<span class="number">3</span>]);
+    <span class="keyword">match</span> version{
+        Ok(v)=&gt;{
+            <span class="built_in">println!</span>(<span class="string">"working with version: {:?}"</span>,v);
+        }
+        Err(e)=&gt;{
+            <span class="built_in">println!</span>(<span class="string">"error parsing header: {:?}"</span>,e);
+        }
+    }
+    <span class="keyword">let</span> version=parse_version(&amp;[<span class="number">1</span>]);
+    <span class="keyword">for</span> i <span class="keyword">in</span> version
+    <span class="keyword">match</span> version{
+        Ok(v)=&gt;{
+            <span class="built_in">println!</span>(<span class="string">"working with version: {:?}"</span>,v);
+        }
+        Err(e)=&gt;{
+            <span class="built_in">println!</span>(<span class="string">"error parsing header: {:?}"</span>,e);
+        }
+    }
+}
+</code></pre><p>这里就是普通的failure，对于panic，我们之前已经用到的unwrap产生的就是panic，事实上unwrap的工作就是将failure处理(upgrade)为panic。例如</p>
+<pre><code><span class="rule"><span class="attribute">io</span>:<span class="value">:<span class="function">stdin</span>().<span class="function">read_line</span>(&amp;mut buffer).<span class="function">unwrap</span>()</span></span>;
+</code></pre><p>unwrap的意思就是如果碰到OK就通过，但碰到Err就报错退出。</p>
+<p>let mut buffer = String::new();<br>let input = io::stdin().read_line(&amp;mut buffer)<br>                       .ok()<br>                       .expect(“Failed to read line”);</p>
+<p>这里用ok更优美点，ok将Result转化为Option，如果发生None，那打印expect的参数退出。expect做的事情很unwrap差不多。</p>
+<p>对于函数的错误还有try!这个宏，但是try!这个宏只能在返回Result类型的函数内使用，try失败就返回一个Result类型了，所以main中不能使用try，因为main的返回值不是Result。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-III/" data-id="cicbcsmci000vpov4h5xbuw5y" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-learning-rust-part-II" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/07/17/learning-rust-part-II/" class="article-date">
@@ -141,7 +286,7 @@ ga('send', 'pageview');
     }
     <span class="function"><span class="keyword">fn</span> <span class="title">eat</span></span>(&amp;<span class="keyword">self</span>, table: &amp;Table){
         <span class="keyword">let</span> _left = table.forks[<span class="keyword">self</span>.left].lock().unwrap();<span class="comment">//获取锁，_left前的_代表不对起不使用进行报警</span>
-        <span class="keyword">let</span> _right=table.forks[<span class="keyword">self</span>.right].lock().unwrap();<span class="comment">//unwrap代表当获取锁失败时无视失败</span>
+        <span class="keyword">let</span> _right=table.forks[<span class="keyword">self</span>.right].lock().unwrap();<span class="comment">//unwrap代表当获取锁失败时无视失败，并且将failure变成panic!</span>
         <span class="built_in">println!</span>(<span class="string">"{} is eating."</span>,<span class="keyword">self</span>.name);
         thread::sleep_ms(<span class="number">1000</span>);
         <span class="built_in">println!</span>(<span class="string">"{} is done eating."</span>, <span class="keyword">self</span>.name);
@@ -279,7 +424,7 @@ lib.<span class="function"><span class="title">process</span><span class="params
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-II/" data-id="cic75viz8000vclv4pm05r7za" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-II/" data-id="cicbcsmcl000ypov4chw3s0mt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -419,7 +564,7 @@ src/main.<span class="string">rs:</span><span class="number">7</span> }
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/16/learning-rust-part-I/" data-id="cic75viza000yclv4mljnr9tu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/16/learning-rust-part-I/" data-id="cicbcsmco0010pov4gdi8v4k1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -716,7 +861,7 @@ mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/06/21/explore-spark-distributed-mllib/" data-id="cic75vizm001eclv4clhxrhrp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/06/21/explore-spark-distributed-mllib/" data-id="cicbcsmf7001gpov4ehunxzgm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -820,7 +965,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/06/09/spark-task-and-scheduler/" data-id="cic75viyz0009clv4ir5t35wc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/06/09/spark-task-and-scheduler/" data-id="cicbcsmc90009pov4sl3c1mko" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scheduler/">scheduler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/task/">task</a></li></ul>
@@ -1110,7 +1255,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/15/explore-spark-RDD-source-code/" data-id="cic75vizp001iclv4x697lypd" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/15/explore-spark-RDD-source-code/" data-id="cicbcsmfa001kpov4e7zwkuha" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RDD/">RDD</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -1223,7 +1368,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/15/spark-machine-learning-lib-for-python/" data-id="cic75viz6000qclv4i8zr3or9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/15/spark-machine-learning-lib-for-python/" data-id="cicbcsmcf000qpov4i6geny1p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -1341,7 +1486,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/" data-id="cic75vizj0019clv4ihcazv1e" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/" data-id="cicbcsmd1001bpov43b9up01g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dataframe/">dataframe</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -1505,7 +1650,7 @@ def _jrdd(self):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/" data-id="cic75viz2000iclv49lfeut3n" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/" data-id="cicbcsmcc000ipov4bis7z8fh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pyspark/">pyspark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rdd/">rdd</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -1665,49 +1810,10 @@ def sum2djit(arr):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/" data-id="cic75vizs001nclv42ipykc0a" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/" data-id="cicbcsmfe001ppov4seu4msmk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/benchmark/">benchmark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cython/">cython</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/f2py/">f2py</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numba/">numba</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numpy/">numpy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-把博客迁到github上来了" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/12/把博客迁到github上来了/" class="article-date">
-  <time datetime="2015-05-12T01:52:53.000Z" itemprop="datePublished">2015-05-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/12/把博客迁到github上来了/">把博客迁到github上来了</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>昨天建站搞了一下午，晚上又忙了一会，终于把博客从cnblogs全迁移到github上来了。这里要赞一下hexo的高效。<br>本来没打算迁移的，结果在学习hexo的过程中发现了一篇<a href="http://www.huangyunkun.com/2014/03/17/migrate_from_cnblogs_to_hexo/" target="_blank" rel="external">文章</a>就想试一下。<br>结果很沮丧的发现作者的<a href="https://github.com/htynkn/hexo-migrator-cnblogs/" target="_blank" rel="external">github</a>去年9月份以后就不更新了。<br>没办法，fork一个下来自己改，javascript一点都不懂，只好console.log一个一个点追过来。<br>最后发现cnblogs改版了以后有些标签换掉了，而且hexo从2升级到3以后hexo.util已经没有这个包了。<br>最后下了独立出来的hexo-fs替换了事。<br>没仔细测试过，不过我这里的cnblogs文章都读出来了。<br>最后欢迎大家使用我更新过的<a href="https://github.com/shiyuankun/hexo-migrator-cnblogs" target="_blank" rel="external">hexo-migrate-cnblogs</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="cic75viyu0002clv4z2cjy46c" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cnblogs/">cnblogs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/migrate/">migrate</a></li></ul>
 
     </footer>
   </div>
@@ -1731,7 +1837,7 @@ def sum2djit(arr):
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -1740,7 +1846,7 @@ def sum2djit(arr):
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 12.5px;">rust</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 15px;">rust</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
     </div>
   </div>
 
@@ -1749,7 +1855,7 @@ def sum2djit(arr):
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1759,6 +1865,10 @@ def sum2djit(arr):
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/07/17/learning-rust-part-III/">rust学习笔记(三)</a>
+          </li>
         
           <li>
             <a href="/2015/07/17/learning-rust-part-II/">rust学习笔记(二)</a>
@@ -1774,10 +1884,6 @@ def sum2djit(arr):
         
           <li>
             <a href="/2015/06/09/spark-task-and-scheduler/">spark 的调度和任务</a>
-          </li>
-        
-          <li>
-            <a href="/2015/05/15/explore-spark-RDD-source-code/">expore spark RDD source code</a>
           </li>
         
       </ul>

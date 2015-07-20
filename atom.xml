@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-07-17T07:21:46.000Z</updated>
+  <updated>2015-07-20T03:28:52.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,11 +15,134 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[rust学习笔记(三)]]></title>
+    <link href="http://yoursite.com/2015/07/17/learning-rust-part-III/"/>
+    <id>http://yoursite.com/2015/07/17/learning-rust-part-III/</id>
+    <published>2015-07-17T07:38:28.000Z</published>
+    <updated>2015-07-20T03:28:52.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="迭代器(Iterator)">迭代器(Iterator)</h2><p>rust带了迭代器，而其似乎特别推崇使用迭代器(这点倒是和python很像)，例如：</p>
+<pre><code><span class="keyword">let</span> nums = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">0</span>..nums.len() {
+    <span class="built_in">println!</span>(<span class="string">"{}"</span>, nums[i]);
+}
+</code></pre><p>这种写法远比</p>
+<pre><code><span class="keyword">let</span> nums = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="keyword">for</span> num <span class="keyword">in</span> &amp;nums {
+    <span class="built_in">println!</span>(<span class="string">"{}"</span>, num);
+}
+</code></pre><p>要差，原因有二，1,第二种更直观，2,第二种不需要做数组的边界检查。与之相关的概念还有两个，迭代器适配器以及消费者，先讲消费者</p>
+<h2 id="消费者(Consumer)">消费者(Consumer)</h2><p>消费者很简单，就是一个collect()，collect消费迭代器产生的数据返回一个集合，例如</p>
+<pre><code><span class="keyword">let</span> <span class="variable">one_to_one_hundred =</span> (<span class="number">1</span>..<span class="number">101</span>).collect();
+</code></pre><p>但这个代码是有问题的，因为collect不知道返回什么样的集合，例如，在以下例子中</p>
+<pre><code><span class="keyword">let</span> x = <span class="string">"hello"</span>.chars<span class="literal">()</span>.rev<span class="literal">()</span>.collect<span class="literal">()</span>;
+</code></pre><p>编译器不知道是应该返回char组成的数组Vec<char>还是一个字符串String，为了避免这种情况的发生，就必须用指定一下类型。</char></p>
+<pre><code>let x = <span class="string">"hello"</span>.chars().rev().<span class="symbol">collect:</span><span class="symbol">:&lt;Vec&lt;char&gt;&gt;</span>();
+let one_to_one_hundred = (<span class="number">1</span>..<span class="number">101</span>).<span class="symbol">collect:</span><span class="symbol">:&lt;Vec&lt;u32&gt;&gt;</span>();
+</code></pre><p>也可以这么写</p>
+<pre><code>let <span class="symbol">x:</span> <span class="constant">Vec&lt;</span>char&gt; = <span class="string">"hello"</span>.chars().rev().<span class="symbol">collect:</span><span class="symbol">:&lt;Vec&lt;char&gt;&gt;</span>();
+let one_to_one_hundred = (<span class="number">1</span>..<span class="number">101</span>).<span class="symbol">collect:</span><span class="symbol">:&lt;Vec&lt;_&gt;&gt;</span>();
+</code></pre><p>find也是一种消费者，拿一个匿名函数，返回一个Option，Option里面可能有东西Some(_)，也可能什么都没有(None)，这里看着好像haskell里的Maybe，果然好东西大家都会拿来用。</p>
+<pre><code><span class="keyword">let</span> greater_than_forty_two = (<span class="number">0.</span>.<span class="number">100</span>)
+                             .find(|x| *x &gt; <span class="number">42</span>);
+
+<span class="keyword">match</span> greater_than_forty_two {
+    <span class="type">Some</span>(_) =&gt; println!(<span class="string">"We got some numbers!"</span>),
+    <span class="type">None</span> =&gt; println!(<span class="string">"No numbers found :("</span>),
+}
+</code></pre><p>fold也是一种消费者，需要两个参数，第一个是累加器(accumulator)，第二个是闭包</p>
+<pre><code><span class="keyword">let</span> <span class="keyword">sum</span> <span class="subst">=</span> (<span class="number">1.</span><span class="built_in">.</span><span class="number">4</span>)<span class="built_in">.</span>fold(<span class="number">0</span>, <span class="subst">|</span><span class="keyword">sum</span>, x<span class="subst">|</span> <span class="keyword">sum</span> <span class="subst">+</span> x);
+</code></pre><p>累加器的初始值是0,闭包的参数是sum和x，闭包内容就是sum+x，sum的初始值是0,x从迭代器里获取值。</p>
+<h2 id="迭代器适配器">迭代器适配器</h2><p>最简单的迭代器适配器就是map了，从一个迭代器出发，通过对每个迭代器施加一个函数(闭包)获取另一个迭代器。但是要注意，大多数迭代器适配器都是懒惰的，他们不会主动求值</p>
+<pre><code>(<span class="number">1</span>..<span class="number">100</span>).map(|x| x + <span class="number">1</span>);
+
+ <span class="number">18</span>:<span class="number">29</span> warning: unused <span class="literal">result</span> which must be used: <span class="keyword">iterator</span> adaptors are lazy <span class="keyword">and</span> <span class="keyword">do</span> nothing unless consumed, <span class="comment">#[warn(unused_must_use)] on by default</span>
+    (<span class="number">1</span>..<span class="number">100</span>).map(|x| x + <span class="number">1</span>);
+</code></pre><p>take也是一种适配器</p>
+<pre><code>(<span class="number">1</span>..).<span class="function"><span class="title">take</span><span class="params">(<span class="number">5</span>)</span></span>
+</code></pre><p>filter也是一种适配器</p>
+<pre><code>(<span class="number">1</span>..<span class="number">100</span>).<span class="function"><span class="title">filter</span><span class="params">(|&amp;x| x % <span class="number">2</span> == <span class="number">0</span>)</span></span>
+</code></pre><p>值得注意的是，所有的适配器都不会主动求值，包括有副作用的函数，比如</p>
+<pre><code>(<span class="number">1.</span>.<span class="number">100</span>).<span class="keyword">map</span>(|x| <span class="built_in">println</span>!(<span class="string">"{}"</span>, x));
+</code></pre><p>如果想要他们主动求值，必须套在for里面</p>
+<pre><code>for i in (<span class="number">1</span>..<span class="number">100</span>).map(|x| println!(<span class="string">"{}"</span>, x)).take(<span class="number">5</span>){
+    println!(<span class="string">"a"</span>)<span class="comment">;</span>
+}
+<span class="number">1</span>
+<span class="literal">a</span>
+<span class="number">2</span>
+<span class="literal">a</span>
+<span class="number">3</span>
+<span class="literal">a</span>
+<span class="number">4</span>
+<span class="literal">a</span>
+<span class="number">5</span>
+<span class="literal">a</span>
+</code></pre><p>这点和haskell很不一样(也有可能我记错了)</p>
+<h2 id="并发(Concurrency)">并发(Concurrency)</h2><p>并发这一块暂时没看懂回头再来补</p>
+<h2 id="错误处理">错误处理</h2><p>rust有两种错误，一种叫做failure，一种叫做panic。前者可以通过代码处理继续运行，而后者则直接停止程序运行。例如</p>
+<pre><code><span class="preprocessor">#[derive(Debug)]</span>
+<span class="keyword">enum</span> <span class="title">Version</span>{Version1, Version2}
+
+<span class="preprocessor">#[derive(Debug)]</span>
+<span class="keyword">enum</span> <span class="title">ParseError</span>{InvalidHeaderLength, InvalidVersion}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">parse_version</span></span>(header: &amp;[<span class="keyword">u8</span>])-&gt;Result&lt;Version, ParseError&gt;{
+    <span class="keyword">if</span> header.len()&lt;<span class="number">1</span>{
+        <span class="keyword">return</span> Err(ParseError::InvalidHeaderLength);
+    }
+    <span class="keyword">match</span> header[<span class="number">0</span>]{
+        <span class="number">1</span>=&gt;Ok(Version::Version1),
+        <span class="number">2</span>=&gt;Ok(Version::Version2),
+        _=&gt;Err(ParseError::InvalidVersion)
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>(){
+
+    <span class="keyword">let</span> version=parse_version(&amp;[<span class="number">3</span>]);
+    <span class="keyword">match</span> version{
+        Ok(v)=&gt;{
+            <span class="built_in">println!</span>(<span class="string">"working with version: {:?}"</span>,v);
+        }
+        Err(e)=&gt;{
+            <span class="built_in">println!</span>(<span class="string">"error parsing header: {:?}"</span>,e);
+        }
+    }
+    <span class="keyword">let</span> version=parse_version(&amp;[<span class="number">1</span>]);
+    <span class="keyword">for</span> i <span class="keyword">in</span> version
+    <span class="keyword">match</span> version{
+        Ok(v)=&gt;{
+            <span class="built_in">println!</span>(<span class="string">"working with version: {:?}"</span>,v);
+        }
+        Err(e)=&gt;{
+            <span class="built_in">println!</span>(<span class="string">"error parsing header: {:?}"</span>,e);
+        }
+    }
+}
+</code></pre><p>这里就是普通的failure，对于panic，我们之前已经用到的unwrap产生的就是panic，事实上unwrap的工作就是将failure处理(upgrade)为panic。例如</p>
+<pre><code><span class="rule"><span class="attribute">io</span>:<span class="value">:<span class="function">stdin</span>().<span class="function">read_line</span>(&amp;mut buffer).<span class="function">unwrap</span>()</span></span>;
+</code></pre><p>unwrap的意思就是如果碰到OK就通过，但碰到Err就报错退出。</p>
+<p>let mut buffer = String::new();<br>let input = io::stdin().read_line(&amp;mut buffer)<br>                       .ok()<br>                       .expect(“Failed to read line”);</p>
+<p>这里用ok更优美点，ok将Result转化为Option，如果发生None，那打印expect的参数退出。expect做的事情很unwrap差不多。</p>
+<p>对于函数的错误还有try!这个宏，但是try!这个宏只能在返回Result类型的函数内使用，try失败就返回一个Result类型了，所以main中不能使用try，因为main的返回值不是Result。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="迭代器(Iterator)">迭代器(Iterator)</h2><p>rust带了迭代器，而其似乎特别推崇使用迭代器(这点倒是和python很像)，例如：</p>
+<pre><code><span class="keyword">let</span> nums ]]>
+    </summary>
+    
+      <category term="rust" scheme="http://yoursite.com/tags/rust/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[rust学习笔记(二)]]></title>
     <link href="http://yoursite.com/2015/07/17/learning-rust-part-II/"/>
     <id>http://yoursite.com/2015/07/17/learning-rust-part-II/</id>
     <published>2015-07-17T03:04:24.000Z</published>
-    <updated>2015-07-17T07:21:46.000Z</updated>
+    <updated>2015-07-20T02:46:41.000Z</updated>
     <content type="html"><![CDATA[<h2 id="多线程">多线程</h2><p>继续学习rust，今天看的是一个怎么利用rust写多线程的例子。这个问题叫做哲学家吃饭，一张圆桌子五个哲学家，每人吃饭都要先拿起左手的筷子再拿右手的筷子，吃完放回去。但如果统一拿左手的筷子，必然会发生线程死锁:每个人都拿了左手的筷子并且等右手的筷子。</p>
 <pre><code><span class="keyword">use</span> std::thread;<span class="comment">//引入线程</span>
 <span class="keyword">use</span> std::sync::{Mutex, Arc};<span class="comment">//引入锁和原子操作</span>
@@ -44,7 +167,7 @@
     }
     <span class="function"><span class="keyword">fn</span> <span class="title">eat</span></span>(&amp;<span class="keyword">self</span>, table: &amp;Table){
         <span class="keyword">let</span> _left = table.forks[<span class="keyword">self</span>.left].lock().unwrap();<span class="comment">//获取锁，_left前的_代表不对起不使用进行报警</span>
-        <span class="keyword">let</span> _right=table.forks[<span class="keyword">self</span>.right].lock().unwrap();<span class="comment">//unwrap代表当获取锁失败时无视失败</span>
+        <span class="keyword">let</span> _right=table.forks[<span class="keyword">self</span>.right].lock().unwrap();<span class="comment">//unwrap代表当获取锁失败时无视失败，并且将failure变成panic!</span>
         <span class="built_in">println!</span>(<span class="string">"{} is eating."</span>,<span class="keyword">self</span>.name);
         thread::sleep_ms(<span class="number">1000</span>);
         <span class="built_in">println!</span>(<span class="string">"{} is done eating."</span>, <span class="keyword">self</span>.name);
@@ -1772,67 +1895,6 @@ markdown-<span class="literal">mode</span>
 <p>yum install docker&nbsp;安装就行</p>
 <p>chkconfig docker on</p>
 <p>service docker start<br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[lxc on centos]]></title>
-    <link href="http://yoursite.com/2015/01/08/4211267/"/>
-    <id>http://yoursite.com/2015/01/08/4211267/</id>
-    <published>2015-01-08T08:17:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>终于把lxc的网络配通了，也不知道对不对，记一下</p>
-<p>一开始都是雷同的地方</p>
-<p>yum install libcgroup lxc lxc-templates</p>
-<p>安装lxc&nbsp;cgroup</p>
-<p>然后记得<br><a id="more"></a></p>
-<p>chkconfig —level 345 libcgroup on把cgroup始终启动</p>
-<p>添加一个桥</p>
-<p>ifcfg-eth0改成如下</p>
-<p>DEVICE=”eth0”<br>ONBOOT=”yes”<br>TYPE=Ethernet<br>IPV6INIT=no<br>USERCTL=no<br>BRIDGE=virbr0<br>新建一个ifcfg-virbr0，如下内容</p>
-<p>DEVICE=virbr0<br>TYPE=Bridge<br>BOOTPROTO=static<br>DNS1=192.168.8.254<br>GATEWAY=192.168.8.254<br>IPADDR=192.168.8.50<br>NETMASK=255.255.255.0<br>ONBOOT=yes<br>重启一下桥就产生了</p>
-<p>然后</p>
-<p>lxc-create -n testcentos -t centos</p>
-<p>创建一个以centos为模板的容器</p>
-<p>然后</p>
-<p>vi /var/lib/lxc/testcentos/config</p>
-<p>lxc.network.type = veth<br>lxc.network.flags = up<br>lxc.network.link = virbr0<br>lxc.network.hwaddr = fe:7c:d6:5a:ed:10<br>lxc.network.ipv4 = 192.168.8.55/24<br>lxc.network.ipv4.gateway = 192.168.8.50<br>lxc.network.name = eth0<br>lxc.rootfs = /var/lib/lxc/testcentos/rootfs</p>
-<p>装完了以后</p>
-<p>cat /var/lib/lxc/testcentos/tmp_root_pass</p>
-<p>看一下root密码</p>
-<p>然后</p>
-<p>lxc-start -n testcentos -d</p>
-<p>启动容器，并且</p>
-<p>lxc-console -n testcentos</p>
-<p>登陆容器</p>
-<p>登录完了以后问题来了，网络呢？这里搞了好久</p>
-<p>sysctl net.ipv4.ip_forward=1</p>
-<p>打开转发</p>
-<p>然后&nbsp;iptables设一条规则</p>
-<p>iptables -t nat -A POSTROUTING -o eth0 -s 192.168.8.55 -j MASQUERADE</p>
-<p>这条规则有问题，一开始设的有点问题，后来改成</p>
-<p>iptables -t nat -A POSTROUTING -o virbr0 -s 192.168.8.55 -j MASQUERADE</p>
-<p>就没问题了，好奇怪。不懂为什么。但这里也只是保证了能访问实验室外部网络，实验室内部网络还是不通</p>
-<p>最后在容器里ping实验室内部地址，再在virbr0上dump icmp包</p>
-<p>tcpdump -n -i&nbsp; virbr0 icmp</p>
-<p>发现压根没有包通过，然后发现容器里的路由有问题</p>
-<p>Destination&nbsp;&nbsp;&nbsp;&nbsp; Gateway&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Genmask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Flags Metric Ref&nbsp;&nbsp;&nbsp; Use Iface<br>192.168.8.0 &nbsp;&nbsp; <em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 255.255.255.0 UH&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 eth0<br>link-local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 255.255.0.0&nbsp;&nbsp;&nbsp;&nbsp; U&nbsp;&nbsp;&nbsp;&nbsp; 1002&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 eth0<br>default&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 192.168.8.50&nbsp;&nbsp;&nbsp; 0.0.0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; UG&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 eth0<br>也就是说所有192.168.8.0网段的ip都不需要转发直接能被访问到。这个不对，最后在</p>
-<p>vi /var/lib/lxc/testcentos/config </p>
-<p>里把容器的ip改为lxc.network.ipv4 = 192.168.8.55/32</p>
-<p>并且在容器内部的/etc/sysconfig/network-scripts/ifcfg-eth0里改掉netmask</p>
-<p>最后都能访问了。</p>
-<p>几点疑问，为什么我在所有文档上都没看到类似的做法，大家都是直接重定向到eth0完事呢？</p>
-<p>另外容器内部的ip设置也和别人不一样。可能别人都是再加一个子网？</p>
-<p>无论怎么样，这个容器算是能用了，有鉴于他的出色计算性能</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>终于把lxc的网络配通了，也不知道对不对，记一下</p>
-<p>一开始都是雷同的地方</p>
-<p>yum install libcgroup lxc lxc-templates</p>
-<p>安装lxc&nbsp;cgroup</p>
-<p>然后记得<br>]]>
     
     </summary>
     
