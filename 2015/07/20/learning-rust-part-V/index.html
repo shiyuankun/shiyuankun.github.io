@@ -3,29 +3,44 @@
 <head>
   <meta charset="utf-8">
   
-  <title>html内嵌javascript中unicode的处理 | 彼格海德的笔记空间</title>
+  <title>彼格海德的笔记空间</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="接着上一篇爬虫处理，发现内嵌javascript里使用的中文字符是以unicode编码\uxxxx形式出现。
-1fnick=\u5200\u5200\u72d7\u7ae5\u8bdd\u96c6\&quot;&amp;gt;\n
+  <meta name="description" content="所有权rust里有数据所有权这个概念
+let v = vec![1, 2, 3];
 
-但python用正则表达式读取的时候是把这些\uxxxx当作ascii码来处理，于是为了转义，在每个字符前又加了反斜杠，成为\uxxx。
-1a=&apos;\\u5200\\u5200\\u72">
+let v2 = v;
+
+println!(&quot;v[0] is: {}&quot;, v[0]);
+这里会报错，因为v本质是一个指针，指向数据的指针，v2被赋值以后也是。这样就发生数据竞争，所以v这个引用不再可用。
+并且，在调用函数时也会发生类似问题
+fn take(v: Vec&amp;lt;i32&amp;gt;) {
+    // w">
 <meta property="og:type" content="article">
-<meta property="og:title" content="html内嵌javascript中unicode的处理">
-<meta property="og:url" content="http://yoursite.com/2012/01/04/2312532/index.html">
+<meta property="og:title" content="彼格海德的笔记空间">
+<meta property="og:url" content="http://yoursite.com/2015/07/20/learning-rust-part-V/index.html">
 <meta property="og:site_name" content="彼格海德的笔记空间">
-<meta property="og:description" content="接着上一篇爬虫处理，发现内嵌javascript里使用的中文字符是以unicode编码\uxxxx形式出现。
-1fnick=\u5200\u5200\u72d7\u7ae5\u8bdd\u96c6\&quot;&amp;gt;\n
+<meta property="og:description" content="所有权rust里有数据所有权这个概念
+let v = vec![1, 2, 3];
 
-但python用正则表达式读取的时候是把这些\uxxxx当作ascii码来处理，于是为了转义，在每个字符前又加了反斜杠，成为\uxxx。
-1a=&apos;\\u5200\\u5200\\u72">
+let v2 = v;
+
+println!(&quot;v[0] is: {}&quot;, v[0]);
+这里会报错，因为v本质是一个指针，指向数据的指针，v2被赋值以后也是。这样就发生数据竞争，所以v这个引用不再可用。
+并且，在调用函数时也会发生类似问题
+fn take(v: Vec&amp;lt;i32&amp;gt;) {
+    // w">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="html内嵌javascript中unicode的处理">
-<meta name="twitter:description" content="接着上一篇爬虫处理，发现内嵌javascript里使用的中文字符是以unicode编码\uxxxx形式出现。
-1fnick=\u5200\u5200\u72d7\u7ae5\u8bdd\u96c6\&quot;&amp;gt;\n
+<meta name="twitter:title" content="彼格海德的笔记空间">
+<meta name="twitter:description" content="所有权rust里有数据所有权这个概念
+let v = vec![1, 2, 3];
 
-但python用正则表达式读取的时候是把这些\uxxxx当作ascii码来处理，于是为了转义，在每个字符前又加了反斜杠，成为\uxxx。
-1a=&apos;\\u5200\\u5200\\u72">
+let v2 = v;
+
+println!(&quot;v[0] is: {}&quot;, v[0]);
+这里会报错，因为v本质是一个指针，指向数据的指针，v2被赋值以后也是。这样就发生数据竞争，所以v这个引用不再可用。
+并且，在调用函数时也会发生类似问题
+fn take(v: Vec&amp;lt;i32&amp;gt;) {
+    // w">
   
     <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
   
@@ -105,62 +120,117 @@ ga('send', 'pageview');
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-2312532" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-learning-rust-part-V" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2012/01/04/2312532/" class="article-date">
-  <time datetime="2012-01-04T14:25:00.000Z" itemprop="datePublished">2012-01-04</time>
+    <a href="/2015/07/20/learning-rust-part-V/" class="article-date">
+  <time datetime="2015-07-20T07:32:11.000Z" itemprop="datePublished">2015-07-20</time>
 </a>
     
   </div>
   <div class="article-inner">
     
     
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      html内嵌javascript中unicode的处理
-    </h1>
-  
-
-      </header>
-    
     <div class="article-entry" itemprop="articleBody">
       
-        <p>接着上一篇爬虫处理，发现内嵌javascript里使用的中文字符是以unicode编码\uxxxx形式出现。</p>
-<div class="cnblogs_code"><br><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fnick=<span class="command">\u</span>5200<span class="command">\u</span>5200<span class="command">\u</span>72d7<span class="command">\u</span>7ae5<span class="command">\u</span>8bdd<span class="command">\u</span>96c6<span class="command">\"</span>&gt;<span class="command">\n</span></span><br></pre></td></tr></table></figure><br><br></div>
+        <h2 id="所有权">所有权</h2><p>rust里有数据所有权这个概念</p>
+<pre><code><span class="keyword">let</span> <span class="variable">v =</span> vec![<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
 
-<p>但python用正则表达式读取的时候是把这些\uxxxx当作ascii码来处理，于是为了转义，在每个字符前又加了反斜杠，成为\uxxx。</p>
-<div class="cnblogs_code"><br><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a='<span class="command">\\</span>u5200<span class="command">\\</span>u5200<span class="command">\\</span>u72d7<span class="command">\\</span>u7ae5<span class="command">\\</span>u8bdd<span class="command">\\</span>u96c6'</span><br></pre></td></tr></table></figure><br><br></div>
+<span class="keyword">let</span> <span class="variable">v2 =</span> v;
 
-<p>所以问题就是怎么把这个字符改成python能正常辨认的字符串str类型。</p>
-<p>python中相关对象分str和unicode，可以用type命令查看。那么其实a的对象是str，编码则是ascii</p>
-<div class="cnblogs_code"><br><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; type(a)&lt;type 'str'=""&gt;&gt;&gt;&gt; chardet.detect(a)<span class="special">&#123;</span>'confidence': 1.0, 'encoding': 'ascii'<span class="special">&#125;</span></span><br><span class="line">```&lt;/type&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line"></span><br><span class="line">而对于python，要赋值一个unicode对象可以使用</span><br><span class="line">&lt;!-- more --&gt;</span><br><span class="line">&lt;div class="cnblogs_code"&gt;</span><br><span class="line">``` </span><br><span class="line">&gt;&gt;&gt; b=u'<span class="command">\u</span>5200<span class="command">\u</span>5200<span class="command">\u</span>72d7<span class="command">\u</span>7ae5<span class="command">\u</span>8bdd<span class="command">\u</span>96c6'&gt;&gt;&gt; print b刀刀狗童话集&gt;&gt;&gt; type(b)&lt;type 'unicode'=""&gt;</span><br><span class="line">```&lt;/type&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line"></span><br><span class="line">这样子再配合exec函数就可以成功转换了，然后只需要把unicode对象encode成str对象就行了。</span><br><span class="line"></span><br><span class="line">&lt;div class="cnblogs_code"&gt;</span><br><span class="line">``` </span><br><span class="line">&gt;&gt;&gt; exec "c=u'"+a+"'"&gt;&gt;&gt; cu'<span class="command">\u</span>5200<span class="command">\u</span>5200<span class="command">\u</span>72d7<span class="command">\u</span>7ae5<span class="command">\u</span>8bdd<span class="command">\u</span>96c6'&gt;&gt;&gt; d=c.encode('utf-8')&gt;&gt;&gt; d'<span class="command">\xe</span>5<span class="command">\x</span>88<span class="command">\x</span>80<span class="command">\xe</span>5<span class="command">\x</span>88<span class="command">\x</span>80<span class="command">\xe</span>7<span class="command">\x</span>8b<span class="command">\x</span>97<span class="command">\xe</span>7<span class="command">\xab</span><span class="command">\xa</span>5<span class="command">\xe</span>8<span class="command">\xaf</span><span class="command">\x</span>9d<span class="command">\xe</span>9<span class="command">\x</span>9b<span class="command">\x</span>86'&gt;&gt;&gt; print(d)刀刀狗童话集&gt;&gt;&gt; chardet.detect(d)<span class="special">&#123;</span>'confidence': 0.98999999999999999, 'encoding': 'utf-8'<span class="special">&#125;</span></span><br></pre></td></tr></table></figure><br><br></div>
+println!(<span class="string">"v[0] is: {}"</span>, v[<span class="number">0</span>]);
+</code></pre><p>这里会报错，因为v本质是一个指针，指向数据的指针，v2被赋值以后也是。这样就发生数据竞争，所以v这个引用不再可用。</p>
+<p>并且，在调用函数时也会发生类似问题</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">take</span></span>(v: Vec&lt;<span class="keyword">i32</span>&gt;) {
+    <span class="comment">// what happens here isn’t important.</span>
+}
+
+<span class="keyword">let</span> v = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+take(v);
+
+<span class="built_in">println!</span>(<span class="string">"v[0] is: {}"</span>, v[<span class="number">0</span>]);
+</code></pre><p>这时候也会报错。</p>
+<p>之所以发生这种情况，是因为变量内容是指针，赋值以后牵涉到了指针复制，多于一个指针指向同一个数据就会被rust报警。</p>
+<p>如果赋值的时候只发生值赋值就不会有这种问题了。</p>
+<pre><code><span class="keyword">let</span> <span class="variable">v =</span> <span class="number">1</span>;
+
+<span class="keyword">let</span> <span class="variable">v2 =</span> v;
+
+println!(<span class="string">"v is: {}"</span>, v);
+</code></pre><p>但是！一般性大多数函数的参数都是传址的，如果我想调用一个函数继续使用刚才那些变量怎么办？rust这么建议。。。</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">foo</span></span>(v1: Vec&lt;<span class="keyword">i32</span>&gt;, v2: Vec&lt;<span class="keyword">i32</span>&gt;) -&gt; (Vec&lt;<span class="keyword">i32</span>&gt;, Vec&lt;<span class="keyword">i32</span>&gt;, <span class="keyword">i32</span>) {
+    <span class="comment">// do stuff with v1 and v2</span>
+
+    <span class="comment">// hand back ownership, and the result of our function</span>
+    (v1, v2, <span class="number">42</span>)
+}
+
+<span class="keyword">let</span> v1 = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="keyword">let</span> v2 = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="keyword">let</span> (v1, v2, answer) = foo(v1, v2);
+</code></pre><p>够繁琐的 wtf。还是python 大法好，就是慢了点。。。</p>
+<h2 id="Borrowing">Borrowing</h2><p>喘口气，我们继续看，上一节说到函数一旦传入一个参数这个参数就不可用了。吃了一惊，还好borrowing这个概念避免了这种情况发生</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">foo</span></span>(v1: &amp;Vec&lt;<span class="keyword">i32</span>&gt;, v2: &amp;Vec&lt;<span class="keyword">i32</span>&gt;) -&gt; <span class="keyword">i32</span> {
+    <span class="comment">// do stuff with v1 and v2</span>
+
+    <span class="comment">// return the answer</span>
+    <span class="number">42</span>
+}
+
+<span class="keyword">let</span> v1 = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="keyword">let</span> v2 = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="keyword">let</span> answer = foo(&amp;v1, &amp;v2);
+</code></pre><p>这里就能继续使用v1, v2了，这里使用了borrowing这个概念, &amp;T就是借用T，但不销毁T，如果不在作用域中。当然&amp;T默认也是不可改的(immutable)，需要改变T必须使用&amp;mut T。</p>
+<p>规则：<br>1.borrow的作用域必须小于owner<br>2.可以有mutable或者immutable的borrow，但同时只能有一个类型<br>3.immutable类型的borrow可以同时有多个。<br>4.mutable类型的borrow同时只能有一个。</p>
+<pre><code><span class="keyword">let</span> y: &amp;i32;
+{ 
+    <span class="keyword">let</span> <span class="variable">x =</span> <span class="number">5</span>;
+    <span class="variable">y =</span> &amp;x;
+}
+
+println!(<span class="string">"{}"</span>, y);
+</code></pre><p>这也是一种错误，y被赋予了x的地址，但是离开大括号以后x就被释放了，所以这时候println打印的地址被释放了，报错。<br>这种错误在另一种情况也会发生，就是指针在指针指向的变量初始化前就产生了：</p>
+<pre><code><span class="keyword">let</span> y: &amp;i32;
+<span class="keyword">let</span> <span class="variable">x =</span> <span class="number">5</span>;
+<span class="variable">y =</span> &amp;x;
+
+println!(<span class="string">"{}"</span>, y);
+</code></pre><p>也会报错</p>
+<h2 id="生命周期">生命周期</h2><p>lifetime的设计就是用来处理野指针的，考虑以下场景</p>
+<p>1.我申请了一个资源，并获得了指向这个资源的指针<br>2.我把这个指针借给了别人<br>3.我不用这个资源了，释放了这个资源<br>4.别人继续用这个指针</p>
+<p>这就是所谓的dangling pointer。为了确保这个事情不发生，必须保证4在3以前发生。这就引入了指针的生命周期</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">bar</span></span>&lt;'a&gt;(x: &amp;'a <span class="keyword">i32</span>){
+}
+</code></pre><p>这里就显式的申明了x的生命周期与bar相同。他们的生命周期都是a。</p>
+<p>同c里面一样，rust也有’static，对于标明了生命周期为’static的变量，他不会被销毁，直到程序结束。</p>
+<p>对于函数中返回值的lifetime，只有三种情况可以省略：</p>
+<ol>
+<li>所有省略了的lifetime变成了不同的lifetime</li>
+<li>如果有明确指定的输入lifetime，这个lifetime会被指派给这个函数所有的省略lifetime的返回值</li>
+<li>如果有多个输入的lifetime，但其中一个是&amp;self或者&amp;mut self，那么这个self的lifetime将会被指派给所有省略lifetime的返回值</li>
+</ol>
+<p>其他所有情况，省略一个返回值的lifetime都会报错</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/04/2312532/" data-id="cicczjs870034whv4u6mj4925" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/20/learning-rust-part-V/" data-id="cicczkppd0000wwv4amxevxe0" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
   
-    <a href="/2012/01/08/2316248/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          sina微博的动态载入
-        
-      </div>
-    </a>
   
-  
-    <a href="/2012/01/03/2311276/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2015/07/20/learning-rust-part-IV/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">python中dict类的显式和隐式产生</div>
+      <div class="article-nav-title">rust学习笔记(四)</div>
     </a>
   
 </nav>

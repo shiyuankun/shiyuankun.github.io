@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2015/07/20/learning-rust-part-V/</loc>
+    <lastmod>2015-07-21T06:54:28.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2015/07/20/learning-rust-part-IV/</loc>
     <lastmod>2015-07-20T07:32:01.000Z</lastmod>
   </url>
@@ -67,17 +72,12 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2012/01/04/2312532/</loc>
-    <lastmod>2015-05-11T14:27:15.000Z</lastmod>
-  </url>
-  
-  <url>
     <loc>http://yoursite.com/2012/01/08/2316248/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
   <url>
-    <loc>http://yoursite.com/2012/01/10/2318175/</loc>
+    <loc>http://yoursite.com/2012/01/03/2311276/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
@@ -137,12 +137,12 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2012/01/03/2311276/</loc>
+    <loc>http://yoursite.com/2013/11/08/3413801/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
   <url>
-    <loc>http://yoursite.com/2013/10/27/3391235/</loc>
+    <loc>http://yoursite.com/2012/01/04/2312532/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
@@ -257,7 +257,12 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2013/11/08/3413801/</loc>
+    <loc>http://yoursite.com/2012/01/10/2318175/</loc>
+    <lastmod>2015-05-11T14:27:15.000Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2013/10/27/3391235/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   

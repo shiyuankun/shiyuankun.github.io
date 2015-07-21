@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-07-20T07:32:01.000Z</updated>
+  <updated>2015-07-21T06:54:28.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,102 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title></title>
+    <link href="http://yoursite.com/2015/07/20/learning-rust-part-V/"/>
+    <id>http://yoursite.com/2015/07/20/learning-rust-part-V/</id>
+    <published>2015-07-20T07:32:11.000Z</published>
+    <updated>2015-07-21T06:54:28.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="所有权">所有权</h2><p>rust里有数据所有权这个概念</p>
+<pre><code><span class="keyword">let</span> <span class="variable">v =</span> vec![<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="keyword">let</span> <span class="variable">v2 =</span> v;
+
+println!(<span class="string">"v[0] is: {}"</span>, v[<span class="number">0</span>]);
+</code></pre><p>这里会报错，因为v本质是一个指针，指向数据的指针，v2被赋值以后也是。这样就发生数据竞争，所以v这个引用不再可用。</p>
+<p>并且，在调用函数时也会发生类似问题</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">take</span></span>(v: Vec&lt;<span class="keyword">i32</span>&gt;) {
+    <span class="comment">// what happens here isn’t important.</span>
+}
+
+<span class="keyword">let</span> v = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+take(v);
+
+<span class="built_in">println!</span>(<span class="string">"v[0] is: {}"</span>, v[<span class="number">0</span>]);
+</code></pre><p>这时候也会报错。</p>
+<p>之所以发生这种情况，是因为变量内容是指针，赋值以后牵涉到了指针复制，多于一个指针指向同一个数据就会被rust报警。</p>
+<p>如果赋值的时候只发生值赋值就不会有这种问题了。</p>
+<pre><code><span class="keyword">let</span> <span class="variable">v =</span> <span class="number">1</span>;
+
+<span class="keyword">let</span> <span class="variable">v2 =</span> v;
+
+println!(<span class="string">"v is: {}"</span>, v);
+</code></pre><p>但是！一般性大多数函数的参数都是传址的，如果我想调用一个函数继续使用刚才那些变量怎么办？rust这么建议。。。</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">foo</span></span>(v1: Vec&lt;<span class="keyword">i32</span>&gt;, v2: Vec&lt;<span class="keyword">i32</span>&gt;) -&gt; (Vec&lt;<span class="keyword">i32</span>&gt;, Vec&lt;<span class="keyword">i32</span>&gt;, <span class="keyword">i32</span>) {
+    <span class="comment">// do stuff with v1 and v2</span>
+
+    <span class="comment">// hand back ownership, and the result of our function</span>
+    (v1, v2, <span class="number">42</span>)
+}
+
+<span class="keyword">let</span> v1 = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="keyword">let</span> v2 = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="keyword">let</span> (v1, v2, answer) = foo(v1, v2);
+</code></pre><p>够繁琐的 wtf。还是python 大法好，就是慢了点。。。</p>
+<h2 id="Borrowing">Borrowing</h2><p>喘口气，我们继续看，上一节说到函数一旦传入一个参数这个参数就不可用了。吃了一惊，还好borrowing这个概念避免了这种情况发生</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">foo</span></span>(v1: &amp;Vec&lt;<span class="keyword">i32</span>&gt;, v2: &amp;Vec&lt;<span class="keyword">i32</span>&gt;) -&gt; <span class="keyword">i32</span> {
+    <span class="comment">// do stuff with v1 and v2</span>
+
+    <span class="comment">// return the answer</span>
+    <span class="number">42</span>
+}
+
+<span class="keyword">let</span> v1 = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="keyword">let</span> v2 = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="keyword">let</span> answer = foo(&amp;v1, &amp;v2);
+</code></pre><p>这里就能继续使用v1, v2了，这里使用了borrowing这个概念, &amp;T就是借用T，但不销毁T，如果不在作用域中。当然&amp;T默认也是不可改的(immutable)，需要改变T必须使用&amp;mut T。</p>
+<p>规则：<br>1.borrow的作用域必须小于owner<br>2.可以有mutable或者immutable的borrow，但同时只能有一个类型<br>3.immutable类型的borrow可以同时有多个。<br>4.mutable类型的borrow同时只能有一个。</p>
+<pre><code><span class="keyword">let</span> y: &amp;i32;
+{ 
+    <span class="keyword">let</span> <span class="variable">x =</span> <span class="number">5</span>;
+    <span class="variable">y =</span> &amp;x;
+}
+
+println!(<span class="string">"{}"</span>, y);
+</code></pre><p>这也是一种错误，y被赋予了x的地址，但是离开大括号以后x就被释放了，所以这时候println打印的地址被释放了，报错。<br>这种错误在另一种情况也会发生，就是指针在指针指向的变量初始化前就产生了：</p>
+<pre><code><span class="keyword">let</span> y: &amp;i32;
+<span class="keyword">let</span> <span class="variable">x =</span> <span class="number">5</span>;
+<span class="variable">y =</span> &amp;x;
+
+println!(<span class="string">"{}"</span>, y);
+</code></pre><p>也会报错</p>
+<h2 id="生命周期">生命周期</h2><p>lifetime的设计就是用来处理野指针的，考虑以下场景</p>
+<p>1.我申请了一个资源，并获得了指向这个资源的指针<br>2.我把这个指针借给了别人<br>3.我不用这个资源了，释放了这个资源<br>4.别人继续用这个指针</p>
+<p>这就是所谓的dangling pointer。为了确保这个事情不发生，必须保证4在3以前发生。这就引入了指针的生命周期</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">bar</span></span>&lt;'a&gt;(x: &amp;'a <span class="keyword">i32</span>){
+}
+</code></pre><p>这里就显式的申明了x的生命周期与bar相同。他们的生命周期都是a。</p>
+<p>同c里面一样，rust也有’static，对于标明了生命周期为’static的变量，他不会被销毁，直到程序结束。</p>
+<p>对于函数中返回值的lifetime，只有三种情况可以省略：</p>
+<ol>
+<li>所有省略了的lifetime变成了不同的lifetime</li>
+<li>如果有明确指定的输入lifetime，这个lifetime会被指派给这个函数所有的省略lifetime的返回值</li>
+<li>如果有多个输入的lifetime，但其中一个是&amp;self或者&amp;mut self，那么这个self的lifetime将会被指派给所有省略lifetime的返回值</li>
+</ol>
+<p>其他所有情况，省略一个返回值的lifetime都会报错</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="所有权">所有权</h2><p>rust里有数据所有权这个概念</p>
+<pre><code><span class="keyword">let</span> <span class="variable">v =</span> vec![<span class="]]>
+    </summary>
+    
+      <category term="rust" scheme="http://yoursite.com/tags/rust/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[rust学习笔记(四)]]></title>
@@ -1917,34 +2013,6 @@ markdown-<span class="literal">mode</span>
 <p>单个SM内部有local&nbsp;memory和16kb大小的share&nbsp;memory，后者是在做计算的时候要尽量利用好的东西。</p>
 <p>&nbsp;</p>
 <p>根据gpu的架构，做cuda计算的时候基本上是这么一个流程<br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[尽信书不如无书]]></title>
-    <link href="http://yoursite.com/2015/01/27/4253426/"/>
-    <id>http://yoursite.com/2015/01/27/4253426/</id>
-    <published>2015-01-27T08:56:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>最近在看dive into python，看到介绍了另外一种字典类UserDict，挖好玩，试试看。请鄙视我这个不读书星人，之前都是用到什么stackoverflow上搜什么&hellip;&hellip;</p>
-<p>开始使用到代码里去。发现在某个地方报了个错</p>
-<p>for&nbsp; i in a:</p>
-<p>blablabla</p>
-<p>KeyError: 0<br><a id="more"></a></p>
-<p>虽然遍历的方式可以用for k,v in a.items()来完成，但是这个0值是哪里来的？再把字典打出来也没有发现根源</p>
-<p>好奇</p>
-<p>然后放狗搜，居然userdict已经从2.6版本开始就deprecated!这是为什么，感觉碰到幽灵了。</p>
-<p>换成从dict类继承同样的代码一点问题都没有。</p>
-<p>&hellip;&hellip;浪费了我好多时间，悲哀，人果然还是要多读书啊！</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>最近在看dive into python，看到介绍了另外一种字典类UserDict，挖好玩，试试看。请鄙视我这个不读书星人，之前都是用到什么stackoverflow上搜什么&hellip;&hellip;</p>
-<p>开始使用到代码里去。发现在某个地方报了个错</p>
-<p>for&nbsp; i in a:</p>
-<p>blablabla</p>
-<p>KeyError: 0<br>]]>
     
     </summary>
     
