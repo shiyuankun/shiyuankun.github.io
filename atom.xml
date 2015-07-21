@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-07-20T03:28:52.000Z</updated>
+  <updated>2015-07-20T07:32:01.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,88 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[rust学习笔记(四)]]></title>
+    <link href="http://yoursite.com/2015/07/20/learning-rust-part-IV/"/>
+    <id>http://yoursite.com/2015/07/20/learning-rust-part-IV/</id>
+    <published>2015-07-20T06:25:13.000Z</published>
+    <updated>2015-07-20T07:32:01.000Z</updated>
+    <content type="html"><![CDATA[<h1 id="基本语法">基本语法</h1><h2 id="变量绑定">变量绑定</h2><p>let 用于绑定变量，rust会自动推断类型名字，也可以自己指定类型，例如：</p>
+<pre><code><span class="tag">let</span> <span class="rule"><span class="attribute">x</span>:<span class="value"> i32 = <span class="number">5</span></span></span>;
+</code></pre><p>但是要注意的是所有变量初始化以后都是immutable的，需要添加mut才能改变变量的值。</p>
+<pre><code><span class="keyword">let</span> mut <span class="variable">x=</span><span class="number">5</span>;
+<span class="variable">x=</span><span class="number">10</span>;
+</code></pre><p>不初始化的变量能过编译(会warning)，不能执行(报错)。</p>
+<h2 id="函数">函数</h2><p>fn用于定义函数，基本格式如下：</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">foo</span></span>(x: <span class="keyword">i32</span>, y: <span class="keyword">i32</span>)-&gt;<span class="keyword">i32</span>{
+}
+</code></pre><p>参数后的类型指定了参数的类型，函数定义后的-&gt;代表了返回类型，函数的最后一行的结果决定了他返回什么值，所以这个返回值要符合返回值类型，并且不需要分号(;)结尾。<br>rust也支持return返回值，但不这么推荐。</p>
+<h2 id="原始类型">原始类型</h2><p>rust里的primitive类型有这几个，boolean, char, numeric(i8, i16, i32, i64, u8, u16, u32, u64, isize, usize, f32, f64)</p>
+<h2 id="数组">数组</h2><pre><code><span class="keyword">let</span> <span class="variable">a=</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];
+<span class="keyword">let</span> mut <span class="variable">m=</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];
+</code></pre><p>数组的类型是[T;N], T代表通用类型，N是数组长度，编译时决定。</p>
+<p>利用这个也能初始化数组，比如</p>
+<p>let a=[0;20]</p>
+<p>就是20个0组成的数组。</p>
+<h2 id="切片">切片</h2><p>数组能切片，比如</p>
+<pre><code><span class="keyword">let</span> <span class="variable">a=</span>[<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>];
+<span class="keyword">let</span> <span class="variable">middle=</span>&amp;a[<span class="number">1</span>..<span class="number">4</span>];
+<span class="keyword">let</span> <span class="variable">complete=</span>&amp;a[..];
+</code></pre><h2 id="字符串">字符串</h2><p>字符串类型 str</p>
+<h2 id="tuple">tuple</h2><p>rust里的tuple和python的一样</p>
+<pre><code><span class="keyword">let</span> <span class="variable">x=</span>(<span class="number">1</span>,<span class="string">"hello"</span>);
+</code></pre><p>定义只有一个值的tuple也需要加一个,</p>
+<p>取值可以用下标</p>
+<pre><code><span class="keyword">let</span> <span class="variable">a=</span> x.<span class="number">0</span>;
+<span class="keyword">let</span> <span class="variable">b=</span> x.<span class="number">1</span>;
+</code></pre><h2 id="函数-1">函数</h2><p>函数也有类型</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">foo</span></span>(x: <span class="keyword">i32</span>) -&gt; <span class="keyword">i32</span> {x}
+
+<span class="keyword">let</span> x: <span class="function"><span class="keyword">fn</span></span>(<span class="keyword">i32</span>) -&gt; <span class="keyword">i32</span> = foo;
+</code></pre><p>这种情况下x就是一个函数指针指向一个需要i32参数返回一个i32值的函数</p>
+<h1 id="注释">注释</h1><p>注释之前已经说过了，这里就不说了。</p>
+<h1 id="if">if</h1><p>rust里的if可以当做传统方法写</p>
+<pre><code><span class="keyword">let</span> <span class="variable">x =</span> <span class="number">5</span>;
+
+<span class="keyword">if</span> <span class="variable">x =</span>= <span class="number">5</span> {
+    println!(<span class="string">"x is five!"</span>);
+} <span class="keyword">else</span> {
+    println!(<span class="string">"x is not five :("</span>);
+}
+</code></pre><p>也可以用函数式的方法写，推荐这么写：</p>
+<pre><code><span class="keyword">let</span> <span class="variable">x =</span> <span class="number">5</span>;
+
+<span class="keyword">let</span> <span class="variable">y =</span> <span class="keyword">if</span> <span class="variable">x =</span>= <span class="number">5</span> { <span class="number">10</span> } <span class="keyword">else</span> { <span class="number">15</span> };
+</code></pre><p>当然这种写法就必须保证if有else 分支，并且每个分支的返回类型相同。</p>
+<h2 id="for循环">for循环</h2><p>rust里的for循环也和python有点像:</p>
+<pre><code><span class="keyword">for</span> <span class="keyword">var</span> <span class="keyword">in</span> expression{
+    code
+}
+</code></pre><p>这个expression应该是一个迭代器(iterator)</p>
+<h2 id="while循环">while循环</h2><p>rust也有while循环</p>
+<pre><code><span class="keyword">let</span> mut x = <span class="number">5</span>; <span class="comment">// mut x: i32</span>
+<span class="keyword">let</span> mut <span class="keyword">done</span> = <span class="keyword">false</span>; <span class="comment">// mut done: bool</span>
+
+<span class="keyword">while</span> !<span class="keyword">done</span> {
+    x += x - <span class="number">3</span>;
+
+    println!(<span class="string">"{}"</span>, x);
+
+    <span class="keyword">if</span> x % <span class="number">5</span> == <span class="number">0</span> {
+        <span class="keyword">done</span> = <span class="keyword">true</span>;
+    }
+}
+</code></pre><p>在循环里也可以用continue和break，用法同python</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h1 id="基本语法">基本语法</h1><h2 id="变量绑定">变量绑定</h2><p>let 用于绑定变量，rust会自动推断类型名字，也可以自己指定类型，例如：</p>
+<pre><code><span class="tag">let</span> <span cl]]>
+    </summary>
+    
+      <category term="rust" scheme="http://yoursite.com/tags/rust/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[rust学习笔记(三)]]></title>
@@ -1863,38 +1945,6 @@ markdown-<span class="literal">mode</span>
 <p>for&nbsp; i in a:</p>
 <p>blablabla</p>
 <p>KeyError: 0<br>]]>
-    
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[docker on centos]]></title>
-    <link href="http://yoursite.com/2015/01/09/4212796/"/>
-    <id>http://yoursite.com/2015/01/09/4212796/</id>
-    <published>2015-01-09T03:03:00.000Z</published>
-    <updated>2015-05-11T14:27:15.000Z</updated>
-    <content type="html"><![CDATA[<p>docker最好在centos7上安装，centos6.5上似乎麻烦不少</p>
-<p>这里直接在centos7上安装，要提前装一下epel的repo</p>
-<p>yum install docker&nbsp;安装就行</p>
-<p>chkconfig docker on</p>
-<p>service docker start<br><a id="more"></a></p>
-<p>把docker服务设置为每次开机启动，然后启动docker服务</p>
-<p>然后就能docker pull centos抓一个镜像下来</p>
-<p>和lxc略有不一样的是，lxc&nbsp;和普通虚拟机一样有create命令，能够创建一个容器，还要自己手动配一下网络，主机名等等</p>
-<p>docker直接把这些都封装起来了，你能看到的只有id以及repo名，而repo名是不在容器内体现的。</p>
-<p>所以docker没有create命令，直接docker run &lt;image name&gt; &lt;command name&gt;就能运行</p>
-<p>一旦对容器状态进行改变以后，比如装了一个包啊之类的，就需要docker&nbsp;push来对状态改变进行保存到另一个repo里面去（或者原repo）</p>
-<p>看来，docker风靡不是没有原因的，类git的操作方法应该很容易被码农接受，并且避免了环境依赖，使得部署测试变得非常方便。</p>
-<p>以后应该会大规模流行。</p>
-<p>而lxc可能更适合定制化需求的paas平台吧。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>docker最好在centos7上安装，centos6.5上似乎麻烦不少</p>
-<p>这里直接在centos7上安装，要提前装一下epel的repo</p>
-<p>yum install docker&nbsp;安装就行</p>
-<p>chkconfig docker on</p>
-<p>service docker start<br>]]>
     
     </summary>
     

@@ -95,6 +95,57 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-3323388" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/09/15/3323388/" class="article-date">
+  <time datetime="2013-09-15T14:53:00.000Z" itemprop="datePublished">2013-09-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/09/15/3323388/">haskell中的let和where</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>haskell中有两种定义局部变量的方法let和where，方法分别如下</p>
+<div class="cnblogs_code"><br><figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots a b c = <span class="list">(<span class="list">(<span class="keyword">-b</span> + det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>, <span class="list">(<span class="keyword">-b</span> - det)</span> / <span class="list">(<span class="keyword">a2</span>)</span>)</span></span><br><span class="line">      where det = sqrt<span class="list">(<span class="keyword">b*b-4*a*c</span>)</span></span><br><span class="line">               a2 = <span class="number">2</span>*a</span><br></pre></td></tr></table></figure><br><br></div><br><div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">roots <span class="tag">a</span> <span class="tag">b</span> c = let det = sqrt (b*<span class="tag">b</span> - <span class="number">4</span>*a*c)</span><br><span class="line">                        a2 = <span class="number">2</span>*<span class="tag">a</span></span><br><span class="line">                   <span class="keyword">in</span> ((-<span class="tag">b</span> + det) / a2, (-<span class="tag">b</span> - det) / a2)</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>这两种方法都可以使全局变量定义失效</p>
+<div class="cnblogs_code"><br><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">det = <span class="string">"Hello World"</span></span><br><span class="line">roots a b c =((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">    where det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">roots' a b c=</span><br><span class="line">    let det = sqrt(b<span class="keyword">*</span>b-4<span class="keyword">*</span>a<span class="keyword">*</span>c)</span><br><span class="line">    in ((-b + det) / (2<span class="keyword">*</span>a), (-b - det) / (2<span class="keyword">*</span>a))</span><br><span class="line">f _ = det</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; roots' 1 3 2</span><br><span class="line">(-1.0,-2.0)</span><br><span class="line"><span class="keyword">*</span>Main&gt; f 'a'</span><br><span class="line"><span class="string">"Hello World"</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>对于let和where混用，那么是let的优先级高，也就是说优先使用let定义的变量，而不是where定义的变量，比如</p>
+<div class="cnblogs_code"><br><figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">f <span class="variable">x =</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y =</span> x+<span class="number">1</span></span><br><span class="line">    <span class="keyword">in</span> y</span><br><span class="line">    where <span class="variable">y =</span> x+<span class="number">2</span></span><br><span class="line">*Main&gt; f <span class="number">10</span></span><br><span class="line"><span class="number">11</span></span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>等于11而不是12</p>
+<p>对于let和where，同样也支持模式匹配，例如<br>
+        
+          <p class="article-more-link">
+            <a href="/2013/09/15/3323388/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2013/09/15/3323388/" data-id="cicczjs7d002iwhv4pu1x21sp" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-3322584" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2013/09/15/3322584/" class="article-date">
@@ -126,7 +177,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2013/09/15/3322584/" data-id="cicbcsmgi002hpov4qpv581ip" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2013/09/15/3322584/" data-id="cicczjs7g002jwhv47o4j3dpn" class="article-share-link">Share</a>
       
       
     </footer>
@@ -175,7 +226,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2013/09/15/3322460/" data-id="cicbcsmgj002ipov4mp4wfa3l" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2013/09/15/3322460/" data-id="cicczjs7h002kwhv42ws0jd6d" class="article-share-link">Share</a>
       
       
     </footer>
@@ -215,7 +266,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2013/08/11/3251033/" data-id="cicbcsmhe002jpov4tv34ifbv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2013/08/11/3251033/" data-id="cicczjs7j002lwhv4hc4qfw1s" class="article-share-link">Share</a>
       
       
     </footer>
@@ -266,7 +317,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2013/04/12/3016605/" data-id="cicbcsmhg002kpov4jwp2hxea" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2013/04/12/3016605/" data-id="cicczjs7k002mwhv4l2nn7n31" class="article-share-link">Share</a>
       
       
     </footer>
@@ -312,7 +363,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2013/04/10/3012214/" data-id="cicbcsmhh002lpov4mg70rx5t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2013/04/10/3012214/" data-id="cicczjs7n002nwhv4wm64n02q" class="article-share-link">Share</a>
       
       
     </footer>
@@ -375,7 +426,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2013/04/10/3011839/" data-id="cicbcsmhk002mpov49ui6tb2t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2013/04/10/3011839/" data-id="cicczjs7o002owhv4xz5pw4su" class="article-share-link">Share</a>
       
       
     </footer>
@@ -424,7 +475,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2013/04/09/3010528/" data-id="cicbcsmho002npov49xl2hggw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2013/04/09/3010528/" data-id="cicczjs7p002pwhv4tr3g5mp8" class="article-share-link">Share</a>
       
       
     </footer>
@@ -483,7 +534,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/06/06/2538546/" data-id="cicbcsmhr002opov45gw7h7ne" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/06/06/2538546/" data-id="cicczjs7r002qwhv49ocgku2j" class="article-share-link">Share</a>
       
       
     </footer>
@@ -528,52 +579,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/19/2457006/" data-id="cicbcsmhs002ppov4gisv2gk7" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-2455540" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2012/04/18/2455540/" class="article-date">
-  <time datetime="2012-04-18T08:43:00.000Z" itemprop="datePublished">2012-04-18</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2012/04/18/2455540/">solaris 11 下编译mongodb</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>solaris 11</p>
-<p>mongodb 2.0.4</p>
-<p>wget <a href="http://downloads.mongodb.org/src/mongodb-src-r2.0.4.tar.gz">http://downloads.mongodb.org/src/mongodb-src-r2.0.4.tar.gz</a></p>
-<p>scons 2.1</p>
-<p>wget <a><a href="http://prdownloads.sourceforge.net/scons/scons-2.1.0.tar.gz">http://prdownloads.sourceforge.net/scons/scons-2.1.0.tar.gz</a></a><br>
-        
-          <p class="article-more-link">
-            <a href="/2012/04/18/2455540/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/18/2455540/" data-id="cicbcsmht002qpov4hprp533q" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/19/2457006/" data-id="cicczjs7s002rwhv43x85w6l7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -598,7 +604,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -607,7 +613,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 15px;">rust</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 17.5px;">rust</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
     </div>
   </div>
 
@@ -616,7 +622,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -626,6 +632,10 @@ ga('send', 'pageview');
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/07/20/learning-rust-part-IV/">rust学习笔记(四)</a>
+          </li>
         
           <li>
             <a href="/2015/07/17/learning-rust-part-III/">rust学习笔记(三)</a>
@@ -641,10 +651,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/2015/06/21/explore-spark-distributed-mllib/">spark的mllib到底是不是分布式的</a>
-          </li>
-        
-          <li>
-            <a href="/2015/06/09/spark-task-and-scheduler/">spark 的调度和任务</a>
           </li>
         
       </ul>

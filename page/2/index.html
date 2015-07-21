@@ -95,6 +95,166 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-comparison-between-high-performance-packages-for-python" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/12/comparison-between-high-performance-packages-for-python/" class="article-date">
+  <time datetime="2015-05-12T10:01:30.000Z" itemprop="datePublished">2015-05-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/12/comparison-between-high-performance-packages-for-python/">comparison_between_high_performance_packages_for_python</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>一直以来大家提到python的性能总是一个字慢，然后顺带提一下GIL表示自己也知道。但其实python有不少模块可以显著提高性能，而且GIL也并不总是影响性能。这里就做了一个很简单的测试。二维矩阵求和。<br>鉴于运行效率，以及内存连续性考虑，这里的矩阵都是用numpy提供的array而没有使用list。numpy的数组和list相比更接近于c fortran的数组。</p>
+<pre><code>Include/listobject.h
+typedef struct {
+    PyObject_VAR_HEAD
+    /* Vector <span class="keyword">of</span> pointers <span class="keyword">to</span> <span class="type">list</span> elements.  <span class="type">list</span>[<span class="number">0</span>] <span class="keyword">is</span> ob_item[<span class="number">0</span>], etc. */
+    PyObject **ob_item;
+
+    /* ob_item <span class="keyword">contains</span> <span class="constant">space</span> <span class="keyword">for</span> 'allocated' elements.  The <span class="type">number</span>
+     * currently <span class="keyword">in</span> use <span class="keyword">is</span> ob_size.
+     * Invariants:
+     *     <span class="number">0</span> &lt;= ob_size &lt;= allocated
+     *     len(<span class="type">list</span>) == ob_size
+     *     ob_item == NULL implies ob_size == allocated == <span class="number">0</span>
+     * <span class="type">list</span>.sort() temporarily sets allocated <span class="keyword">to</span> -<span class="number">1</span> <span class="keyword">to</span> detect mutations.
+     *
+     * Items must normally <span class="keyword">not</span> be NULL, except during construction when
+     * <span class="keyword">the</span> <span class="type">list</span> <span class="keyword">is</span> <span class="keyword">not</span> yet visible outside <span class="keyword">the</span> function <span class="keyword">that</span> builds <span class="keyword">it</span>.
+     */
+    Py_ssize_t allocated;
+} PyListObject;
+</code></pre><p>拿一个包含浮点数的list来说，list里面的东西其实是PyFloatObject</p>
+<pre><code>Include/floatobject.h
+<span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> {</span>
+    PyObject_HEAD
+    <span class="built_in">double</span> ob_fval;
+} PyFloatObject;
+</code></pre><p>也就是一个PyObject_HEAD的头加上具体的值，看源代码可以发现PyObject_HEAD的定义是这样子的</p>
+<pre><code>Include/<span class="keyword">object</span>.h
+<span class="preprocessor">#<span class="keyword">define</span> PyObject_HEAD                   \</span>
+    _PyObject_HEAD_EXTRA                \
+    Py_ssize_t ob_refcnt;               \
+    <span class="keyword">struct</span> _typeobject *ob_type;
+</code></pre><p>一堆零零碎碎的东西。本身list存object的时候已经不能保证一个list内的对象是内存连续了，对象内部也掺杂着其他信息，这样子的内存排列方式对于计算其实没有多少帮助。<br>例如在做浮点计算的时候要用到的sse/avx指令集就要求2/4个double必须连续排列。<br>而对于numpy来说，事情就简单的多了</p>
+<pre><code>numpy/core/include/numpy/ndarraytypes.h
+typedef struct tagPyArrayObject_fields {
+    PyObject_HEAD
+    /<span class="keyword">*</span> Pointer to the raw data buffer <span class="keyword">*</span>/
+    char <span class="keyword">*</span>data;
+    /<span class="keyword">*</span> The number of dimensions, also called 'ndim' <span class="keyword">*</span>/
+    int nd;
+    /<span class="keyword">*</span> The size in each dimension, also called 'shape' <span class="keyword">*</span>/
+    npy_intp <span class="keyword">*</span>dimensions;
+    /<span class="keyword">*</span>
+     <span class="keyword">*</span> Number of bytes to jump to get to the
+     <span class="keyword">*</span> next element in each dimension
+     <span class="keyword">*</span>/
+    npy_intp <span class="keyword">*</span>strides;
+    /<span class="keyword">*</span>
+     <span class="keyword">*</span> This object is decref'd upon
+     <span class="keyword">*</span> deletion of array. Except in the
+     <span class="keyword">*</span> case of UPDATEIFCOPY which has
+     <span class="keyword">*</span> special handling.
+     <span class="keyword">*</span>
+     <span class="keyword">*</span> For views it points to the original
+     <span class="keyword">*</span> array, collapsed so no chains of
+     <span class="keyword">*</span> views occur.
+     <span class="keyword">*</span>
+     <span class="keyword">*</span> For creation from buffer object it
+     <span class="keyword">*</span> points to an object that shold be
+     <span class="keyword">*</span> decref'd on deletion
+     <span class="keyword">*</span>
+     <span class="keyword">*</span> For UPDATEIFCOPY flag this is an
+     <span class="keyword">*</span> array to-be-updated upon deletion
+     <span class="keyword">*</span> of this one
+     <span class="keyword">*</span>/
+    PyObject <span class="keyword">*</span>base;
+    /<span class="keyword">*</span> Pointer to type structure <span class="keyword">*</span>/
+    PyArray_Descr <span class="keyword">*</span>descr;
+    /<span class="keyword">*</span> Flags describing array -- see below <span class="keyword">*</span>/
+    int flags;
+    /<span class="keyword">*</span> For weak references <span class="keyword">*</span>/
+    PyObject <span class="keyword">*</span>weakreflist;
+} PyArrayObject_fields;
+</code></pre><p>除了ndim，size这些零碎以外，核心部分的数据都是连续存放在一个char *data里的，这就能保证了浮点数据的连续存放。在做浮点运算的时候也能利用上指令集了。<br>好了说完这些我们回过头来看python的这些加速库就能知道孰优孰劣了</p>
+<p>首先是比较的条件，7000×7000的矩阵，全都是随机数的求和。虚拟机<br>当然是最差的cpython</p>
+<pre><code>def sum2d(arr):
+    M, N = arr.shape
+    <span class="literal">result</span> = <span class="number">0</span>.<span class="number">0</span>
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="type">range</span>(M):
+        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="type">range</span>(N):
+            <span class="literal">result</span> += arr[i, j]
+    <span class="keyword">return</span> <span class="literal">result</span>
+</code></pre><p>时间是9.8秒</p>
+<p>然后试试看f2py</p>
+<pre><code><span class="function"><span class="keyword">subroutine</span></span> sum2dfort(x, y, n, m)
+    <span class="type">implicit</span> <span class="type">none</span>
+    <span class="type">integer</span>(<span class="keyword">kind</span> = <span class="number">4</span>) :: n, m
+    <span class="type">real</span>(<span class="keyword">kind</span> = <span class="number">8</span>), <span class="type">dimension</span>(n, m), <span class="type">intent</span>(<span class="type">in</span>) :: x
+    <span class="type">real</span>(<span class="keyword">kind</span> = <span class="number">8</span>), <span class="type">intent</span>(<span class="type">out</span>) :: y
+    <span class="type">integer</span>(<span class="keyword">kind</span> = <span class="number">4</span>):: i, j
+    y = <span class="number">0.0</span>
+    <span class="keyword">do</span> j = <span class="number">1</span>, m
+        <span class="keyword">do</span> i = <span class="number">1</span>, n
+                y = y + x(i, j)
+        <span class="keyword">end</span> <span class="keyword">do</span>
+    <span class="keyword">end</span> <span class="keyword">do</span>
+    <span class="keyword">return</span>
+<span class="keyword">end</span> <span class="function"><span class="keyword">subroutine</span></span> sum2dfort
+</code></pre><p>时间是5.83秒，快了很多哟。不过这里还是要吐嘈一下f2py，为啥矩阵一大就要用swap了，其他几个方法都没有这么大的内存需求量</p>
+<p>然后是cython</p>
+<pre><code>def sum2dcyt(arr):
+    cdef <span class="type">int</span> m=arr.shape[<span class="number">0</span>]
+    cdef <span class="type">int</span> n=arr.shape[<span class="number">1</span>]
+    cdef double <span class="literal">result</span>=<span class="number">0</span>.<span class="number">0</span>
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="type">range</span>(m):
+        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="type">range</span>(n):
+            <span class="literal">result</span> += arr[i,j]
+    <span class="keyword">return</span> <span class="literal">result</span>
+</code></pre><p>一定是我写的方式不对，为什么只有9秒？</p>
+<p>最后是numba</p>
+<pre><code><span class="keyword">from</span> numba <span class="keyword">import</span> jit
+@jit
+def sum2djit(arr):
+    M,N = arr.shape
+    <span class="literal">result</span> = <span class="number">0</span>.<span class="number">0</span>
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="type">range</span>(M):
+        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="type">range</span>(N):
+            <span class="literal">result</span> += arr[i, j]
+    <span class="keyword">return</span> <span class="literal">result</span>
+</code></pre><p>居然到了惊人的0.22秒</p>
+<p>当然还有一个numpy自带的求和是0.04秒</p>
+<p>最后来一个<img src="/images/compare_python_performance.png" alt="汇总"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/" data-id="cicczjs68001rwhv4sl7emp7g" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/benchmark/">benchmark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cython/">cython</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/f2py/">f2py</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numba/">numba</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numpy/">numpy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-把博客迁到github上来了" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/05/12/把博客迁到github上来了/" class="article-date">
@@ -122,7 +282,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="cicbcsmc40002pov4w4t7j55t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="cicczjs4u0002whv4digstznj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cnblogs/">cnblogs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/migrate/">migrate</a></li></ul>
@@ -204,7 +364,7 @@ hexo <span class="keyword">server</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="cicbcsmcr0012pov4bl587in4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="cicczjs5j0014whv4zhfg6s8t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/github/">github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
@@ -251,7 +411,7 @@ hexo <span class="keyword">server</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="cicbcsmcu0018pov41ri5yuvb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="cicczjs5p001awhv4txb88zrr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -310,7 +470,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="cicbcsmcy0019pov48nhuoc2e" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="cicczjs5r001bwhv4dae5kh0k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li></ul>
@@ -357,7 +517,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/08/4488876/" data-id="cicbcsmfi0021pov4gji7rg4s" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/08/4488876/" data-id="cicczjs6e0023whv4y3z8p5bs" class="article-share-link">Share</a>
       
       
     </footer>
@@ -404,7 +564,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/19/4439945/" data-id="cicbcsmfl0022pov4db09l6i9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/04/19/4439945/" data-id="cicczjs6f0024whv4wgw6yex8" class="article-share-link">Share</a>
       
       
     </footer>
@@ -449,7 +609,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/10/4415746/" data-id="cicbcsmfm0023pov4hr6f0gwu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/04/10/4415746/" data-id="cicczjs6h0025whv4wqzgglko" class="article-share-link">Share</a>
       
       
     </footer>
@@ -494,7 +654,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/03/4390056/" data-id="cicbcsmfr0024pov4wkd2xjf9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/04/03/4390056/" data-id="cicczjs6j0026whv4aknueg1o" class="article-share-link">Share</a>
       
       
     </footer>
@@ -539,52 +699,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/01/27/4253426/" data-id="cicbcsmfv0025pov4j98xaw5v" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-4212796" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/01/09/4212796/" class="article-date">
-  <time datetime="2015-01-09T03:03:00.000Z" itemprop="datePublished">2015-01-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/01/09/4212796/">docker on centos</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>docker最好在centos7上安装，centos6.5上似乎麻烦不少</p>
-<p>这里直接在centos7上安装，要提前装一下epel的repo</p>
-<p>yum install docker&nbsp;安装就行</p>
-<p>chkconfig docker on</p>
-<p>service docker start<br>
-        
-          <p class="article-more-link">
-            <a href="/2015/01/09/4212796/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/01/09/4212796/" data-id="cicbcsmfx0026pov4a1oh8ryp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/01/27/4253426/" data-id="cicczjs6l0027whv4uqbegqza" class="article-share-link">Share</a>
       
       
     </footer>
@@ -609,7 +724,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -618,7 +733,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 15px;">rust</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12.5px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12.5px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12.5px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 17.5px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 17.5px;">rust</a><a href="/tags/scala/" style="font-size: 15px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
     </div>
   </div>
 
@@ -627,7 +742,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -637,6 +752,10 @@ markdown-<span class="literal">mode</span>
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/07/20/learning-rust-part-IV/">rust学习笔记(四)</a>
+          </li>
         
           <li>
             <a href="/2015/07/17/learning-rust-part-III/">rust学习笔记(三)</a>
@@ -652,10 +771,6 @@ markdown-<span class="literal">mode</span>
         
           <li>
             <a href="/2015/06/21/explore-spark-distributed-mllib/">spark的mllib到底是不是分布式的</a>
-          </li>
-        
-          <li>
-            <a href="/2015/06/09/spark-task-and-scheduler/">spark 的调度和任务</a>
           </li>
         
       </ul>
