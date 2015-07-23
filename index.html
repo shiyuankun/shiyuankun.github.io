@@ -95,6 +95,252 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-learning-rust-part-XI" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/23/learning-rust-part-XI/" class="article-date">
+  <time datetime="2015-07-23T08:54:13.000Z" itemprop="datePublished">2015-07-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/23/learning-rust-part-XI/">rust学习笔记(十一)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Deref_转换">Deref 转换</h2><p>在rust中，有一个特殊的trait，叫做Deref，他用来重载<em>号，这里</em>号的含义和c里面的一样用于取一个指针指的值。</p>
+<pre><code><span class="keyword">use</span> std::ops::Deref;
+
+<span class="keyword">struct</span> DerefExample&lt;T&gt; {
+    value: T,
+}
+
+<span class="keyword">impl</span>&lt;T&gt; Deref <span class="keyword">for</span> DerefExample&lt;T&gt; {
+    <span class="keyword">type</span> <span class="title">Target</span> = T;
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">deref</span></span>(&amp;<span class="keyword">self</span>) -&gt; &amp;T {
+        &amp;<span class="keyword">self</span>.value
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> x = DerefExample { value: <span class="string">'a'</span> };
+    <span class="built_in">assert_eq!</span>(<span class="string">'a'</span>, *x);
+}
+</code></pre><p>这里重定义了*号的作用，所以就是取出封装的value。</p>
+<h2 id="宏">宏</h2><p>宏的定义和c里面的概念差不多。甚至可以定义出递归宏，例如：</p>
+<pre><code>macro_rules! write_html {
+    (<span class="variable">$w</span><span class="symbol">:expr</span>, ) =&gt; (());
+
+    (<span class="variable">$w</span><span class="symbol">:expr</span>, <span class="variable">$e</span><span class="symbol">:tt</span>) =&gt; (write!(<span class="variable">$w</span>, <span class="string">"{}"</span>, <span class="variable">$e</span>));
+
+    (<span class="variable">$w</span><span class="symbol">:expr</span>, <span class="variable">$tag</span><span class="symbol">:ident</span> [ <span class="variable">$(</span><span class="variable">$inner</span><span class="symbol">:tt</span>)* ] <span class="variable">$(</span><span class="variable">$rest</span><span class="symbol">:tt</span>)*) =&gt; &lt;!--￼<span class="number">0</span>--&gt;;
+}
+
+<span class="keyword">fn</span> main() {
+    <span class="keyword">use</span> <span class="symbol">std:</span><span class="symbol">:fmt</span><span class="symbol">:</span><span class="symbol">:Write</span>;
+    let mut out = <span class="constant">String:</span><span class="symbol">:new</span>();
+
+    write_html!(&amp;mut out,
+        html[
+            head[title[<span class="string">"Macros guide"</span>]]
+            body[h1[<span class="string">"Macros are the best!"</span>]]
+        ]);
+
+    assert_eq!(out,
+        <span class="string">"&lt;html&gt;&lt;head&gt;&lt;title&gt;Macros guide&lt;/title&gt;&lt;/head&gt;\
+         &lt;body&gt;&lt;h1&gt;Macros are the best!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;"</span>);
+}
+</code></pre><h2 id="Raw_Pointers">Raw Pointers</h2><p>rust拥有不少智能指针。但也可以使用原始指针，原始指针的定义就是<em>const T和</em>mut T<br>需要注意的是，<br>1.原始执政不保证指向内容有效。<br>2.没有自动清理<br>3.没有属主概念<br>4.没有生命周期概念<br>5.没有可变性保证。</p>
+<p>这么申请一个原始指针</p>
+<pre><code><span class="keyword">let</span> x = <span class="number">5</span>;
+<span class="keyword">let</span> raw = &amp;x <span class="keyword">as</span> *<span class="keyword">const</span> <span class="keyword">i32</span>;
+
+<span class="keyword">let</span> <span class="keyword">mut</span> y = <span class="number">10</span>;
+<span class="keyword">let</span> raw_mut = &amp;<span class="keyword">mut</span> y <span class="keyword">as</span> *<span class="keyword">mut</span> <span class="keyword">i32</span>;
+</code></pre><p>但由于这种操作是没有刚才那些保证的，所以如果要取值必须使用unsafe</p>
+<pre><code><span class="keyword">let</span> x = <span class="number">5</span>;
+<span class="keyword">let</span> raw = &amp;x <span class="keyword">as</span> *<span class="keyword">const</span> <span class="keyword">i32</span>;
+
+<span class="keyword">let</span> points_at = <span class="keyword">unsafe</span> { *raw };
+</code></pre><p>rust离得原始指针主要用来给FFI用</p>
+<h2 id="Unsafe">Unsafe</h2><p>unsafe主要是用来干一些编译器不让你干的事情<br>1.获取更改一个静态的可变变量<br>2.获取一个原始指针指向的值<br>3.调用一个不安全的函数</p>
+<p>safe的保证可以看<a href="这里">https://doc.rust-lang.org/stable/book/unsafe.html</a></p>
+<p>紧赶慢赶终于把rust教程看完了。很多地方没有细看，随手写了点笔记了解了一下rust的设计理念。接下去要实际拿一个项目测一下rust到底该如何做了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/23/learning-rust-part-XI/" data-id="cicfzby6u000v4zv49skc0i97" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-learning-rust-part-X" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/23/learning-rust-part-X/" class="article-date">
+  <time datetime="2015-07-23T07:42:27.000Z" itemprop="datePublished">2015-07-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/23/learning-rust-part-X/">rust学习笔记(十)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Universal_Function_Call_Syntax">Universal Function Call Syntax</h2><p>有些时候函数可能会有相同的名字。例如：</p>
+<pre><code><span class="keyword">trait</span> <span class="title">Foo</span> {
+    <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>);
+}
+
+<span class="keyword">trait</span> <span class="title">Bar</span> {
+    <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>);
+}
+
+<span class="keyword">struct</span> Baz;
+
+<span class="keyword">impl</span> Foo <span class="keyword">for</span> Baz {
+    <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>) { <span class="built_in">println!</span>(<span class="string">"Baz’s impl of Foo"</span>); }
+}
+
+<span class="keyword">impl</span> Bar <span class="keyword">for</span> Baz {
+    <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>) { <span class="built_in">println!</span>(<span class="string">"Baz’s impl of Bar"</span>); }
+}
+
+<span class="keyword">let</span> b = Baz;
+</code></pre><p>这时候如果调用b.f()就会报错。必须这样</p>
+<pre><code><span class="rule"><span class="attribute">Foo</span>:<span class="value">:<span class="function">f</span>(&amp;b)</span></span>;
+<span class="rule"><span class="attribute">Bar</span>:<span class="value">:<span class="function">f</span>(&amp;b)</span></span>;
+</code></pre><p>才能正常执行。rust在执行b.f()是会自动借用b作为&amp;self，而这里不会，所以要手动将&amp;b传入。</p>
+<h2 id="cates_and_modules">cates and modules</h2><p>在rust里，crate就是library package的同义词。每个crate都有一个根module，根module下面还有很多子module。</p>
+<p>在src/lib.rs中这么写定义模块</p>
+<pre><code><span class="operator">mod</span> <span class="keyword">english</span> {
+    <span class="operator">mod</span> greetings {
+    }
+
+    <span class="operator">mod</span> farewells {
+    }
+}
+
+<span class="operator">mod</span> japanese {
+    <span class="operator">mod</span> greetings {
+    }
+
+    <span class="operator">mod</span> farewells {
+    }
+}
+</code></pre><p>cargo会去src/<modname>.rs或者src/<modname>/mod.rs中去找相应模块。</modname></modname></p>
+<h2 id="const_and_static">const and static</h2><pre><code><span class="tag">const</span> <span class="rule"><span class="attribute">N</span>:<span class="value"> i32=<span class="number">5</span></span></span>;
+</code></pre><p>定义了一个寿命为永久的N，并且在rust中const没有地址，因为所有的N调用在编译时都会被替换为具体值。</p>
+<pre><code><span class="tag">static</span> <span class="rule"><span class="attribute">N</span>:<span class="value"> i32=<span class="number">5</span></span></span>;
+</code></pre><p>同样定义了一个永久寿命的N，但这个本质上是一个变量。</p>
+<pre><code><span class="tag">static</span> <span class="tag">mut</span> <span class="rule"><span class="attribute">N</span>:<span class="value"> i32 = <span class="number">5</span></span></span>;
+</code></pre><p>由于本身已经定义为static了，所以这样子可能导致一个线程读一个线程写，这是不安全的，所以要这么做只能放在unsafeblock里</p>
+<pre><code><span class="keyword">unsafe</span> {
+    N += <span class="number">1</span>;
+
+    <span class="built_in">println!</span>(<span class="string">"N: {}"</span>, N);
+}
+</code></pre><p>所有static的类型必然是sync的。</p>
+<h2 id="属性">属性</h2><p>通过#[test]来定义</p>
+<h2 id="type">type</h2><p>type用来设定一个同义变量</p>
+<pre><code><span class="keyword">type</span> Name = <span class="keyword">String</span>;
+</code></pre><p>这个新的类型Name在函数调用上和String完全一样。</p>
+<h2 id="不同类型间转换">不同类型间转换</h2><p>as可以做基本的转换</p>
+<p>let x: i32 = 5;</p>
+<p>let y = x as i64;</p>
+<p>transmute可以不做检查直接转换</p>
+<p>use std::mem;</p>
+<p>unsafe {<br>    let a = [0u8, 0u8, 0u8, 0u8];</p>
+<pre><code><span class="keyword">let</span> b = mem::transmute::&lt;[<span class="keyword">u8</span>; <span class="number">4</span>], <span class="keyword">u32</span>&gt;(a);
+</code></pre><p>}</p>
+<p>但还是会做一些基本的比如越界检查防止内存问题</p>
+<h2 id="联合类型">联合类型</h2><p>例如对于一个图，你可能有Node Edge两种类型，但这样不美观，所以就可以用trait把两种类型联合起来</p>
+<pre><code><span class="keyword">trait</span> Graph {
+    <span class="keyword">type</span> N;
+    <span class="keyword">type</span> E;
+
+    fn has_edge(<span class="subst">&amp;</span><span class="built_in">self</span>, <span class="subst">&amp;</span><span class="built_in">Self</span><span class="tag">::N</span>, <span class="subst">&amp;</span><span class="built_in">Self</span><span class="tag">::N</span>) <span class="subst">-&gt; </span>bool;
+    fn edges(<span class="subst">&amp;</span><span class="built_in">self</span>, <span class="subst">&amp;</span><span class="built_in">Self</span><span class="tag">::N</span>) <span class="subst">-&gt; </span>Vec<span class="subst">&lt;</span><span class="built_in">Self</span><span class="tag">::E</span><span class="subst">&gt;</span>;
+    <span class="comment">// etc</span>
+}
+</code></pre><p>并实现相关的函数</p>
+<pre><code><span class="keyword">struct</span> Node;
+
+<span class="keyword">struct</span> Edge;
+
+<span class="keyword">struct</span> MyGraph;
+
+<span class="keyword">impl</span> Graph <span class="keyword">for</span> MyGraph {
+    <span class="keyword">type</span> <span class="title">N</span> = Node;
+    <span class="keyword">type</span> <span class="title">E</span> = Edge;
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">has_edge</span></span>(&amp;<span class="keyword">self</span>, n1: &amp;Node, n2: &amp;Node) -&gt; <span class="keyword">bool</span> {
+        <span class="keyword">true</span>
+    }
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">edges</span></span>(&amp;<span class="keyword">self</span>, n: &amp;Node) -&gt; Vec&lt;Edge&gt; {
+        Vec::new()
+    }
+}
+</code></pre><h2 id="不定长类型">不定长类型</h2><p>大多数类型都有固定长度，但rust也允许使用动态长度的类型。但这里有一定的限制</p>
+<p>1.只能通过指针操作unsized type, &amp;[T]可以但[T]不行<br>2.变量和参数不能有动态长度的类型<br>3.只有struct的最后一栏允许动态长度类型。enum不允许有动态长度类型</p>
+<h2 id="操作符重载">操作符重载</h2><p>只要对一个类型实现相应的函数就能实现相应重载。</p>
+<p>use std::ops::Add;</p>
+<h1 id="[derive(Debug)]">[derive(Debug)]</h1><p>struct Point {<br>    x: i32,<br>    y: i32,<br>}</p>
+<p>impl Add for Point {<br>    type Output = Point;</p>
+<pre><code><span class="tag">fn</span> <span class="tag">add</span>(self, <span class="attribute">other</span>: Point) <span class="tag">-</span>&gt; <span class="tag">Point</span> {
+    <span class="tag">Point</span> { <span class="attribute">x</span>: self.x + other.x, <span class="attribute">y</span>: self.y + other.y }
+}
+</code></pre><p>}</p>
+<p>fn main() {<br>    let p1 = Point { x: 1, y: 0 };<br>    let p2 = Point { x: 2, y: 3 };</p>
+<pre><code><span class="keyword">let</span> <span class="variable">p3 =</span> p1 + p2;
+
+println!(<span class="string">"{:?}"</span>, p3);
+</code></pre><p>}</p>
+<p>这些允许重载的函数可以在std::ops中找到</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/23/learning-rust-part-X/" data-id="cicfzby6w000y4zv46eihb7ac" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-learning-rust-part-IX" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/07/23/learning-rust-part-IX/" class="article-date">
@@ -251,7 +497,7 @@ pub <span class="keyword">trait</span> FnOnce<span class="subst">&lt;</span>Args
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/23/learning-rust-part-IX/" data-id="cicfw51qj0014qtv4p5zndkpf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/23/learning-rust-part-IX/" data-id="cicfzby7500184zv4dltnct53" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -448,7 +694,7 @@ fn bar&lt;T, K&gt;(x: T, y: K)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VIII/" data-id="cicfw51po000vqtv4nlluwdbc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VIII/" data-id="cicfzby6y00104zv4rpu8jvhn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -675,7 +921,7 @@ match x {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VII/" data-id="cicfw51pq000yqtv4dt284a2f" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VII/" data-id="cicfzby6z00124zv4a6d4s2ri" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -786,7 +1032,7 @@ point = Point3d { y: <span class="number">1</span>, .. point };
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VI/" data-id="cicfw51ps0010qtv40zib179d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VI/" data-id="cicfzby7100144zv4l2irgynb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -905,7 +1151,7 @@ println!(<span class="string">"{}"</span>, y);
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/20/learning-rust-part-V/" data-id="cicfw51qh0012qtv42dardwm5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/20/learning-rust-part-V/" data-id="cicfzby7300164zv45kpyf3ws" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -1009,7 +1255,7 @@ println!(<span class="string">"{}"</span>, y);
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/20/learning-rust-part-IV/" data-id="cicfw51qn0016qtv4s2nkzie2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/20/learning-rust-part-IV/" data-id="cicfzby76001a4zv4dtwlxubu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -1154,7 +1400,7 @@ let one_to_one_hundred = (<span class="number">1</span>..<span class="number">10
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-III/" data-id="cicfw51qo0018qtv4igca32u5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-III/" data-id="cicfzby78001c4zv4cvd1huc1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -1350,447 +1596,10 @@ lib.<span class="function"><span class="title">process</span><span class="params
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-II/" data-id="cicfw51qq001aqtv4npe9e8g2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-II/" data-id="cicfzby7a001e4zv4xflbskzc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-learning-rust-part-I" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/07/16/learning-rust-part-I/" class="article-date">
-  <time datetime="2015-07-16T01:49:38.000Z" itemprop="datePublished">2015-07-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/07/16/learning-rust-part-I/">rust学习笔记(一)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>rust今年来发布了1.0版本，很火，一直想学可惜一直太懒，最近有空正好学习一下，写一点笔记。<br>初次关注rust的时候还是1.0版本，等到现在想学了，已经是1.1版本了……所以我是有多懒惰啊。  </p>
-<h2 id="安装">安装</h2><pre><code>$ curl -<span class="keyword">sf</span> -L http<span class="variable">s:</span>//static.rust-lang.org/rustup.<span class="keyword">sh</span> | <span class="keyword">sh</span>
-</code></pre><h2 id="卸载">卸载</h2><pre><code>$ sudo <span class="regexp">/usr/</span>local<span class="regexp">/lib/</span>rustlib<span class="regexp">/uninstall.sh</span>
-</code></pre><p>rust自带一个叫做cargo的项目管理器，可以很方便的新建、编译、运行项目</p>
-<h2 id="新建">新建</h2><pre><code><span class="variable">$ </span>cargo new hello_world --bin
-<span class="variable">$ </span>cd hello_world
-</code></pre><h2 id="编译">编译</h2><pre><code><span class="variable">$ </span>cargo build
-</code></pre><h2 id="运行">运行</h2><pre><code>$ cargo <span class="command">run</span>
-</code></pre><p>新建一个项目以后，这个项目的目录下会有一个Cargo.toml的文件，对项目内容做了一些必要的描述，例如，版本号，名字。rust和c++/c一样，需要编译运行。所以导入一些依赖库需要在Cargo.toml中指明，例如</p>
-<pre><code><span class="title">[dependencies]</span>
-
-<span class="setting">rand=<span class="value"><span class="string">"0.3.0"</span></span></span>
-</code></pre><p>cargo会自动去github上寻找这个包在编译时链接。以下贴一个官方的例子简要介绍rust的语法</p>
-<pre><code><span class="keyword">extern</span> <span class="keyword">crate</span> rand; <span class="comment">//指明rand是一个外部包，crate在rust中即包</span>
-
-<span class="keyword">use</span> std::io; <span class="comment">//指明需要使用的库</span>
-<span class="keyword">use</span> std::cmp::Ordering;
-<span class="keyword">use</span> rand::Rng;
-
-<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() { <span class="comment">//定义一个main函数，fn是定义函数的关键字</span>
-    <span class="built_in">println!</span>(<span class="string">"Guess the number!"</span>);<span class="comment">//println!是宏</span>
-
-    <span class="keyword">let</span> secret_number = rand::thread_rng().gen_range(<span class="number">1</span>, <span class="number">101</span>);<span class="comment">//let是一个绑定，将secret_number绑定到随机数上，rust里默认的变量是不可变的</span>
-
-    <span class="keyword">loop</span> {<span class="comment">//loop代表一个循环</span>
-        <span class="built_in">println!</span>(<span class="string">"Please input your guess."</span>);
-
-        <span class="keyword">let</span> <span class="keyword">mut</span> guess = String::new();<span class="comment">//mut代表将guess设定为mutable(可变的)</span>
-
-        io::stdin().read_line(&amp;<span class="keyword">mut</span> guess)<span class="comment">//这里&amp;guess代表的是guess的reference，默认是不可变的，但mut指定为可变（我在想是不是其实就是读了一个字符串得到一个指向这个字符串的地址A，然后直接将A复制到guess这个指针所在的地址，相当于将guess指向了另一个字符串。）</span>
-            .ok()<span class="comment">//io会返回io::Result，必须写代码处理，不然编译器会鄙视你，这里ok代表io成功运行什么代码</span>
-            .expect(<span class="string">"failed to read line"</span>);<span class="comment">//ok也会返回一个需要处理的值需要expect处理，如果失败就打印这句话并退出</span>
-
-        <span class="keyword">let</span> guess: <span class="keyword">u32</span> = <span class="keyword">match</span> guess.trim().parse() {<span class="comment">//字符转换成数字，并对结果进行模式匹配</span>
-            Ok(num) =&gt; num,<span class="comment">//如果成功，就返回数值</span>
-            Err(_) =&gt; <span class="keyword">continue</span>,<span class="comment">//如果失败就继续，不出错</span>
-        };
-
-        <span class="built_in">println!</span>(<span class="string">"You guessed: {}"</span>, guess);
-
-        <span class="keyword">match</span> guess.cmp(&amp;secret_number) {<span class="comment">//guess和secret_number进行比较，并且进行模式匹配</span>
-            Ordering::Less    =&gt; <span class="built_in">println!</span>(<span class="string">"Too small!"</span>),
-            Ordering::Greater =&gt; <span class="built_in">println!</span>(<span class="string">"Too big!"</span>),
-            Ordering::Equal   =&gt; {
-                <span class="built_in">println!</span>(<span class="string">"You win!"</span>);
-                <span class="keyword">break</span>;<span class="comment">//退出循环</span>
-            }
-        }
-    }
-}
-</code></pre><p>这是官方教程的第一个例子。来一个复杂一点的</p>
-<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
-    <span class="keyword">let</span> <span class="keyword">mut</span> x = <span class="built_in">vec!</span>[<span class="string">"Hello"</span>, <span class="string">"world"</span>];
-
-    <span class="keyword">let</span> y = &amp;x[<span class="number">0</span>];
-
-    x.push(<span class="string">"foo"</span>);
-}
-</code></pre><p>这段代码会报错</p>
-<pre><code>src/main.<span class="string">rs:</span><span class="number">6</span>:<span class="number">5</span>: <span class="number">6</span>:<span class="number">6</span> <span class="string">error:</span> cannot borrow `x` <span class="keyword">as</span> mutable because it is also borrowed <span class="keyword">as</span> immutable
-src/main.<span class="string">rs:</span><span class="number">6</span>     x.push(<span class="string">"foo"</span>);
-                  ^
-src/main.<span class="string">rs:</span><span class="number">4</span>:<span class="number">14</span>: <span class="number">4</span>:<span class="number">15</span> <span class="string">note:</span> previous borrow of `x` occurs here; the immutable borrow prevents subsequent moves or mutable borrows of `x` until the borrow ends
-src/main.<span class="string">rs:</span><span class="number">4</span>     let y = &amp;x[<span class="number">0</span>];
-                           ^
-src/main.<span class="string">rs:</span><span class="number">7</span>:<span class="number">2</span>: <span class="number">7</span>:<span class="number">2</span> <span class="string">note:</span> previous borrow ends here
-src/main.<span class="string">rs:</span><span class="number">1</span> fn main() {
-...
-src/main.<span class="string">rs:</span><span class="number">7</span> }
-</code></pre><p>大意就是 x的第一个元素被immutable的引用了一次，所以x就不能被更改，如果我们把他的引用改为mutable呢？</p>
-<pre><code>src/main.<span class="string">rs:</span><span class="number">6</span>:<span class="number">5</span>: <span class="number">6</span>:<span class="number">6</span> <span class="string">error:</span> cannot borrow `x` <span class="keyword">as</span> mutable more than once at a time
-src/main.<span class="string">rs:</span><span class="number">6</span>     x.push(<span class="string">"foo"</span>);
-                  ^
-src/main.<span class="string">rs:</span><span class="number">4</span>:<span class="number">19</span>: <span class="number">4</span>:<span class="number">20</span> <span class="string">note:</span> previous borrow of `x` occurs here; the mutable borrow prevents subsequent moves, borrows, or modification of `x` until the borrow ends
-src/main.<span class="string">rs:</span><span class="number">4</span>     let y = &amp; mut x[<span class="number">0</span>];
-                                ^
-src/main.<span class="string">rs:</span><span class="number">7</span>:<span class="number">2</span>: <span class="number">7</span>:<span class="number">2</span> <span class="string">note:</span> previous borrow ends here
-src/main.<span class="string">rs:</span><span class="number">1</span> fn main() {
-...
-src/main.<span class="string">rs:</span><span class="number">7</span> }
-</code></pre><p>又报错了，说x不能被多次mutable引用<br>所以rust通过控制引用的可变和不可变以及可变应用次数来达到不需要gc也能自动释放占用内存。要想达到刚才的效果，只能这么做。</p>
-<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
-    <span class="keyword">let</span> <span class="keyword">mut</span> x = <span class="built_in">vec!</span>[<span class="string">"Hello"</span>, <span class="string">"world"</span>];
-
-    <span class="keyword">let</span> y = x[<span class="number">0</span>].clone();
-
-    x.push(<span class="string">"foo"</span>);
-}
-
-或者
-
-<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
-    <span class="keyword">let</span> <span class="keyword">mut</span> x = <span class="built_in">vec!</span>[<span class="string">"Hello"</span>, <span class="string">"world"</span>];
-
-    {
-        <span class="keyword">let</span> y = &amp;x[<span class="number">0</span>];
-    }
-
-    x.push(<span class="string">"foo"</span>);
-}
-</code></pre><p>前者给y做了一个x的备份，这样很自然的就将同一内存的操作分开了。后者在一个scope内新建了一个引用，离开这个scope这个引用就消失了，所以也能对x进行可变操作。<br>先写到这里，继续看书明天更新</p>
-<h2 id="参考">参考</h2><p><a href="https://doc.rust-lang.org/stable/book/hello-cargo.html" target="_blank" rel="external">https://doc.rust-lang.org/stable/book/hello-cargo.html</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/16/learning-rust-part-I/" data-id="cicfw51qs001cqtv40y1dgerv" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-explore-spark-distributed-mllib" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/06/21/explore-spark-distributed-mllib/" class="article-date">
-  <time datetime="2015-06-21T04:26:50.000Z" itemprop="datePublished">2015-06-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/06/21/explore-spark-distributed-mllib/">spark的mllib到底是不是分布式的</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>端午节，群里有个人问了一个spark关于mllib扩展性的问题，不太确定，继续看代码。正好上周1.4也发布了，也把代码下下来比较了一下。<br>比较以后才知道，原来scala版本的计算和pyspark差了好多，pyspark关于linalg的计算都是直接调用numpy，也就是非并行的。例如linalg.py里随处可见的np.dot</p>
-<pre><code>assert <span class="function"><span class="title">len</span><span class="params">(self)</span></span> == other<span class="class">.shape</span>[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
-             return other.<span class="function"><span class="title">transpose</span><span class="params">()</span></span>.<span class="function"><span class="title">dot</span><span class="params">(self.toArray()</span></span>)
-         <span class="keyword">else</span>:
-             assert <span class="function"><span class="title">len</span><span class="params">(self)</span></span> == _vector_size(other), <span class="string">"dimension mismatch"</span>
-             <span class="keyword">if</span> <span class="function"><span class="title">isinstance</span><span class="params">(other, SparseVector)</span></span>:
-                 return other.<span class="function"><span class="title">dot</span><span class="params">(self)</span></span>
-             elif <span class="function"><span class="title">isinstance</span><span class="params">(other, Vector)</span></span>:
-                 return np.<span class="function"><span class="title">dot</span><span class="params">(self.toArray()</span></span>, other.<span class="function"><span class="title">toArray</span><span class="params">()</span></span>)
-             <span class="keyword">else</span>:
-                 return np.<span class="function"><span class="title">dot</span><span class="params">(self.toArray()</span></span>, other)
-</code></pre><p>但scala版本的linalg多了一个distributed的目录，下面就定义了好几种分布式矩阵</p>
-<pre><code>:~/spark-<span class="number">1.4</span>.<span class="number">0</span>$ ls mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/*
-mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Block</span>Matrix.scala
-mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Coordinate</span>Matrix.scala
-mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Distributed</span>Matrix.scala
-mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Indexed</span>RowMatrix.scala
-mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/distributed/<span class="constant">Row</span>Matrix.scala
-</code></pre><p>除此以外还多了SVD，PCA一些常见矩阵运算。当然，在linalg中的BLAS.scala里面，依旧是调用了本地的blas库来计算矩阵乘法</p>
-<pre><code>private <span class="function"><span class="keyword">def</span> <span class="title">dot</span><span class="params">(x: DenseVector, y: DenseVector)</span>:</span> Double = {
-  val n = x.size
-  f2jBLAS.ddot(n, x.values, <span class="number">1</span>, y.values, <span class="number">1</span>)
-}     
-</code></pre><p>这里仅限于非稀疏矩阵，spark中所有的稀疏矩阵都是自己写的没有调用额外的库</p>
-<pre><code><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">dot</span>(</span>x: <span class="type">SparseVector</span>, y: <span class="type">SparseVector</span>): <span class="type">Double</span> = {
-     <span class="function"><span class="keyword">val</span> <span class="title">xValues</span> =</span> x.values
-     <span class="function"><span class="keyword">val</span> <span class="title">xIndices</span> =</span> x.indices
-     <span class="function"><span class="keyword">val</span> <span class="title">yValues</span> =</span> y.values
-     <span class="function"><span class="keyword">val</span> <span class="title">yIndices</span> =</span> y.indices
-     <span class="function"><span class="keyword">val</span> <span class="title">nnzx</span> =</span> xIndices.size
-     <span class="function"><span class="keyword">val</span> <span class="title">nnzy</span> =</span> yIndices.size
-
-     <span class="keyword">var</span> kx = <span class="number">0</span>
-     <span class="keyword">var</span> ky = <span class="number">0</span>
-     <span class="keyword">var</span> sum = <span class="number">0.0</span>
-     <span class="comment">// y catching x</span>
-     <span class="keyword">while</span> (kx &lt; nnzx &amp;&amp; ky &lt; nnzy) {
-       <span class="function"><span class="keyword">val</span> <span class="title">ix</span> =</span> xIndices(kx)
-       <span class="keyword">while</span> (ky &lt; nnzy &amp;&amp; yIndices(ky) &lt; ix) {
-         ky += <span class="number">1</span>
-       }
-       <span class="keyword">if</span> (ky &lt; nnzy &amp;&amp; yIndices(ky) == ix) {
-         sum += xValues(kx) * yValues(ky)
-         ky += <span class="number">1</span>
-       }
-       kx += <span class="number">1</span>
-     }
-     sum
-   }
-</code></pre><p>矩阵乘法也是一样处理，都是牵涉到稀疏矩阵计算的就用自己写的方法</p>
-<pre><code>private def gemm(
-       alpha: Double,
-       A: DenseMatrix,
-       B: DenseMatrix,
-       beta: Double,
-       C: DenseMatrix): <span class="variable">Unit =</span> {
-     val <span class="variable">tAstr =</span> <span class="keyword">if</span> (A.isTransposed) <span class="string">"T"</span> <span class="keyword">else</span> <span class="string">"N"</span>
-     val <span class="variable">tBstr =</span> <span class="keyword">if</span> (B.isTransposed) <span class="string">"T"</span> <span class="keyword">else</span> <span class="string">"N"</span>
-     val <span class="variable">lda =</span> <span class="keyword">if</span> (!A.isTransposed) A.numRows <span class="keyword">else</span> A.numCols
-     val <span class="variable">ldb =</span> <span class="keyword">if</span> (!B.isTransposed) B.numRows <span class="keyword">else</span> B.numCols
-
-     require(A.<span class="variable">numCols =</span>= B.numRows,
-       s<span class="string">"The columns of A don't match the rows of B. A: <span class="subst">${A.numCols}</span>, B: <span class="subst">${B.numRows}</span>"</span>)
-     require(A.<span class="variable">numRows =</span>= C.numRows,
-       s<span class="string">"The rows of C don't match the rows of A. C: <span class="subst">${C.numRows}</span>, A: <span class="subst">${A.numRows}</span>"</span>)
-     require(B.<span class="variable">numCols =</span>= C.numCols,
-       s<span class="string">"The columns of C don't match the columns of B. C: <span class="subst">${C.numCols}</span>, A: <span class="subst">${B.numCols}</span>"</span>)
-     nativeBLAS.dgemm(tAstr, tBstr, A.numRows, B.numCols, A.numCols, alpha, A.values, lda,
-       B.values, ldb, beta, C.values, C.numRows)
-   }
-</code></pre><p>然后，我们回到spark的分布式矩阵，分布式矩阵的好处是直接利用rdd就能将对应的值转化为矩阵，例如这样</p>
-<pre><code>val rows = sc.textFile(args(<span class="number">0</span>)).<span class="built_in">map</span> { <span class="built_in">line</span> =&gt;
-       val values = <span class="built_in">line</span>.<span class="built_in">split</span>(<span class="string">' '</span>).<span class="built_in">map</span>(_.toDouble)
-       Vectors.dense(values)
-     }
-     val mat = <span class="keyword">new</span> RowMatrix(rows)
-</code></pre><p>这样，mat就是一个分布式的RowMatrix了，所做的就是赋值一个rdd。对于做SVD这类计算来说，RowMatrix定义了三种方法LocalARPACK，LocalLAPACK和DistARPACK，根据m，n的大小来自动决定到底用哪个计算</p>
-<pre><code><span class="keyword">if</span> (n &lt; <span class="number">100</span> || (k &gt; n / <span class="number">2</span> &amp;&amp; n &lt;= <span class="number">15000</span>)) {
-          <span class="regexp">//</span> If n <span class="keyword">is</span> small <span class="keyword">or</span> k <span class="keyword">is</span> large compared <span class="reserved">with</span> n, we better compute the Gramian matrix first
-          <span class="regexp">//</span> <span class="keyword">and</span> <span class="keyword">then</span> compute its eigenvalues locally, instead <span class="keyword">of</span> making multiple passes.
-          <span class="keyword">if</span> (k &lt; n / <span class="number">3</span>) {
-            SVDMode.LocalARPACK
-          } <span class="keyword">else</span> {
-            SVDMode.LocalLAPACK
-          }
-        } <span class="keyword">else</span> {
-          <span class="regexp">//</span> If k <span class="keyword">is</span> small compared <span class="reserved">with</span> n, we use ARPACK <span class="reserved">with</span> distributed multiplication.
-          SVDMode.DistARPACK
-        }
-</code></pre><p>基本上矩阵尺寸不大的时候就用local的方法来计算了，似乎作者认为ARPACK在计算方阵的时候效率不如lapack。所以当k&gt;n/3的时候选择了lapack。选完了以后就开始计算对角化矩阵</p>
-<pre><code><span class="function"><span class="keyword">val</span> (</span>sigmaSquares: <span class="type">BDV</span>[<span class="type">Double</span>], u: <span class="type">BDM</span>[<span class="type">Double</span>]) = computeMode <span class="keyword">match</span> {
-       <span class="keyword">case</span> <span class="type">SVDMode</span>.<span class="type">LocalARPACK</span> =&gt;
-         require(k &lt; n, s<span class="string">"k must be smaller than n in local-eigs mode but got k=$k and n=$n."</span>)
-         <span class="function"><span class="keyword">val</span> <span class="title">G</span> =</span> computeGramianMatrix().toBreeze.asInstanceOf[<span class="type">BDM</span>[<span class="type">Double</span>]]
-         <span class="type">EigenValueDecomposition</span>.symmetricEigs(v =&gt; <span class="type">G</span> * v, n, k, tol, maxIter)
-       <span class="keyword">case</span> <span class="type">SVDMode</span>.<span class="type">LocalLAPACK</span> =&gt;
-         <span class="comment">// breeze (v0.10) svd latent constraint, 7 * n * n + 4 * n &lt; Int.MaxValue</span>
-         require(n &lt; <span class="number">17515</span>, s<span class="string">"$n exceeds the breeze svd capability"</span>)
-         <span class="function"><span class="keyword">val</span> <span class="title">G</span> =</span> computeGramianMatrix().toBreeze.asInstanceOf[<span class="type">BDM</span>[<span class="type">Double</span>]]
-         <span class="function"><span class="keyword">val</span> <span class="title">brzSvd</span>.<span class="title">SVD</span>(</span>uFull: <span class="type">BDM</span>[<span class="type">Double</span>], sigmaSquaresFull: <span class="type">BDV</span>[<span class="type">Double</span>], _) = brzSvd(<span class="type">G</span>)
-         (sigmaSquaresFull, uFull)
-       <span class="keyword">case</span> <span class="type">SVDMode</span>.<span class="type">DistARPACK</span> =&gt;
-         <span class="keyword">if</span> (rows.getStorageLevel == <span class="type">StorageLevel</span>.<span class="type">NONE</span>) {
-           logWarning(<span class="string">"The input data is not directly cached, which may hurt performance if its"</span>
-             + <span class="string">" parent RDDs are also uncached."</span>)
-         }
-         require(k &lt; n, s<span class="string">"k must be smaller than n in dist-eigs mode but got k=$k and n=$n."</span>)
-         <span class="type">EigenValueDecomposition</span>.symmetricEigs(multiplyGramianMatrixBy, n, k, tol, maxIter)
-         }
-</code></pre><p>这里不管lapack怎么算（其实两者最后都是调用了brzSvd去计算的），ARPACK是调用了EigenValueDecomposition去计算的，并且要求一个Gramian矩阵</p>
-<pre><code><span class="keyword">private</span>[mllib] <span class="function"><span class="keyword">def</span> <span class="title">multiplyGramianMatrixBy</span>(</span>v: <span class="type">BDV</span>[<span class="type">Double</span>]): <span class="type">BDV</span>[<span class="type">Double</span>] = {
-     <span class="function"><span class="keyword">val</span> <span class="title">n</span> =</span> numCols().toInt
-     <span class="function"><span class="keyword">val</span> <span class="title">vbr</span> =</span> rows.context.broadcast(v)
-     rows.treeAggregate(<span class="type">BDV</span>.zeros[<span class="type">Double</span>](n))(
-       seqOp = (<span class="type">U</span>, r) =&gt; {
-         <span class="function"><span class="keyword">val</span> <span class="title">rBrz</span> =</span> r.toBreeze
-         <span class="function"><span class="keyword">val</span> <span class="title">a</span> =</span> rBrz.dot(vbr.value)
-         rBrz <span class="keyword">match</span> {
-           <span class="comment">// use specialized axpy for better performance</span>
-           <span class="keyword">case</span> _: <span class="type">BDV</span>[_] =&gt; brzAxpy(a, rBrz.asInstanceOf[<span class="type">BDV</span>[<span class="type">Double</span>]], <span class="type">U</span>)
-           <span class="keyword">case</span> _: <span class="type">BSV</span>[_] =&gt; brzAxpy(a, rBrz.asInstanceOf[<span class="type">BSV</span>[<span class="type">Double</span>]], <span class="type">U</span>)
-           <span class="keyword">case</span> _ =&gt; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">UnsupportedOperationException</span>(
-             s<span class="string">"Do not support vector operation from type ${rBrz.getClass.getName}."</span>)
-         }
-         <span class="type">U</span>
-       }, combOp = (<span class="type">U1</span>, <span class="type">U2</span>) =&gt; <span class="type">U1</span> += <span class="type">U2</span>)
-   }
-</code></pre><p>这个计算用到了broadcast，头一次看到将数据分发出去-_-bb。然后就在各自本地机器上计算。给定一个矩阵x，他的列向量的Gramian矩阵其实就是x’<em>x，他的行向量的Gramian矩阵就是x</em>x’。</p>
-<pre><code><span class="keyword">private</span>[mllib] <span class="class"><span class="keyword">object</span> <span class="title">EigenValueDecomposition</span> {</span>
-  <span class="comment">/**
-   * Compute the leading k eigenvalues and eigenvectors on a symmetric square matrix using ARPACK.
-   * The caller needs to ensure that the input matrix is real symmetric. This function requires
-   * memory for `n*(4*k+4)` doubles.
-   *
-   * @param mul a function that multiplies the symmetric matrix with a DenseVector.
-   * @param n dimension of the square matrix (maximum Int.MaxValue).
-   * @param k number of leading eigenvalues required, 0 &lt; k &lt; n.
-   * @param tol tolerance of the eigs computation.
-   * @param maxIterations the maximum number of Arnoldi update iterations.
-   * @return a dense vector of eigenvalues in descending order and a dense matrix of eigenvectors
-   *         (columns of the matrix).
-   * @note The number of computed eigenvalues might be smaller than k when some Ritz values do not
-   *       satisfy the convergence criterion specified by tol (see ARPACK Users Guide, Chapter 4.6
-   *       for more details). The maximum number of Arnoldi update iterations is set to 300 in this
-   *       function.
-   */</span>
-  <span class="keyword">private</span>[mllib] <span class="function"><span class="keyword">def</span> <span class="title">symmetricEigs</span>(</span>
-      mul: <span class="type">BDV</span>[<span class="type">Double</span>] =&gt; <span class="type">BDV</span>[<span class="type">Double</span>],
-      n: <span class="type">Int</span>,
-      k: <span class="type">Int</span>,
-      tol: <span class="type">Double</span>,
-      maxIterations: <span class="type">Int</span>): (<span class="type">BDV</span>[<span class="type">Double</span>], <span class="type">BDM</span>[<span class="type">Double</span>]) = {
-    <span class="comment">// TODO: remove this function and use eigs in breeze when switching breeze version</span>
-    require(n &gt; k, s<span class="string">"Number of required eigenvalues $k must be smaller than matrix dimension $n"</span>)
-
-    <span class="function"><span class="keyword">val</span> <span class="title">arpack</span> =</span> <span class="type">ARPACK</span>.getInstance()
-
-    <span class="comment">// tolerance used in stopping criterion</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">tolW</span> =</span> <span class="keyword">new</span> doubleW(tol)
-    <span class="comment">// number of desired eigenvalues, 0 &lt; nev &lt; n</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">nev</span> =</span> <span class="keyword">new</span> intW(k)
-    <span class="comment">// nev Lanczos vectors are generated in the first iteration</span>
-    <span class="comment">// ncv-nev Lanczos vectors are generated in each subsequent iteration</span>
-    <span class="comment">// ncv must be smaller than n</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">ncv</span> =</span> math.min(<span class="number">2</span> * k, n)
-
-    <span class="comment">// "I" for standard eigenvalue problem, "G" for generalized eigenvalue problem</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">bmat</span> =</span> <span class="string">"I"</span>
-    <span class="comment">// "LM" : compute the NEV largest (in magnitude) eigenvalues</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">which</span> =</span> <span class="string">"LM"</span>
-
-    <span class="keyword">var</span> iparam = <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">Int</span>](<span class="number">11</span>)
-    <span class="comment">// use exact shift in each iteration</span>
-    iparam(<span class="number">0</span>) = <span class="number">1</span>
-    <span class="comment">// maximum number of Arnoldi update iterations, or the actual number of iterations on output</span>
-    iparam(<span class="number">2</span>) = maxIterations
-    <span class="comment">// Mode 1: A*x = lambda*x, A symmetric</span>
-    iparam(<span class="number">6</span>) = <span class="number">1</span>
-
-    require(n * ncv.toLong &lt;= <span class="type">Integer</span>.<span class="type">MAX_VALUE</span> &amp;&amp; ncv * (ncv.toLong + <span class="number">8</span>) &lt;= <span class="type">Integer</span>.<span class="type">MAX_VALUE</span>,
-      s<span class="string">"k = $k and/or n = $n are too large to compute an eigendecomposition"</span>)
-
-    <span class="keyword">var</span> ido = <span class="keyword">new</span> intW(<span class="number">0</span>)
-    <span class="keyword">var</span> info = <span class="keyword">new</span> intW(<span class="number">0</span>)
-    <span class="keyword">var</span> resid = <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">Double</span>](n)
-    <span class="keyword">var</span> v = <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">Double</span>](n * ncv)
-    <span class="keyword">var</span> workd = <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">Double</span>](n * <span class="number">3</span>)
-    <span class="keyword">var</span> workl = <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">Double</span>](ncv * (ncv + <span class="number">8</span>))
-    <span class="keyword">var</span> ipntr = <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">Int</span>](<span class="number">11</span>)
-
-    <span class="comment">// call ARPACK's reverse communication, first iteration with ido = 0</span>
-    arpack.dsaupd(ido, bmat, n, which, nev.`<span class="function"><span class="keyword">val</span>`, <span class="title">tolW</span>, <span class="title">resid</span>, <span class="title">ncv</span>, <span class="title">v</span>, <span class="title">n</span>, <span class="title">iparam</span>, <span class="title">ipntr</span>, <span class="title">workd</span>,
-</span>      workl, workl.length, info)
-
-    <span class="function"><span class="keyword">val</span> <span class="title">w</span> =</span> <span class="type">BDV</span>(workd)
-
-    <span class="comment">// ido = 99 : done flag in reverse communication</span>
-    <span class="keyword">while</span> (ido.`<span class="function"><span class="keyword">val</span>` <span class="title">!=</span> 99) {</span>
-      <span class="keyword">if</span> (ido.`<span class="function"><span class="keyword">val</span>` <span class="title">!=</span> <span class="title">-1</span> <span class="title">&amp;&amp;</span> <span class="title">ido</span>.`<span class="title">val</span>` <span class="title">!=</span> 1) {</span>
-        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalStateException</span>(<span class="string">"ARPACK returns ido = "</span> + ido.`<span class="function"><span class="keyword">val</span>` <span class="title">+</span>
-</span>            <span class="string">" This flag is not compatible with Mode 1: A*x = lambda*x, A symmetric."</span>)
-      }
-      <span class="comment">// multiply working vector with the matrix</span>
-      <span class="function"><span class="keyword">val</span> <span class="title">inputOffset</span> =</span> ipntr(<span class="number">0</span>) - <span class="number">1</span>
-      <span class="function"><span class="keyword">val</span> <span class="title">outputOffset</span> =</span> ipntr(<span class="number">1</span>) - <span class="number">1</span>
-      <span class="function"><span class="keyword">val</span> <span class="title">x</span> =</span> w.slice(inputOffset, inputOffset + n)
-      <span class="function"><span class="keyword">val</span> <span class="title">y</span> =</span> w.slice(outputOffset, outputOffset + n)
-      y := mul(x)
-      <span class="comment">// call ARPACK's reverse communication</span>
-      arpack.dsaupd(ido, bmat, n, which, nev.`<span class="function"><span class="keyword">val</span>`, <span class="title">tolW</span>, <span class="title">resid</span>, <span class="title">ncv</span>, <span class="title">v</span>, <span class="title">n</span>, <span class="title">iparam</span>, <span class="title">ipntr</span>,
-</span>        workd, workl, workl.length, info)
-    }
-
-    <span class="keyword">if</span> (info.`<span class="function"><span class="keyword">val</span>` <span class="title">!=</span> 0) {</span>
-      info.`<span class="function"><span class="keyword">val</span>` <span class="title">match</span> {</span>
-        <span class="keyword">case</span> <span class="number">1</span> =&gt; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalStateException</span>(<span class="string">"ARPACK returns non-zero info = "</span> + info.`<span class="function"><span class="keyword">val</span>` <span class="title">+</span>
-</span>            <span class="string">" Maximum number of iterations taken. (Refer ARPACK user guide for details)"</span>)
-        <span class="keyword">case</span> <span class="number">3</span> =&gt; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalStateException</span>(<span class="string">"ARPACK returns non-zero info = "</span> + info.`<span class="function"><span class="keyword">val</span>` <span class="title">+</span>
-</span>            <span class="string">" No shifts could be applied. Try to increase NCV. "</span> +
-            <span class="string">"(Refer ARPACK user guide for details)"</span>)
-        <span class="keyword">case</span> _ =&gt; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalStateException</span>(<span class="string">"ARPACK returns non-zero info = "</span> + info.`<span class="function"><span class="keyword">val</span>` <span class="title">+</span>
-</span>            <span class="string">" Please refer ARPACK user guide for error message."</span>)
-      }
-    }
-
-    <span class="function"><span class="keyword">val</span> <span class="title">d</span> =</span> <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">Double</span>](nev.`<span class="function"><span class="keyword">val</span>`)
-</span>    <span class="function"><span class="keyword">val</span> <span class="title">select</span> =</span> <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">Boolean</span>](ncv)
-    <span class="comment">// copy the Ritz vectors</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">z</span> =</span> java.util.<span class="type">Arrays</span>.copyOfRange(v, <span class="number">0</span>, nev.`<span class="function"><span class="keyword">val</span>` <span class="title">*</span> <span class="title">n</span>)
-</span>
-    <span class="comment">// call ARPACK's post-processing for eigenvectors</span>
-    arpack.dseupd(<span class="literal">true</span>, <span class="string">"A"</span>, select, d, z, n, <span class="number">0.0</span>, bmat, n, which, nev, tol, resid, ncv, v, n,
-      iparam, ipntr, workd, workl, workl.length, info)
-
-    <span class="comment">// number of computed eigenvalues, might be smaller than k</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">computed</span> =</span> iparam(<span class="number">4</span>)
-
-    <span class="function"><span class="keyword">val</span> <span class="title">eigenPairs</span> =</span> java.util.<span class="type">Arrays</span>.copyOfRange(d, <span class="number">0</span>, computed).zipWithIndex.map { r =&gt;
-      (r._1, java.util.<span class="type">Arrays</span>.copyOfRange(z, r._2 * n, r._2 * n + n))
-    }
-
-    <span class="comment">// sort the eigen-pairs in descending order</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">sortedEigenPairs</span> =</span> eigenPairs.sortBy(- _._1)
-
-    <span class="comment">// copy eigenvectors in descending order of eigenvalues</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">sortedU</span> =</span> <span class="type">BDM</span>.zeros[<span class="type">Double</span>](n, computed)
-    sortedEigenPairs.zipWithIndex.foreach { r =&gt;
-      <span class="function"><span class="keyword">val</span> <span class="title">b</span> =</span> r._2 * n
-      <span class="keyword">var</span> i = <span class="number">0</span>
-      <span class="keyword">while</span> (i &lt; n) {
-        sortedU.data(b + i) = r._1._2(i)
-        i += <span class="number">1</span>
-      }
-    }
-
-    (<span class="type">BDV</span>[<span class="type">Double</span>](sortedEigenPairs.map(_._1)), sortedU)
-  }
-}
-</code></pre><p>最后来到关键的地方，所以其实spark内部的分布式求矩阵都是用svd的近似，不断调用Gramian方法来传递向量，用迭代的方式来求特征值和特征向量。最后返回的也是一个BDV，也就是breeze.linalg.DenseVector。我个人认为这种方法相比mpi，似乎一路上也没有checkpoint，效率可能还不一定比mpi做的高，毕竟MPI，BLAS，SCALAPACK这些库都是久经考验得工业标准了。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/06/21/explore-spark-distributed-mllib/" data-id="cicfw51r3001sqtv42wa93d5d" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
 
     </footer>
   </div>
@@ -1801,7 +1610,7 @@ mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/
   
   
     <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -1814,7 +1623,7 @@ mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -1832,7 +1641,7 @@ mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1844,6 +1653,14 @@ mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/
       <ul>
         
           <li>
+            <a href="/2015/07/23/learning-rust-part-XI/">rust学习笔记(十一)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/23/learning-rust-part-X/">rust学习笔记(十)</a>
+          </li>
+        
+          <li>
             <a href="/2015/07/23/learning-rust-part-IX/">rust学习笔记(九)</a>
           </li>
         
@@ -1853,14 +1670,6 @@ mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/
         
           <li>
             <a href="/2015/07/21/learning-rust-part-VII/">rust学习笔记(七)</a>
-          </li>
-        
-          <li>
-            <a href="/2015/07/21/learning-rust-part-VI/">rust学习笔记(六)</a>
-          </li>
-        
-          <li>
-            <a href="/2015/07/20/learning-rust-part-V/">rust学习笔记(五)</a>
           </li>
         
       </ul>

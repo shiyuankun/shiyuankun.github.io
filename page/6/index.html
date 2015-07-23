@@ -95,6 +95,98 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-2440667" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/04/10/2440667/" class="article-date">
+  <time datetime="2012-04-10T07:34:00.000Z" itemprop="datePublished">2012-04-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2012/04/10/2440667/">xcat网络无盘启动——添加自定义安装包</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近在安装包含chess3的网络无盘启动包。发现手动要调整的太多，还是使用xcat更方便一点。</p>
+<p>我们可以发现，在xcat的网络无盘启动中，其实是把/install/netboot/os/arch/compute/rootimg下的东西打了个包，通过查看genimage中产生的信息，我们也可以发现是通过yum —installroot=/install/netboot/os/arch/compute/rootimg将对应的包装到这个目录下的。随后再通过packimage打包。</p>
+<p>那这样子事情就比较简单的了，通过更改rootimg下的对应文件就能够把更改做到无盘启动的文件包里。对于编译安装的软件直接复制更改对应就可以了。</p>
+<p>对于rpm包，有两种办法安装，对于Redhat等本身dvd中已经有的包需要额外安装，可以更改/opt/xcat/share/netboot/rh/compute.pkglist，添加对应的包，如</p>
+<div class="cnblogs_code"><br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">cat <span class="regexp">/opt/</span>xcat<span class="regexp">/share/</span>netboot<span class="regexp">/rh/</span>compute.pkglistbash</span><br><span class="line">nfs-utils</span><br><span class="line">openssl</span><br><span class="line">dhclient</span><br><span class="line">kernel</span><br><span class="line">openssh-server</span><br><span class="line">openssh-clients</span><br><span class="line">busybox-anaconda</span><br><span class="line">wget</span><br><span class="line">vim-minimal</span><br></pre></td></tr></table></figure><br><br></div>
+
+<p>更改为<br>
+        
+          <p class="article-more-link">
+            <a href="/2012/04/10/2440667/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2012/04/10/2440667/" data-id="cicfzby9000394zv437pbzntf" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-2439300" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/04/09/2439300/" class="article-date">
+  <time datetime="2012-04-09T09:33:00.000Z" itemprop="datePublished">2012-04-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2012/04/09/2439300/">xcat网络无盘启动</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>首先，先到$osname目录下找genimage</p>
+<p>/opt/xcat/share/xcat/netboot/$osname</p>
+<p>-i 网卡，如eth1<br>-n 网络驱动，如e1000<br>-o 系统名，如rhel5.7<br>-p 组名，这里是compute</p>
+<p>./genimage -i eth1 -n e1000 -o rhel5.7 -p compute以后，生成image文件</p>
+<p>随后到/install/netboot/rhel5.7/x86_64/compute/rootimg/etc目录下修改fstab<br>
+        
+          <p class="article-more-link">
+            <a href="/2012/04/09/2439300/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2012/04/09/2439300/" data-id="cicfzby91003a4zv4tlqorfev" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-2436061" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2012/04/07/2436061/" class="article-date">
@@ -134,7 +226,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/04/07/2436061/" data-id="cicfw51t60037qtv4rgpzq7fm" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/04/07/2436061/" data-id="cicfzby92003b4zv4dy6a4wy9" class="article-share-link">Share</a>
       
       
     </footer>
@@ -181,7 +273,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/22/2411421/" data-id="cicfw51t70038qtv42obdso2k" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/22/2411421/" data-id="cicfzby93003c4zv4e9x9aywf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -230,7 +322,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/22/2411348/" data-id="cicfw51t80039qtv440rj2mx5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/22/2411348/" data-id="cicfzby93003d4zv4ey5rjdhm" class="article-share-link">Share</a>
       
       
     </footer>
@@ -279,7 +371,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/21/2410769/" data-id="cicfw51ta003aqtv4wbhjtqsg" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/21/2410769/" data-id="cicfzby95003e4zv4bc2xiv99" class="article-share-link">Share</a>
       
       
     </footer>
@@ -330,7 +422,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/03/05/2380650/" data-id="cicfw51tb003bqtv47iin59xw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/03/05/2380650/" data-id="cicfzby96003f4zv4v250ee05" class="article-share-link">Share</a>
       
       
     </footer>
@@ -379,7 +471,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/10/2318175/" data-id="cicfw51tc003cqtv4t9epruq6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/01/10/2318175/" data-id="cicfzby96003g4zv481zgvm93" class="article-share-link">Share</a>
       
       
     </footer>
@@ -421,7 +513,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/08/2316248/" data-id="cicfw51td003dqtv4c0q8rraf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/01/08/2316248/" data-id="cicfzby97003h4zv4aq9ppbu7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -465,58 +557,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/04/2312532/" data-id="cicfw51te003eqtv43puklipk" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-2311276" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2012/01/03/2311276/" class="article-date">
-  <time datetime="2012-01-03T12:11:00.000Z" itemprop="datePublished">2012-01-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2012/01/03/2311276/">python中dict类的显式和隐式产生</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><span style="font-size: 14px;">python中有两种方法创建dict类</span></p>
-<p><span style="font-size: 14px;">显式</span></p>
-<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">foo.<span class="function"><span class="title">update</span><span class="params">(dict(a＝ <span class="number">1</span>, b=<span class="string">'2'</span>&#125;)</span></span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p><span style="font-size: 14px;">隐式</span></p>
-<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">foo.<span class="function"><span class="title">update</span><span class="params">(&#123;<span class="string">'a'</span>: <span class="number">1</span>, <span class="string">'b'</span>: <span class="string">'2'</span>&#125;)</span></span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p><span style="font-size: 14px;">最近在写一个爬虫的时候碰到一个问题，dict的key是系统的保留字from</span><br><span style="font-size: 14px;">于是在stackoverflow上找到了答案。对于这类情况，只能使用隐式方法创建dict类</span><br><span style="font-size: 14px;">如</span></p>
-<div class="cnblogs_code"><br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">foo.<span class="function"><span class="title">update</span><span class="params">(&#123;<span class="string">'from'</span>:<span class="number">1</span>,<span class="string">'d'</span>:<span class="number">2</span>&#125;)</span></span></span><br></pre></td></tr></table></figure><br><br></div>
-
-<p><span style="font-size: 14px;">显式方法只能适用于key为普通字符串的情况，任何包含标点，空格，unicode代码的key都必须用隐式方法产成dict类。并且，相比于显式方法，隐式方法更有速度优势</span><br>
-        
-          <p class="article-more-link">
-            <a href="/2012/01/03/2311276/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2012/01/03/2311276/" data-id="cicfw51nu0000qtv4ywk53nh1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2012/01/04/2312532/" data-id="cicfzby98003i4zv48t97j3vs" class="article-share-link">Share</a>
       
       
     </footer>
@@ -528,7 +569,7 @@ ga('send', 'pageview');
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/5/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span>
+      <a class="extend prev" rel="prev" href="/page/5/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -541,7 +582,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -559,7 +600,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -571,6 +612,14 @@ ga('send', 'pageview');
       <ul>
         
           <li>
+            <a href="/2015/07/23/learning-rust-part-XI/">rust学习笔记(十一)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/23/learning-rust-part-X/">rust学习笔记(十)</a>
+          </li>
+        
+          <li>
             <a href="/2015/07/23/learning-rust-part-IX/">rust学习笔记(九)</a>
           </li>
         
@@ -580,14 +629,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/2015/07/21/learning-rust-part-VII/">rust学习笔记(七)</a>
-          </li>
-        
-          <li>
-            <a href="/2015/07/21/learning-rust-part-VI/">rust学习笔记(六)</a>
-          </li>
-        
-          <li>
-            <a href="/2015/07/20/learning-rust-part-V/">rust学习笔记(五)</a>
           </li>
         
       </ul>

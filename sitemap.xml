@@ -2,6 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2015/07/23/learning-rust-part-XI/</loc>
+    <lastmod>2015-07-23T09:11:11.000Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2015/07/23/learning-rust-part-X/</loc>
+    <lastmod>2015-07-23T08:54:04.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2015/07/23/learning-rust-part-IX/</loc>
     <lastmod>2015-07-23T07:41:46.000Z</lastmod>
   </url>
@@ -147,12 +157,12 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2014/06/23/3804254/</loc>
+    <loc>http://yoursite.com/2012/01/03/2311276/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
   <url>
-    <loc>http://yoursite.com/2012/01/03/2311276/</loc>
+    <loc>http://yoursite.com/2013/12/10/3466917/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
@@ -282,7 +292,7 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2013/12/10/3466917/</loc>
+    <loc>http://yoursite.com/2014/06/23/3804254/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   

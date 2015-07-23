@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-07-23T07:41:46.000Z</updated>
+  <updated>2015-07-23T09:11:11.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,208 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[rust学习笔记(十一)]]></title>
+    <link href="http://yoursite.com/2015/07/23/learning-rust-part-XI/"/>
+    <id>http://yoursite.com/2015/07/23/learning-rust-part-XI/</id>
+    <published>2015-07-23T08:54:13.000Z</published>
+    <updated>2015-07-23T09:11:11.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="Deref_转换">Deref 转换</h2><p>在rust中，有一个特殊的trait，叫做Deref，他用来重载<em>号，这里</em>号的含义和c里面的一样用于取一个指针指的值。</p>
+<pre><code><span class="keyword">use</span> std::ops::Deref;
+
+<span class="keyword">struct</span> DerefExample&lt;T&gt; {
+    value: T,
+}
+
+<span class="keyword">impl</span>&lt;T&gt; Deref <span class="keyword">for</span> DerefExample&lt;T&gt; {
+    <span class="keyword">type</span> <span class="title">Target</span> = T;
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">deref</span></span>(&amp;<span class="keyword">self</span>) -&gt; &amp;T {
+        &amp;<span class="keyword">self</span>.value
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> x = DerefExample { value: <span class="string">'a'</span> };
+    <span class="built_in">assert_eq!</span>(<span class="string">'a'</span>, *x);
+}
+</code></pre><p>这里重定义了*号的作用，所以就是取出封装的value。</p>
+<h2 id="宏">宏</h2><p>宏的定义和c里面的概念差不多。甚至可以定义出递归宏，例如：</p>
+<pre><code>macro_rules! write_html {
+    (<span class="variable">$w</span><span class="symbol">:expr</span>, ) =&gt; (());
+
+    (<span class="variable">$w</span><span class="symbol">:expr</span>, <span class="variable">$e</span><span class="symbol">:tt</span>) =&gt; (write!(<span class="variable">$w</span>, <span class="string">"{}"</span>, <span class="variable">$e</span>));
+
+    (<span class="variable">$w</span><span class="symbol">:expr</span>, <span class="variable">$tag</span><span class="symbol">:ident</span> [ <span class="variable">$(</span><span class="variable">$inner</span><span class="symbol">:tt</span>)* ] <span class="variable">$(</span><span class="variable">$rest</span><span class="symbol">:tt</span>)*) =&gt; &lt;!--￼<span class="number">0</span>--&gt;;
+}
+
+<span class="keyword">fn</span> main() {
+    <span class="keyword">use</span> <span class="symbol">std:</span><span class="symbol">:fmt</span><span class="symbol">:</span><span class="symbol">:Write</span>;
+    let mut out = <span class="constant">String:</span><span class="symbol">:new</span>();
+
+    write_html!(&amp;mut out,
+        html[
+            head[title[<span class="string">"Macros guide"</span>]]
+            body[h1[<span class="string">"Macros are the best!"</span>]]
+        ]);
+
+    assert_eq!(out,
+        <span class="string">"&lt;html&gt;&lt;head&gt;&lt;title&gt;Macros guide&lt;/title&gt;&lt;/head&gt;\
+         &lt;body&gt;&lt;h1&gt;Macros are the best!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;"</span>);
+}
+</code></pre><h2 id="Raw_Pointers">Raw Pointers</h2><p>rust拥有不少智能指针。但也可以使用原始指针，原始指针的定义就是<em>const T和</em>mut T<br>需要注意的是，<br>1.原始执政不保证指向内容有效。<br>2.没有自动清理<br>3.没有属主概念<br>4.没有生命周期概念<br>5.没有可变性保证。</p>
+<p>这么申请一个原始指针</p>
+<pre><code><span class="keyword">let</span> x = <span class="number">5</span>;
+<span class="keyword">let</span> raw = &amp;x <span class="keyword">as</span> *<span class="keyword">const</span> <span class="keyword">i32</span>;
+
+<span class="keyword">let</span> <span class="keyword">mut</span> y = <span class="number">10</span>;
+<span class="keyword">let</span> raw_mut = &amp;<span class="keyword">mut</span> y <span class="keyword">as</span> *<span class="keyword">mut</span> <span class="keyword">i32</span>;
+</code></pre><p>但由于这种操作是没有刚才那些保证的，所以如果要取值必须使用unsafe</p>
+<pre><code><span class="keyword">let</span> x = <span class="number">5</span>;
+<span class="keyword">let</span> raw = &amp;x <span class="keyword">as</span> *<span class="keyword">const</span> <span class="keyword">i32</span>;
+
+<span class="keyword">let</span> points_at = <span class="keyword">unsafe</span> { *raw };
+</code></pre><p>rust离得原始指针主要用来给FFI用</p>
+<h2 id="Unsafe">Unsafe</h2><p>unsafe主要是用来干一些编译器不让你干的事情<br>1.获取更改一个静态的可变变量<br>2.获取一个原始指针指向的值<br>3.调用一个不安全的函数</p>
+<p>safe的保证可以看<a href="这里">https://doc.rust-lang.org/stable/book/unsafe.html</a></p>
+<p>紧赶慢赶终于把rust教程看完了。很多地方没有细看，随手写了点笔记了解了一下rust的设计理念。接下去要实际拿一个项目测一下rust到底该如何做了。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="Deref_转换">Deref 转换</h2><p>在rust中，有一个特殊的trait，叫做Deref，他用来重载<em>号，这里</em>号的含义和c里面的一样用于取一个指针指的值。</p>
+<pre><code><span class="keyword">u]]>
+    </summary>
+    
+      <category term="rust" scheme="http://yoursite.com/tags/rust/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[rust学习笔记(十)]]></title>
+    <link href="http://yoursite.com/2015/07/23/learning-rust-part-X/"/>
+    <id>http://yoursite.com/2015/07/23/learning-rust-part-X/</id>
+    <published>2015-07-23T07:42:27.000Z</published>
+    <updated>2015-07-23T08:54:04.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="Universal_Function_Call_Syntax">Universal Function Call Syntax</h2><p>有些时候函数可能会有相同的名字。例如：</p>
+<pre><code><span class="keyword">trait</span> <span class="title">Foo</span> {
+    <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>);
+}
+
+<span class="keyword">trait</span> <span class="title">Bar</span> {
+    <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>);
+}
+
+<span class="keyword">struct</span> Baz;
+
+<span class="keyword">impl</span> Foo <span class="keyword">for</span> Baz {
+    <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>) { <span class="built_in">println!</span>(<span class="string">"Baz’s impl of Foo"</span>); }
+}
+
+<span class="keyword">impl</span> Bar <span class="keyword">for</span> Baz {
+    <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>) { <span class="built_in">println!</span>(<span class="string">"Baz’s impl of Bar"</span>); }
+}
+
+<span class="keyword">let</span> b = Baz;
+</code></pre><p>这时候如果调用b.f()就会报错。必须这样</p>
+<pre><code><span class="rule"><span class="attribute">Foo</span>:<span class="value">:<span class="function">f</span>(&amp;b)</span></span>;
+<span class="rule"><span class="attribute">Bar</span>:<span class="value">:<span class="function">f</span>(&amp;b)</span></span>;
+</code></pre><p>才能正常执行。rust在执行b.f()是会自动借用b作为&amp;self，而这里不会，所以要手动将&amp;b传入。</p>
+<h2 id="cates_and_modules">cates and modules</h2><p>在rust里，crate就是library package的同义词。每个crate都有一个根module，根module下面还有很多子module。</p>
+<p>在src/lib.rs中这么写定义模块</p>
+<pre><code><span class="operator">mod</span> <span class="keyword">english</span> {
+    <span class="operator">mod</span> greetings {
+    }
+
+    <span class="operator">mod</span> farewells {
+    }
+}
+
+<span class="operator">mod</span> japanese {
+    <span class="operator">mod</span> greetings {
+    }
+
+    <span class="operator">mod</span> farewells {
+    }
+}
+</code></pre><p>cargo会去src/<modname>.rs或者src/<modname>/mod.rs中去找相应模块。</modname></modname></p>
+<h2 id="const_and_static">const and static</h2><pre><code><span class="tag">const</span> <span class="rule"><span class="attribute">N</span>:<span class="value"> i32=<span class="number">5</span></span></span>;
+</code></pre><p>定义了一个寿命为永久的N，并且在rust中const没有地址，因为所有的N调用在编译时都会被替换为具体值。</p>
+<pre><code><span class="tag">static</span> <span class="rule"><span class="attribute">N</span>:<span class="value"> i32=<span class="number">5</span></span></span>;
+</code></pre><p>同样定义了一个永久寿命的N，但这个本质上是一个变量。</p>
+<pre><code><span class="tag">static</span> <span class="tag">mut</span> <span class="rule"><span class="attribute">N</span>:<span class="value"> i32 = <span class="number">5</span></span></span>;
+</code></pre><p>由于本身已经定义为static了，所以这样子可能导致一个线程读一个线程写，这是不安全的，所以要这么做只能放在unsafeblock里</p>
+<pre><code><span class="keyword">unsafe</span> {
+    N += <span class="number">1</span>;
+
+    <span class="built_in">println!</span>(<span class="string">"N: {}"</span>, N);
+}
+</code></pre><p>所有static的类型必然是sync的。</p>
+<h2 id="属性">属性</h2><p>通过#[test]来定义</p>
+<h2 id="type">type</h2><p>type用来设定一个同义变量</p>
+<pre><code><span class="keyword">type</span> Name = <span class="keyword">String</span>;
+</code></pre><p>这个新的类型Name在函数调用上和String完全一样。</p>
+<h2 id="不同类型间转换">不同类型间转换</h2><p>as可以做基本的转换</p>
+<p>let x: i32 = 5;</p>
+<p>let y = x as i64;</p>
+<p>transmute可以不做检查直接转换</p>
+<p>use std::mem;</p>
+<p>unsafe {<br>    let a = [0u8, 0u8, 0u8, 0u8];</p>
+<pre><code><span class="keyword">let</span> b = mem::transmute::&lt;[<span class="keyword">u8</span>; <span class="number">4</span>], <span class="keyword">u32</span>&gt;(a);
+</code></pre><p>}</p>
+<p>但还是会做一些基本的比如越界检查防止内存问题</p>
+<h2 id="联合类型">联合类型</h2><p>例如对于一个图，你可能有Node Edge两种类型，但这样不美观，所以就可以用trait把两种类型联合起来</p>
+<pre><code><span class="keyword">trait</span> Graph {
+    <span class="keyword">type</span> N;
+    <span class="keyword">type</span> E;
+
+    fn has_edge(<span class="subst">&amp;</span><span class="built_in">self</span>, <span class="subst">&amp;</span><span class="built_in">Self</span><span class="tag">::N</span>, <span class="subst">&amp;</span><span class="built_in">Self</span><span class="tag">::N</span>) <span class="subst">-&gt; </span>bool;
+    fn edges(<span class="subst">&amp;</span><span class="built_in">self</span>, <span class="subst">&amp;</span><span class="built_in">Self</span><span class="tag">::N</span>) <span class="subst">-&gt; </span>Vec<span class="subst">&lt;</span><span class="built_in">Self</span><span class="tag">::E</span><span class="subst">&gt;</span>;
+    <span class="comment">// etc</span>
+}
+</code></pre><p>并实现相关的函数</p>
+<pre><code><span class="keyword">struct</span> Node;
+
+<span class="keyword">struct</span> Edge;
+
+<span class="keyword">struct</span> MyGraph;
+
+<span class="keyword">impl</span> Graph <span class="keyword">for</span> MyGraph {
+    <span class="keyword">type</span> <span class="title">N</span> = Node;
+    <span class="keyword">type</span> <span class="title">E</span> = Edge;
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">has_edge</span></span>(&amp;<span class="keyword">self</span>, n1: &amp;Node, n2: &amp;Node) -&gt; <span class="keyword">bool</span> {
+        <span class="keyword">true</span>
+    }
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">edges</span></span>(&amp;<span class="keyword">self</span>, n: &amp;Node) -&gt; Vec&lt;Edge&gt; {
+        Vec::new()
+    }
+}
+</code></pre><h2 id="不定长类型">不定长类型</h2><p>大多数类型都有固定长度，但rust也允许使用动态长度的类型。但这里有一定的限制</p>
+<p>1.只能通过指针操作unsized type, &amp;[T]可以但[T]不行<br>2.变量和参数不能有动态长度的类型<br>3.只有struct的最后一栏允许动态长度类型。enum不允许有动态长度类型</p>
+<h2 id="操作符重载">操作符重载</h2><p>只要对一个类型实现相应的函数就能实现相应重载。</p>
+<p>use std::ops::Add;</p>
+<h1 id="[derive(Debug)]">[derive(Debug)]</h1><p>struct Point {<br>    x: i32,<br>    y: i32,<br>}</p>
+<p>impl Add for Point {<br>    type Output = Point;</p>
+<pre><code><span class="tag">fn</span> <span class="tag">add</span>(self, <span class="attribute">other</span>: Point) <span class="tag">-</span>&gt; <span class="tag">Point</span> {
+    <span class="tag">Point</span> { <span class="attribute">x</span>: self.x + other.x, <span class="attribute">y</span>: self.y + other.y }
+}
+</code></pre><p>}</p>
+<p>fn main() {<br>    let p1 = Point { x: 1, y: 0 };<br>    let p2 = Point { x: 2, y: 3 };</p>
+<pre><code><span class="keyword">let</span> <span class="variable">p3 =</span> p1 + p2;
+
+println!(<span class="string">"{:?}"</span>, p3);
+</code></pre><p>}</p>
+<p>这些允许重载的函数可以在std::ops中找到</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="Universal_Function_Call_Syntax">Universal Function Call Syntax</h2><p>有些时候函数可能会有相同的名字。例如：</p>
+<pre><code><span class="keyword">trait]]>
+    </summary>
+    
+      <category term="rust" scheme="http://yoursite.com/tags/rust/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[rust学习笔记(九)]]></title>
@@ -2427,67 +2629,6 @@ hexo <span class="keyword">server</span>
       <category term="github" scheme="http://yoursite.com/tags/github/"/>
     
       <category term="hexo" scheme="http://yoursite.com/tags/hexo/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[Hello World]]></title>
-    <link href="http://yoursite.com/2015/05/11/hello-world/"/>
-    <id>http://yoursite.com/2015/05/11/hello-world/</id>
-    <published>2015-05-11T08:07:27.000Z</published>
-    <updated>2015-05-11T08:07:27.000Z</updated>
-    <content type="html"><![CDATA[<p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick_Start">Quick Start</h2><h3 id="Create_a_new_post">Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run_server">Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate_static_files">Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy_to_remote_sites">Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io]]>
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[first blog]]></title>
-    <link href="http://yoursite.com/2015/05/11/first-blog/"/>
-    <id>http://yoursite.com/2015/05/11/first-blog/</id>
-    <published>2015-05-11T07:22:16.000Z</published>
-    <updated>2015-05-11T08:43:43.000Z</updated>
-    <content type="html"><![CDATA[<h2 id="这是第一篇_markdown-mode_学习笔记">这是第一篇 markdown-mode 学习笔记</h2><p>用来测试markdown的效果<br>emacs中如果要配置markdown-mode<br>如果是emacs-24可以使用  </p>
-<pre><code><span class="constant">M</span>-x <span class="keyword">package</span>-install
-markdown-<span class="literal">mode</span>
-</code></pre><p>来安装<br>debian/emacs-23也可以</p>
-<pre><code>aptitude <span class="keyword">install</span> emacs-good-el
-</code></pre><p>随后在.emacs或者.emacs.d/init.el中添加这些  </p>
-<pre><code><span class="list">(<span class="keyword">autoload</span> <span class="quoted">'markdown-mode</span> <span class="string">"markdown-mode"</span>
-   <span class="string">"Major mode for editing Markdown files"</span> <span class="literal">t</span>)</span>
-<span class="list">(<span class="keyword">add-to-list</span> <span class="quoted">'auto-mode-alist</span> <span class="quoted">'(<span class="string">"\\.text\\'"</span> . markdown-mode)</span>)</span>
-<span class="list">(<span class="keyword">add-to-list</span> <span class="quoted">'auto-mode-alist</span> <span class="quoted">'(<span class="string">"\\.markdown\\'"</span> . markdown-mode)</span>)</span>
-<span class="list">(<span class="keyword">add-to-list</span> <span class="quoted">'auto-mode-alist</span> <span class="quoted">'(<span class="string">"\\.md\\'"</span> . markdown-mode)</span>)</span>
-</code></pre><p>在Markdown模式中，可以使用  </p>
-<h2 id="C-c_C-a_超链接">C-c C-a 超链接</h2><p>跟l是增加一个<a href="ilink">inline link</a> (如C-c C-a l, 下同)<br>跟L是增加一个<a href="rlink">reference link</a><br>跟u是增加一个bare url<br>跟f是增加一个[^1]footnote<br>跟w是增加一个[[wiki link]]  </p>
-<h2 id="C-c_C-i_图片">C-c C-i 图片</h2><p>跟i是增加一个<img src="aa.jpg" alt="inline image"><br>跟I增加一个![reference image][aa.jpg]  </p>
-<h2 id="C-c_C-s_样式">C-c C-s 样式</h2><p>跟e标记<em>italic</em><br>跟b标记</p>
-<blockquote>
-<p>blockquote</p>
-</blockquote>
-<p>跟p标记</p>
-<pre><code>preformatted <span class="tag">code</span> blocks
-</code></pre><h2 id="C-c_C-t_标题">C-c C-t 标题</h2><p>跟h标记自动样式标题<br>跟H自动选择标题的级别但使用下划线<br>1-6 !可以选择标题级别<br>C-c C-c 命令<br>跟m代表编译<br>跟p代表预览<br>跟e代表导出<br>跟v代表导出并用浏览器查看<br>跟c代表检查错误<br>跟n重新编号<br>跟]完成所有标题和水平规则  </p>
-<h2 id="参考文献">参考文献</h2><p><a href="http://jblevins.org/projects/markdown-mode/" target="_blank" rel="external">http://jblevins.org/projects/markdown-mode/</a><br><a href="http://lutaf.com/markdown-simple-usage.htm" target="_blank" rel="external">http://lutaf.com/markdown-simple-usage.htm</a><br><a href="http://zipperary.com/2013/05/22/introduction-to-markdown/" target="_blank" rel="external">http://zipperary.com/2013/05/22/introduction-to-markdown/</a></p>
-<p>[^1]: foot note</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<h2 id="这是第一篇_markdown-mode_学习笔记">这是第一篇 markdown-mode 学习笔记</h2><p>用来测试markdown的效果<br>emacs中如果要配置markdown-mode<br>如果是emacs-24可以使用  </p>
-<pre>]]>
-    </summary>
-    
-      <category term="blog" scheme="http://yoursite.com/tags/blog/"/>
     
   </entry>
   
