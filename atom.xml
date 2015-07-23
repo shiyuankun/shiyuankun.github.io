@@ -94,7 +94,7 @@
     <link href="http://yoursite.com/2015/07/23/learning-rust-part-X/"/>
     <id>http://yoursite.com/2015/07/23/learning-rust-part-X/</id>
     <published>2015-07-23T07:42:27.000Z</published>
-    <updated>2015-07-23T09:12:57.000Z</updated>
+    <updated>2015-07-23T09:17:27.000Z</updated>
     <content type="html"><![CDATA[<h2 id="Universal_Function_Call_Syntax">Universal Function Call Syntax</h2><p>有些时候函数可能会有相同的名字。例如：</p>
 <pre><code><span class="keyword">trait</span> <span class="title">Foo</span> {
     <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>);
@@ -155,14 +155,11 @@
 </code></pre><p>这个新的类型Name在函数调用上和String完全一样。</p>
 <h2 id="不同类型间转换">不同类型间转换</h2><p>as可以做基本的转换</p>
 <pre><code><span class="keyword">let</span> x: <span class="keyword">i32</span> = <span class="number">5</span>;
-
 <span class="keyword">let</span> y = x <span class="keyword">as</span> <span class="keyword">i64</span>;
 </code></pre><p>transmute可以不做检查直接转换</p>
 <pre><code><span class="keyword">use</span> std::mem;
-
 <span class="keyword">unsafe</span> {
     <span class="keyword">let</span> a = [<span class="number">0u8</span>, <span class="number">0u8</span>, <span class="number">0u8</span>, <span class="number">0u8</span>];
-
     <span class="keyword">let</span> b = mem::transmute::&lt;[<span class="keyword">u8</span>; <span class="number">4</span>], <span class="keyword">u32</span>&gt;(a);
 }
 </code></pre><p>但还是会做一些基本的比如越界检查防止内存问题</p>
