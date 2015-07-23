@@ -174,15 +174,17 @@ fn main() {
 }
 </code></pre><p>这种转换会使编译器失去原始类型的信息，所以也可以认为是”type erasure”</p>
 <h2 id="closures">closures</h2><p>rust支持闭包(closures)，也就是有函数环境的匿名函数。rust闭包这样子实现</p>
-<p>let plus_one = |x: i32| x + 1;</p>
-<p>这样子就创建了一个闭包，闭包的参数在管道符中间，然后跟着表达式就是闭包的函数体。由于{}可以视为一个表达式，所以也可以用大括号将多行代码扩起来组成一个复杂点的闭包，这点比python好太多。</p>
-<p>let plus_two = |x| {<br>    let mut result: i32 = x;</p>
-<pre><code><span class="literal">result</span> += <span class="number">1</span>;
-<span class="literal">result</span> += <span class="number">1</span>;
+<pre><code><span class="keyword">let</span> <span class="variable">plus_one =</span> |x: i32| x + <span class="number">1</span>;
+</code></pre><p>这样子就创建了一个闭包，闭包的参数在管道符中间，然后跟着表达式就是闭包的函数体。由于{}可以视为一个表达式，所以也可以用大括号将多行代码扩起来组成一个复杂点的闭包，这点比python好太多。</p>
+<pre><code><span class="keyword">let</span> plus_two = |x| {
+    <span class="keyword">let</span> mut <span class="literal">result</span>: i32 = x;
 
-<span class="literal">result</span>
-</code></pre><p>};</p>
-<p>闭包也可以用类型指定返回值，</p>
+    <span class="literal">result</span> += <span class="number">1</span>;
+    <span class="literal">result</span> += <span class="number">1</span>;
+
+    <span class="literal">result</span>
+};
+</code></pre><p>闭包也可以用类型指定返回值，</p>
 <pre><code><span class="keyword">let</span> plus_one = |x: <span class="keyword">i32</span>| -&gt; <span class="keyword">i32</span> { x + <span class="number">1</span> };
 </code></pre><p>但一般为了简洁不这么做</p>
 <p>在python中，闭包的内部环境处理的并不好，如果引用了外部变量，那匿名函数的内部引用会随这外部变量的改变而改变，这点很坑。<br>rust部分解决了这个问题。</p>

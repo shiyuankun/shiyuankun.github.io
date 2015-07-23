@@ -210,14 +210,18 @@ ga('send', 'pageview');
 <pre><code><span class="keyword">type</span> Name = <span class="keyword">String</span>;
 </code></pre><p>这个新的类型Name在函数调用上和String完全一样。</p>
 <h2 id="不同类型间转换">不同类型间转换</h2><p>as可以做基本的转换</p>
-<p>let x: i32 = 5;</p>
-<p>let y = x as i64;</p>
-<p>transmute可以不做检查直接转换</p>
-<p>use std::mem;</p>
-<p>unsafe {<br>    let a = [0u8, 0u8, 0u8, 0u8];</p>
-<pre><code><span class="keyword">let</span> b = mem::transmute::&lt;[<span class="keyword">u8</span>; <span class="number">4</span>], <span class="keyword">u32</span>&gt;(a);
-</code></pre><p>}</p>
-<p>但还是会做一些基本的比如越界检查防止内存问题</p>
+<pre><code><span class="keyword">let</span> x: <span class="keyword">i32</span> = <span class="number">5</span>;
+
+<span class="keyword">let</span> y = x <span class="keyword">as</span> <span class="keyword">i64</span>;
+</code></pre><p>transmute可以不做检查直接转换</p>
+<pre><code><span class="keyword">use</span> std::mem;
+
+<span class="keyword">unsafe</span> {
+    <span class="keyword">let</span> a = [<span class="number">0u8</span>, <span class="number">0u8</span>, <span class="number">0u8</span>, <span class="number">0u8</span>];
+
+    <span class="keyword">let</span> b = mem::transmute::&lt;[<span class="keyword">u8</span>; <span class="number">4</span>], <span class="keyword">u32</span>&gt;(a);
+}
+</code></pre><p>但还是会做一些基本的比如越界检查防止内存问题</p>
 <h2 id="联合类型">联合类型</h2><p>例如对于一个图，你可能有Node Edge两种类型，但这样不美观，所以就可以用trait把两种类型联合起来</p>
 <pre><code><span class="keyword">trait</span> Graph {
     <span class="keyword">type</span> N;
@@ -249,19 +253,31 @@ ga('send', 'pageview');
 </code></pre><h2 id="不定长类型">不定长类型</h2><p>大多数类型都有固定长度，但rust也允许使用动态长度的类型。但这里有一定的限制</p>
 <p>1.只能通过指针操作unsized type, &amp;[T]可以但[T]不行<br>2.变量和参数不能有动态长度的类型<br>3.只有struct的最后一栏允许动态长度类型。enum不允许有动态长度类型</p>
 <h2 id="操作符重载">操作符重载</h2><p>只要对一个类型实现相应的函数就能实现相应重载。</p>
-<p>use std::ops::Add;</p>
-<h1 id="[derive(Debug)]">[derive(Debug)]</h1><p>struct Point {<br>    x: i32,<br>    y: i32,<br>}</p>
-<p>impl Add for Point {<br>    type Output = Point;</p>
-<pre><code><span class="tag">fn</span> <span class="tag">add</span>(self, <span class="attribute">other</span>: Point) <span class="tag">-</span>&gt; <span class="tag">Point</span> {
-    <span class="tag">Point</span> { <span class="attribute">x</span>: self.x + other.x, <span class="attribute">y</span>: self.y + other.y }
-}
-</code></pre><p>}</p>
-<p>fn main() {<br>    let p1 = Point { x: 1, y: 0 };<br>    let p2 = Point { x: 2, y: 3 };</p>
-<pre><code><span class="keyword">let</span> <span class="variable">p3 =</span> p1 + p2;
+<pre><code><span class="keyword">use</span> std::ops::Add;
 
-println!(<span class="string">"{:?}"</span>, p3);
-</code></pre><p>}</p>
-<p>这些允许重载的函数可以在std::ops中找到</p>
+<span class="preprocessor">#[derive(Debug)]</span>
+<span class="keyword">struct</span> Point {
+    x: <span class="keyword">i32</span>,
+    y: <span class="keyword">i32</span>,
+}
+
+<span class="keyword">impl</span> Add <span class="keyword">for</span> Point {
+    <span class="keyword">type</span> <span class="title">Output</span> = Point;
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">add</span></span>(<span class="keyword">self</span>, other: Point) -&gt; Point {
+        Point { x: <span class="keyword">self</span>.x + other.x, y: <span class="keyword">self</span>.y + other.y }
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> p1 = Point { x: <span class="number">1</span>, y: <span class="number">0</span> };
+    <span class="keyword">let</span> p2 = Point { x: <span class="number">2</span>, y: <span class="number">3</span> };
+
+    <span class="keyword">let</span> p3 = p1 + p2;
+
+    <span class="built_in">println!</span>(<span class="string">"{:?}"</span>, p3);
+}
+</code></pre><p>这些允许重载的函数可以在std::ops中找到</p>
 
       
     </div>

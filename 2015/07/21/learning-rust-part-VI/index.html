@@ -206,14 +206,20 @@ point.y.set(<span class="number">7</span>);
 point = Point3d { y: <span class="number">1</span>, .. point };
 </code></pre><p>这样point中除y以外的数值都会从另一个复制过来</p>
 <p>Tuple structs<br>这个定义类似于tuple和struct结合体</p>
-<p>struct Color(i32, i32, i32);<br>struct Point(i32, i32, i32);</p>
-<p>let black = Color(0, 0, 0);<br>let origin = Point(0, 0, 0);</p>
-<p>但不推荐这么写，因为没有变量名字。</p>
+<pre><code><span class="keyword">struct</span> Color(<span class="keyword">i32</span>, <span class="keyword">i32</span>, <span class="keyword">i32</span>);
+<span class="keyword">struct</span> Point(<span class="keyword">i32</span>, <span class="keyword">i32</span>, <span class="keyword">i32</span>);
+
+<span class="keyword">let</span> black = Color(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);
+<span class="keyword">let</span> origin = Point(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);
+</code></pre><p>但不推荐这么写，因为没有变量名字。</p>
 <p>但有的时候有奇效，比如</p>
-<p>struct Inches(i32);</p>
-<p>let length = Inches(10);</p>
-<p>let Inches(integer_length) = length;<br>println!(“length is {} inches”, integer_length);</p>
-<p>这样可以从tuple struct解包出一个数值，有点像python的unpack。</p>
+<pre><code>struct Inches<span class="list">(<span class="keyword">i32</span>)</span><span class="comment">;</span>
+
+let length = Inches<span class="list">(<span class="number">10</span>)</span><span class="comment">;</span>
+
+let Inches<span class="list">(<span class="keyword">integer_length</span>)</span> = length<span class="comment">;</span>
+println!<span class="list">(<span class="string">"length is {} inches"</span>, integer_length)</span><span class="comment">;</span>
+</code></pre><p>这样可以从tuple struct解包出一个数值，有点像python的unpack。</p>
 <h2 id="Enums">Enums</h2><p>枚举是一个常见的东西，就不细说了<br>差不多就是把不同种类的变量类型打包成一个类型，这个类型的数据有各种变量类型的可能。</p>
 
       

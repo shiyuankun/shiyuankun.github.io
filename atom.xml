@@ -94,7 +94,7 @@
     <link href="http://yoursite.com/2015/07/23/learning-rust-part-X/"/>
     <id>http://yoursite.com/2015/07/23/learning-rust-part-X/</id>
     <published>2015-07-23T07:42:27.000Z</published>
-    <updated>2015-07-23T08:54:04.000Z</updated>
+    <updated>2015-07-23T09:12:57.000Z</updated>
     <content type="html"><![CDATA[<h2 id="Universal_Function_Call_Syntax">Universal Function Call Syntax</h2><p>有些时候函数可能会有相同的名字。例如：</p>
 <pre><code><span class="keyword">trait</span> <span class="title">Foo</span> {
     <span class="function"><span class="keyword">fn</span> <span class="title">f</span></span>(&amp;<span class="keyword">self</span>);
@@ -154,14 +154,18 @@
 <pre><code><span class="keyword">type</span> Name = <span class="keyword">String</span>;
 </code></pre><p>这个新的类型Name在函数调用上和String完全一样。</p>
 <h2 id="不同类型间转换">不同类型间转换</h2><p>as可以做基本的转换</p>
-<p>let x: i32 = 5;</p>
-<p>let y = x as i64;</p>
-<p>transmute可以不做检查直接转换</p>
-<p>use std::mem;</p>
-<p>unsafe {<br>    let a = [0u8, 0u8, 0u8, 0u8];</p>
-<pre><code><span class="keyword">let</span> b = mem::transmute::&lt;[<span class="keyword">u8</span>; <span class="number">4</span>], <span class="keyword">u32</span>&gt;(a);
-</code></pre><p>}</p>
-<p>但还是会做一些基本的比如越界检查防止内存问题</p>
+<pre><code><span class="keyword">let</span> x: <span class="keyword">i32</span> = <span class="number">5</span>;
+
+<span class="keyword">let</span> y = x <span class="keyword">as</span> <span class="keyword">i64</span>;
+</code></pre><p>transmute可以不做检查直接转换</p>
+<pre><code><span class="keyword">use</span> std::mem;
+
+<span class="keyword">unsafe</span> {
+    <span class="keyword">let</span> a = [<span class="number">0u8</span>, <span class="number">0u8</span>, <span class="number">0u8</span>, <span class="number">0u8</span>];
+
+    <span class="keyword">let</span> b = mem::transmute::&lt;[<span class="keyword">u8</span>; <span class="number">4</span>], <span class="keyword">u32</span>&gt;(a);
+}
+</code></pre><p>但还是会做一些基本的比如越界检查防止内存问题</p>
 <h2 id="联合类型">联合类型</h2><p>例如对于一个图，你可能有Node Edge两种类型，但这样不美观，所以就可以用trait把两种类型联合起来</p>
 <pre><code><span class="keyword">trait</span> Graph {
     <span class="keyword">type</span> N;
@@ -193,19 +197,31 @@
 </code></pre><h2 id="不定长类型">不定长类型</h2><p>大多数类型都有固定长度，但rust也允许使用动态长度的类型。但这里有一定的限制</p>
 <p>1.只能通过指针操作unsized type, &amp;[T]可以但[T]不行<br>2.变量和参数不能有动态长度的类型<br>3.只有struct的最后一栏允许动态长度类型。enum不允许有动态长度类型</p>
 <h2 id="操作符重载">操作符重载</h2><p>只要对一个类型实现相应的函数就能实现相应重载。</p>
-<p>use std::ops::Add;</p>
-<h1 id="[derive(Debug)]">[derive(Debug)]</h1><p>struct Point {<br>    x: i32,<br>    y: i32,<br>}</p>
-<p>impl Add for Point {<br>    type Output = Point;</p>
-<pre><code><span class="tag">fn</span> <span class="tag">add</span>(self, <span class="attribute">other</span>: Point) <span class="tag">-</span>&gt; <span class="tag">Point</span> {
-    <span class="tag">Point</span> { <span class="attribute">x</span>: self.x + other.x, <span class="attribute">y</span>: self.y + other.y }
-}
-</code></pre><p>}</p>
-<p>fn main() {<br>    let p1 = Point { x: 1, y: 0 };<br>    let p2 = Point { x: 2, y: 3 };</p>
-<pre><code><span class="keyword">let</span> <span class="variable">p3 =</span> p1 + p2;
+<pre><code><span class="keyword">use</span> std::ops::Add;
 
-println!(<span class="string">"{:?}"</span>, p3);
-</code></pre><p>}</p>
-<p>这些允许重载的函数可以在std::ops中找到</p>
+<span class="preprocessor">#[derive(Debug)]</span>
+<span class="keyword">struct</span> Point {
+    x: <span class="keyword">i32</span>,
+    y: <span class="keyword">i32</span>,
+}
+
+<span class="keyword">impl</span> Add <span class="keyword">for</span> Point {
+    <span class="keyword">type</span> <span class="title">Output</span> = Point;
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">add</span></span>(<span class="keyword">self</span>, other: Point) -&gt; Point {
+        Point { x: <span class="keyword">self</span>.x + other.x, y: <span class="keyword">self</span>.y + other.y }
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> p1 = Point { x: <span class="number">1</span>, y: <span class="number">0</span> };
+    <span class="keyword">let</span> p2 = Point { x: <span class="number">2</span>, y: <span class="number">3</span> };
+
+    <span class="keyword">let</span> p3 = p1 + p2;
+
+    <span class="built_in">println!</span>(<span class="string">"{:?}"</span>, p3);
+}
+</code></pre><p>这些允许重载的函数可以在std::ops中找到</p>
 ]]></content>
     <summary type="html">
     <![CDATA[<h2 id="Universal_Function_Call_Syntax">Universal Function Call Syntax</h2><p>有些时候函数可能会有相同的名字。例如：</p>
@@ -221,7 +237,7 @@ println!(<span class="string">"{:?}"</span>, p3);
     <link href="http://yoursite.com/2015/07/23/learning-rust-part-IX/"/>
     <id>http://yoursite.com/2015/07/23/learning-rust-part-IX/</id>
     <published>2015-07-23T06:21:13.000Z</published>
-    <updated>2015-07-23T07:41:46.000Z</updated>
+    <updated>2015-07-23T09:13:31.000Z</updated>
     <content type="html"><![CDATA[<p>感觉好累，休息了一天，连椭圆机都没练，感觉今天终于缓过来了，继续学习。</p>
 <h2 id="Trait_对象">Trait 对象</h2><p>当代码处理多态(polymorphism)的时候，需要有一个机制来决定到底执行哪个版本的代码。这通常叫做调度(dispatch)。调度的方式一般有两种，静态和动态。rust倾向于静态调度，但也支持动态调度。</p>
 <p>例如，我们定义一个trait，并对u8和string实现一个方法</p>
@@ -269,15 +285,17 @@ fn main() {
 }
 </code></pre><p>这种转换会使编译器失去原始类型的信息，所以也可以认为是”type erasure”</p>
 <h2 id="closures">closures</h2><p>rust支持闭包(closures)，也就是有函数环境的匿名函数。rust闭包这样子实现</p>
-<p>let plus_one = |x: i32| x + 1;</p>
-<p>这样子就创建了一个闭包，闭包的参数在管道符中间，然后跟着表达式就是闭包的函数体。由于{}可以视为一个表达式，所以也可以用大括号将多行代码扩起来组成一个复杂点的闭包，这点比python好太多。</p>
-<p>let plus_two = |x| {<br>    let mut result: i32 = x;</p>
-<pre><code><span class="literal">result</span> += <span class="number">1</span>;
-<span class="literal">result</span> += <span class="number">1</span>;
+<pre><code><span class="keyword">let</span> <span class="variable">plus_one =</span> |x: i32| x + <span class="number">1</span>;
+</code></pre><p>这样子就创建了一个闭包，闭包的参数在管道符中间，然后跟着表达式就是闭包的函数体。由于{}可以视为一个表达式，所以也可以用大括号将多行代码扩起来组成一个复杂点的闭包，这点比python好太多。</p>
+<pre><code><span class="keyword">let</span> plus_two = |x| {
+    <span class="keyword">let</span> mut <span class="literal">result</span>: i32 = x;
 
-<span class="literal">result</span>
-</code></pre><p>};</p>
-<p>闭包也可以用类型指定返回值，</p>
+    <span class="literal">result</span> += <span class="number">1</span>;
+    <span class="literal">result</span> += <span class="number">1</span>;
+
+    <span class="literal">result</span>
+};
+</code></pre><p>闭包也可以用类型指定返回值，</p>
 <pre><code><span class="keyword">let</span> plus_one = |x: <span class="keyword">i32</span>| -&gt; <span class="keyword">i32</span> { x + <span class="number">1</span> };
 </code></pre><p>但一般为了简洁不这么做</p>
 <p>在python中，闭包的内部环境处理的并不好，如果引用了外部变量，那匿名函数的内部引用会随这外部变量的改变而改变，这点很坑。<br>rust部分解决了这个问题。</p>
@@ -747,7 +765,7 @@ match x {
     <link href="http://yoursite.com/2015/07/21/learning-rust-part-VI/"/>
     <id>http://yoursite.com/2015/07/21/learning-rust-part-VI/</id>
     <published>2015-07-21T06:56:38.000Z</published>
-    <updated>2015-07-21T07:33:01.000Z</updated>
+    <updated>2015-07-23T09:14:29.000Z</updated>
     <content type="html"><![CDATA[<h2 id="可变性(Mutability)">可变性(Mutability)</h2><p>rust的可变性已经提到过很多了，差不多就是这样子</p>
 <pre><code><span class="keyword">let</span> mut <span class="variable">x =</span> <span class="number">5</span>;
 <span class="keyword">let</span> <span class="variable">y =</span> &amp;mut x;
@@ -812,14 +830,20 @@ point.y.set(<span class="number">7</span>);
 point = Point3d { y: <span class="number">1</span>, .. point };
 </code></pre><p>这样point中除y以外的数值都会从另一个复制过来</p>
 <p>Tuple structs<br>这个定义类似于tuple和struct结合体</p>
-<p>struct Color(i32, i32, i32);<br>struct Point(i32, i32, i32);</p>
-<p>let black = Color(0, 0, 0);<br>let origin = Point(0, 0, 0);</p>
-<p>但不推荐这么写，因为没有变量名字。</p>
+<pre><code><span class="keyword">struct</span> Color(<span class="keyword">i32</span>, <span class="keyword">i32</span>, <span class="keyword">i32</span>);
+<span class="keyword">struct</span> Point(<span class="keyword">i32</span>, <span class="keyword">i32</span>, <span class="keyword">i32</span>);
+
+<span class="keyword">let</span> black = Color(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);
+<span class="keyword">let</span> origin = Point(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);
+</code></pre><p>但不推荐这么写，因为没有变量名字。</p>
 <p>但有的时候有奇效，比如</p>
-<p>struct Inches(i32);</p>
-<p>let length = Inches(10);</p>
-<p>let Inches(integer_length) = length;<br>println!(“length is {} inches”, integer_length);</p>
-<p>这样可以从tuple struct解包出一个数值，有点像python的unpack。</p>
+<pre><code>struct Inches<span class="list">(<span class="keyword">i32</span>)</span><span class="comment">;</span>
+
+let length = Inches<span class="list">(<span class="number">10</span>)</span><span class="comment">;</span>
+
+let Inches<span class="list">(<span class="keyword">integer_length</span>)</span> = length<span class="comment">;</span>
+println!<span class="list">(<span class="string">"length is {} inches"</span>, integer_length)</span><span class="comment">;</span>
+</code></pre><p>这样可以从tuple struct解包出一个数值，有点像python的unpack。</p>
 <h2 id="Enums">Enums</h2><p>枚举是一个常见的东西，就不细说了<br>差不多就是把不同种类的变量类型打包成一个类型，这个类型的数据有各种变量类型的可能。</p>
 ]]></content>
     <summary type="html">

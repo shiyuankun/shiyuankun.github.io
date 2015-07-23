@@ -2,18 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://yoursite.com/2015/07/23/learning-rust-part-XI/</loc>
-    <lastmod>2015-07-23T09:11:11.000Z</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://yoursite.com/2015/07/23/learning-rust-part-X/</loc>
-    <lastmod>2015-07-23T08:54:04.000Z</lastmod>
+    <loc>http://yoursite.com/2015/07/21/learning-rust-part-VI/</loc>
+    <lastmod>2015-07-23T09:14:29.000Z</lastmod>
   </url>
   
   <url>
     <loc>http://yoursite.com/2015/07/23/learning-rust-part-IX/</loc>
-    <lastmod>2015-07-23T07:41:46.000Z</lastmod>
+    <lastmod>2015-07-23T09:13:31.000Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2015/07/23/learning-rust-part-X/</loc>
+    <lastmod>2015-07-23T09:12:57.000Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2015/07/23/learning-rust-part-XI/</loc>
+    <lastmod>2015-07-23T09:11:11.000Z</lastmod>
   </url>
   
   <url>
@@ -24,11 +29,6 @@
   <url>
     <loc>http://yoursite.com/2015/07/21/learning-rust-part-VII/</loc>
     <lastmod>2015-07-21T08:09:37.000Z</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://yoursite.com/2015/07/21/learning-rust-part-VI/</loc>
-    <lastmod>2015-07-21T07:33:01.000Z</lastmod>
   </url>
   
   <url>
