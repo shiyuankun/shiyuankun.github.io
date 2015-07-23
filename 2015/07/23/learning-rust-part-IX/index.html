@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>rust学习笔记(九) | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="感觉好累，休息了一天，连椭圆机都没练，感觉今天终于缓过来了，继续学习。
+Trait 对象当代码处理多态(polymorphism)的时候，需要有一个机制来决定到底执行哪个版本的代码。这通常叫做调度(dispatch)。调度的方式一般有两种，静态和动态。rust倾向于静态调度，但也支持动态调度。
+例如，我们定义一个trait，并对u8和string实现一个方法
+trait Foo {
+    fn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rust学习笔记(九)">
+<meta property="og:url" content="http://yoursite.com/2015/07/23/learning-rust-part-IX/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="感觉好累，休息了一天，连椭圆机都没练，感觉今天终于缓过来了，继续学习。
+Trait 对象当代码处理多态(polymorphism)的时候，需要有一个机制来决定到底执行哪个版本的代码。这通常叫做调度(dispatch)。调度的方式一般有两种，静态和动态。rust倾向于静态调度，但也支持动态调度。
+例如，我们定义一个trait，并对u8和string实现一个方法
+trait Foo {
+    fn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rust学习笔记(九)">
+<meta name="twitter:description" content="感觉好累，休息了一天，连椭圆机都没练，感觉今天终于缓过来了，继续学习。
+Trait 对象当代码处理多态(polymorphism)的时候，需要有一个机制来决定到底执行哪个版本的代码。这通常叫做调度(dispatch)。调度的方式一般有两种，静态和动态。rust倾向于静态调度，但也支持动态调度。
+例如，我们定义一个trait，并对u8和string实现一个方法
+trait Foo {
+    fn">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-62861406-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+<!-- Baidu Statistics -->
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+<!-- End Baidu Statistics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-learning-rust-part-IX" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/23/learning-rust-part-IX/" class="article-date">
+  <time datetime="2015-07-23T06:21:13.000Z" itemprop="datePublished">2015-07-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      rust学习笔记(九)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>感觉好累，休息了一天，连椭圆机都没练，感觉今天终于缓过来了，继续学习。</p>
+<h2 id="Trait_对象">Trait 对象</h2><p>当代码处理多态(polymorphism)的时候，需要有一个机制来决定到底执行哪个版本的代码。这通常叫做调度(dispatch)。调度的方式一般有两种，静态和动态。rust倾向于静态调度，但也支持动态调度。</p>
+<p>例如，我们定义一个trait，并对u8和string实现一个方法</p>
+<pre><code>trait <span class="type">Foo</span> {
+    fn <span class="keyword">method</span>(&amp;self) -&gt; <span class="type">String</span>;
+}
+
+impl <span class="type">Foo</span> <span class="keyword">for</span> u8 {
+    fn <span class="keyword">method</span>(&amp;self) -&gt; <span class="type">String</span> { format!(<span class="string">"u8: {}"</span>, *self) }
+}
+
+impl <span class="type">Foo</span> <span class="keyword">for</span> <span class="type">String</span> {
+    fn <span class="keyword">method</span>(&amp;self) -&gt; <span class="type">String</span> { format!(<span class="string">"string: {}"</span>, *self) }
+}
+</code></pre><p>这时候静态的调度就可以通过trait bounds实现</p>
+<pre><code>fn do_something&lt;T: <span class="type">Foo</span>&gt;(x: T) {
+    x.<span class="keyword">method</span>();
+}
+
+fn main() {
+    <span class="keyword">let</span> x = <span class="number">5u8</span>;
+    <span class="keyword">let</span> y = <span class="string">"Hello"</span>.to_string();
+
+    do_something(x);
+    do_something(y);
+}
+</code></pre><p>rust是通过单态(monomorphization)来实现静态调度的。也就是说，编译之后为每一个T类型产生一个do_something_T这样的函数，并且替换掉每一个do_something的调用为相应类型的调用。<br>这样做的好处是可以将函数内联(inline)，这样可以让程序跑得更快，但也有坏处，会产生过多的函数。另外没有充分优化过得的编译器也会让某些inline函数跑得更慢。</p>
+<h2 id="dynamic_dispatch">dynamic dispatch</h2><p>rust通过特点对象(trait objects)来实现动态调度(dynamic dispatch)。trait objects的使用很简单，就是&amp;Foo 或者 Box<foo>。在调用时使用(&amp;x as &amp;Foo)转换，或者(&amp;x作为函数参数)强制转换就可以使用trait objects来实现动态调度了。例如：<br>普通转换</foo></p>
+<pre><code>fn do_something(x: &amp;<span class="type">Foo</span>) {
+    x.<span class="keyword">method</span>();
+}
+
+fn main() {
+    <span class="keyword">let</span> x = <span class="number">5u8</span>;
+    do_something(&amp;x <span class="keyword">as</span> &amp;<span class="type">Foo</span>);
+}
+</code></pre><p>强制转换</p>
+<pre><code>fn do_something(x: &amp;<span class="type">Foo</span>) {
+    x.<span class="keyword">method</span>();
+}
+
+fn main() {
+    <span class="keyword">let</span> x = <span class="string">"Hello"</span>.to_string();
+    do_something(&amp;x);
+}
+</code></pre><p>这种转换会使编译器失去原始类型的信息，所以也可以认为是”type erasure”</p>
+<h2 id="closures">closures</h2><p>rust支持闭包(closures)，也就是有函数环境的匿名函数。rust闭包这样子实现</p>
+<p>let plus_one = |x: i32| x + 1;</p>
+<p>这样子就创建了一个闭包，闭包的参数在管道符中间，然后跟着表达式就是闭包的函数体。由于{}可以视为一个表达式，所以也可以用大括号将多行代码扩起来组成一个复杂点的闭包，这点比python好太多。</p>
+<p>let plus_two = |x| {<br>    let mut result: i32 = x;</p>
+<pre><code><span class="literal">result</span> += <span class="number">1</span>;
+<span class="literal">result</span> += <span class="number">1</span>;
+
+<span class="literal">result</span>
+</code></pre><p>};</p>
+<p>闭包也可以用类型指定返回值，</p>
+<pre><code><span class="keyword">let</span> plus_one = |x: <span class="keyword">i32</span>| -&gt; <span class="keyword">i32</span> { x + <span class="number">1</span> };
+</code></pre><p>但一般为了简洁不这么做</p>
+<p>在python中，闭包的内部环境处理的并不好，如果引用了外部变量，那匿名函数的内部引用会随这外部变量的改变而改变，这点很坑。<br>rust部分解决了这个问题。</p>
+<pre><code><span class="keyword">let</span> mut <span class="variable">num =</span> <span class="number">5</span>;
+<span class="keyword">let</span> <span class="variable">plus_num =</span> |x: i32| x + num;
+
+<span class="keyword">let</span> <span class="variable">y =</span> &amp;mut num;
+</code></pre><p>这样是错误的，编译器会告诉你在定义plus_num的时候num被immutable引用了，所以y=&amp;mut num就报错了。<br>要这么做只能让闭包在他自己的作用域中，执行完以后消失</p>
+<pre><code><span class="keyword">let</span> <span class="keyword">mut</span> num = <span class="number">5</span>;
+{
+    <span class="keyword">let</span> plus_num = |x: <span class="keyword">i32</span>| x + num;
+
+} <span class="comment">// plus_num 离开作用域就消失了。</span>
+
+<span class="keyword">let</span> y = &amp;<span class="keyword">mut</span> num;
+</code></pre><h2 id="move闭包">move闭包</h2><pre><code><span class="keyword">let</span> <span class="keyword">mut</span> num = <span class="number">5</span>;
+
+{ 
+    <span class="keyword">let</span> <span class="keyword">mut</span> add_num = |x: <span class="keyword">i32</span>| num += x;
+
+    add_num(<span class="number">5</span>);
+}
+
+<span class="built_in">assert_eq!</span>(<span class="number">10</span>, num);<span class="comment">//结果是10</span>
+
+
+<span class="keyword">let</span> <span class="keyword">mut</span> num = <span class="number">5</span>;
+
+{ 
+    <span class="keyword">let</span> <span class="keyword">mut</span> add_num = move |x: <span class="keyword">i32</span>| num += x;
+
+    add_num(<span class="number">5</span>);
+}
+
+<span class="built_in">assert_eq!</span>(<span class="number">5</span>, num);<span class="comment">//结果是5</span>
+</code></pre><p>所以在定义闭包时使用move就是对所使用的外部变量做了一个copy，即使改变了，离开了作用域还是原来的值。</p>
+<h2 id="closure_实现方法">closure 实现方法</h2><p>同其他语言不一样，rust里闭包的实现其是靠的就是trait objects。</p>
+<pre><code>pub <span class="keyword">trait</span> Fn<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> : FnMut<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> {
+    extern <span class="string">"rust-call"</span> fn call(<span class="subst">&amp;</span><span class="built_in">self</span>, args: Args) <span class="subst">-&gt; </span><span class="built_in">Self</span><span class="tag">::Output</span>;
+}
+
+pub <span class="keyword">trait</span> FnMut<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> : FnOnce<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> {
+    extern <span class="string">"rust-call"</span> fn call_mut(<span class="subst">&amp;</span>mut <span class="built_in">self</span>, args: Args) <span class="subst">-&gt; </span><span class="built_in">Self</span><span class="tag">::Output</span>;
+}
+
+pub <span class="keyword">trait</span> FnOnce<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> {
+    <span class="keyword">type</span> Output;
+
+    extern <span class="string">"rust-call"</span> fn call_once(<span class="built_in">self</span>, args: Args) <span class="subst">-&gt; </span><span class="built_in">Self</span><span class="tag">::Output</span>;
+}
+</code></pre><p>在rust内部，所有的闭包都是以上这三个trait objects的重载</p>
+<h2 id="将闭包作为参数">将闭包作为参数</h2><p>看懂了闭包的实现本质是trait objects，我们就可以看看怎么把闭包作为参数传递进别的函数中。</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">call_with_one</span></span>&lt;F&gt;(some_closure: F) -&gt; <span class="keyword">i32</span>
+    where F : Fn(<span class="keyword">i32</span>) -&gt; <span class="keyword">i32</span> {
+
+    some_closure(<span class="number">1</span>)
+}
+
+<span class="keyword">let</span> answer = call_with_one(|x| x + <span class="number">2</span>);
+
+<span class="built_in">assert_eq!</span>(<span class="number">3</span>, answer);
+</code></pre><p>这里是一个例子，在call_with_one的调用时定义了一个匿名函数，然后在定义call_with_one里，将参数定义为类型F，返回值为i32，然后接着一行where F: Fn(i32)-&gt;i32)的意思就是F这个类型其实是Fn(i32)-&gt;i32，Fn就是上一节第一个闭包。</p>
+<h2 id="返回闭包">返回闭包</h2><p>能传入闭包，那能返回闭包吗？</p>
+<p>能！但不能像传入闭包一样那样定义一个传出的函数，然后类型是Fn。1.是生命周期的缘故，所有内部定义的函数他的生命都不会长过函数本身，这个可以用’static定义返回值类型来避开。2.这个就比较麻烦，应为在rust编译器里，闭包直接有一个类型叫闭包，并不是Fn….3.由于在函数中定义闭包很容易以来函数内部的变量，这些变量的寿命都很短，所以rust为了避免问题就将所有的闭包定义为一个新的闭包并且没有static生命。当然这也不难解决</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">factory</span></span>() -&gt; Box&lt;Fn(<span class="keyword">i32</span>) -&gt; <span class="keyword">i32</span>&gt; {<span class="comment">//Fn就是为了定义闭包，Box为了将闭包类型转换</span>
+    <span class="keyword">let</span> num = <span class="number">5</span>;
+
+    Box::new(move |x| x + num)<span class="comment">//move 为了将num做一份复制到闭包中，避免num本身的生命周期过短的问题</span>
+}
+<span class="keyword">let</span> f = factory();
+
+<span class="keyword">let</span> answer = f(<span class="number">1</span>);
+<span class="built_in">assert_eq!</span>(<span class="number">6</span>, answer);
+</code></pre><p>内心不住的咆哮(我要休假！去海边！)</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/23/learning-rust-part-IX/" data-id="cicfw51qj0014qtv4p5zndkpf" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/07/21/learning-rust-part-VIII/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rust学习笔记(八)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 16px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 20px;">rust</a><a href="/tags/scala/" style="font-size: 14px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 18px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/07/23/learning-rust-part-IX/">rust学习笔记(九)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/21/learning-rust-part-VIII/">rust学习笔记(八)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/21/learning-rust-part-VII/">rust学习笔记(七)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/21/learning-rust-part-VI/">rust学习笔记(六)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/20/learning-rust-part-V/">rust学习笔记(五)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

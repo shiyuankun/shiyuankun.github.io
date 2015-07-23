@@ -95,6 +95,631 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-spark-task-and-scheduler" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/06/09/spark-task-and-scheduler/" class="article-date">
+  <time datetime="2015-06-09T13:27:45.000Z" itemprop="datePublished">2015-06-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/06/09/spark-task-and-scheduler/">spark 的调度和任务</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>一晃快一个月过去了，这个月有点小忙做了很多项目一直都没空闲重新研究spark的代码。今天晚上下决心看完。花了一点时间追了一下代码。基本算是搞清楚了spark的调度。<br>上次说到，spark会把记录了操作的rdd提交交给调度器等待运行。那调度器具体是怎么执行计算的呢？随手提交了一个作业，有如下日志</p>
+<pre><code><span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">DAGScheduler:</span> Submitting <span class="number">1</span> missing tasks from Stage <span class="number">1</span> (MapPartitionsRDD[<span class="number">2</span>] at map at Task2a.<span class="string">scala:</span><span class="number">8</span>)
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">TaskSchedulerImpl:</span> Adding task set <span class="number">1.0</span> with <span class="number">1</span> tasks
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">TaskSetManager:</span> Starting task <span class="number">0.0</span> <span class="keyword">in</span> stage <span class="number">1.0</span> (TID <span class="number">1</span>, localhost, PROCESS_LOCAL, <span class="number">1348</span> bytes)
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">Executor:</span> Running task <span class="number">0.0</span> <span class="keyword">in</span> stage <span class="number">1.0</span> (TID <span class="number">1</span>)
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">HadoopRDD:</span> Input <span class="string">split:</span> <span class="string">file:</span><span class="regexp">/home/</span>cloudera/<span class="number">1</span>millionTweets.<span class="string">tsv:</span><span class="number">0</span>+<span class="number">28775886</span>
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">10</span> INFO <span class="string">BlockManager:</span> Removing broadcast <span class="number">1</span>
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">10</span> INFO <span class="string">BlockManager:</span> Removing block broadcast_1_piece0
+<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">10</span> INFO <span class="string">MemoryStore:</span> Block broadcast_1_piece0 of size <span class="number">2039</span> dropped from memory (free <span class="number">280032800</span>)
+</code></pre><p>我们可以看到，DAGScheduler将任务提交了以后其实是TaskSetManager执行任务的</p>
+<pre><code>logInfo(<span class="string">"Starting <span class="variable">%s</span> (TID <span class="variable">%d</span>, <span class="variable">%s</span>, <span class="variable">%s</span>, <span class="variable">%d</span> bytes)"</span>.<span class="keyword">format</span>(
+taskName, taskId, host, taskLocality, serializedTask.limit))
+sched.dagScheduler.taskStarted(task, info)
+<span class="keyword">return</span> Some(new TaskDescription(taskId = taskId, attemptNumber = attemptNum, execId,
+taskName, <span class="keyword">index</span>, serializedTask))
+</code></pre><p>这里调用了dagScheduler的taskstarted开始任务的而最后到了Executor执行，也就是这一段</p>
+<pre><code><span class="comment">// Run the actual task and measure its runtime.</span>
+taskStart = System.<span class="function"><span class="title">currentTimeMillis</span><span class="params">()</span></span>
+val value = task.<span class="function"><span class="title">run</span><span class="params">(taskAttemptId = taskId, attemptNumber = attemptNumber)</span></span>
+val taskFinish = System.<span class="function"><span class="title">currentTimeMillis</span><span class="params">()</span></span>
+</code></pre><p>这里调用的是task.run来执行</p>
+<pre><code>final <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(taskAttemptId: Long, attemptNumber: Int)</span>:</span> T = {
+  context = new TaskContextImpl(stageId = stageId, partitionId = partitionId,
+    taskAttemptId = taskAttemptId, attemptNumber = attemptNumber, runningLocally = false)
+  TaskContextHelper.setTaskContext(context)
+  context.taskMetrics.setHostname(Utils.localHostName())
+  taskThread = Thread.currentThread()
+  <span class="keyword">if</span> (_killed) {
+    kill(interruptThread = false)
+  }
+  <span class="keyword">try</span> {
+    runTask(context)
+  } <span class="keyword">finally</span> {
+    context.markTaskCompleted()
+    TaskContextHelper.unset()
+  }
+ }
+</code></pre><p>这是一个抽象类的final方法，基本可以看出大致的逻辑，调用自己的runTask执行任务完事。<br>例如，对于shuffle任务有一个</p>
+<pre><code><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">ShuffleMapTask</span>(</span>
+  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">runTask</span>(</span>context: <span class="type">TaskContext</span>): <span class="type">MapStatus</span> = {
+    <span class="comment">// Deserialize the RDD using the broadcast variable.</span>
+    <span class="function"><span class="keyword">val</span> <span class="title">ser</span> =</span> <span class="type">SparkEnv</span>.get.closureSerializer.newInstance()
+    <span class="function"><span class="keyword">val</span> (</span>rdd, dep) = ser.deserialize[(<span class="type">RDD</span>[_], <span class="type">ShuffleDependency</span>[_, _, _])](
+      <span class="type">ByteBuffer</span>.wrap(taskBinary.value), <span class="type">Thread</span>.currentThread.getContextClassLoader)
+
+    metrics = <span class="type">Some</span>(context.taskMetrics)
+    <span class="keyword">var</span> writer: <span class="type">ShuffleWriter</span>[<span class="type">Any</span>, <span class="type">Any</span>] = <span class="literal">null</span>
+    <span class="keyword">try</span> {
+      <span class="function"><span class="keyword">val</span> <span class="title">manager</span> =</span> <span class="type">SparkEnv</span>.get.shuffleManager
+      writer = manager.getWriter[<span class="type">Any</span>, <span class="type">Any</span>](dep.shuffleHandle, partitionId, context)
+      writer.write(rdd.iterator(partition, context).asInstanceOf[<span class="type">Iterator</span>[_ &lt;: <span class="type">Product2</span>[<span class="type">Any</span>, <span class="type">Any</span>]]])
+      <span class="keyword">return</span> writer.stop(success = <span class="literal">true</span>).get
+    } <span class="keyword">catch</span> {
+      <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;
+        <span class="keyword">try</span> {
+          <span class="keyword">if</span> (writer != <span class="literal">null</span>) {
+            writer.stop(success = <span class="literal">false</span>)
+          }
+        } <span class="keyword">catch</span> {
+          <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;
+            log.debug(<span class="string">"Could not stop writer"</span>, e)
+        }
+        <span class="keyword">throw</span> e
+    }
+  }
+</code></pre><p>每一个Task子类都有自己的衍生的Runtask方法，取决于各自的目的。<br>终于算是找到了核心运算单元了，继续看mllib和dataframe的代码</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/06/09/spark-task-and-scheduler/" data-id="cicfw51p80009qtv45xc7nmir" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scheduler/">scheduler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/task/">task</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-explore-spark-RDD-source-code" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/15/explore-spark-RDD-source-code/" class="article-date">
+  <time datetime="2015-05-15T08:14:17.000Z" itemprop="datePublished">2015-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/15/explore-spark-RDD-source-code/">expore spark RDD source code</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>一鼓作气再而衰三而竭。<br>开始阅读spark部分的代码，好在之前在coursera上看过一点scala虽然习题没做完但是不至于全忘。在spark里面，RDD的lazy evaluation也是通过和pyspark差不多的方法实现的，定义一个RDD类，每次操作都返回一个MapParitionsRDD，在这个MapParitionsRDD里记下前一个RDD和对应的函数。</p>
+<pre><code>abstract <span class="class"><span class="keyword">class</span> <span class="title">RDD</span>[<span class="title">T</span>:</span> ClassTag](
+    <span class="decorator">@transient private var _sc: SparkContext,</span>
+    <span class="decorator">@transient private var deps: Seq[Dependency[_]]</span>
+  ) extends Serializable <span class="keyword">with</span> Logging {
+
+  <span class="keyword">if</span> (classOf[RDD[_]].isAssignableFrom(elementClassTag.runtimeClass)) {
+    // This <span class="keyword">is</span> a warning instead of an exception <span class="keyword">in</span> order to avoid breaking user programs that
+    // might have defined nested RDDs without running jobs <span class="keyword">with</span> them.
+    logWarning(<span class="string">"Spark does not support nested RDDs (see SPARK-5063)"</span>)
+  }
+
+  private <span class="function"><span class="keyword">def</span> <span class="title">sc</span>:</span> SparkContext = {
+    <span class="keyword">if</span> (_sc == null) {
+      throw new SparkException(
+        <span class="string">"RDD transformations and actions can only be invoked by the driver, not inside of other "</span> +
+        <span class="string">"transformations; for example, rdd1.map(x =&gt; rdd2.values.count() * x) is invalid because "</span> +
+        <span class="string">"the values transformation and count action cannot be performed inside of the rdd1.map "</span> +
+        <span class="string">"transformation. For more information, see SPARK-5063."</span>)
+    }
+    _sc
+  }
+
+
+  <span class="function"><span class="keyword">def</span> <span class="title">map</span>[<span class="title">U</span>:</span> ClassTag](f: T =&gt; U): RDD[U] = {
+    val cleanF = sc.clean(f)
+    new MapPartitionsRDD[U, T](this, (context, pid, iter) =&gt; iter.map(cleanF))
+  }
+
+  <span class="function"><span class="keyword">def</span> <span class="title">filter</span><span class="params">(f: T =&gt; Boolean)</span>:</span> RDD[T] = {
+    val cleanF = sc.clean(f)
+    new MapPartitionsRDD[T, T](
+      this,
+      (context, pid, iter) =&gt; iter.filter(cleanF),
+      preservesPartitioning = true)
+  }
+
+  <span class="function"><span class="keyword">def</span> <span class="title">mapPartitionsWithIndex</span>[<span class="title">U</span>:</span> ClassTag](
+      f: (Int, Iterator[T]) =&gt; Iterator[U], preservesPartitioning: Boolean = false): RDD[U] = {
+    val func = (context: TaskContext, index: Int, iter: Iterator[T]) =&gt; f(index, iter)
+    new MapPartitionsRDD(this, sc.clean(func), preservesPartitioning)
+  }
+</code></pre><p>而MapPartitionsRDD仅仅记录下了动作和父RDD</p>
+<pre><code>private[spark] class <span class="type">MapPartitionsRDD</span>[U: <span class="type">ClassTag</span>, T: <span class="type">ClassTag</span>](
+    prev: <span class="type">RDD</span>[T],
+    f: (<span class="type">TaskContext</span>, <span class="type">Int</span>, <span class="type">Iterator</span>[T]) =&gt; <span class="type">Iterator</span>[U],  // (<span class="type">TaskContext</span>, partition index, <span class="keyword">iterator</span>)
+    preservesPartitioning: <span class="type">Boolean</span> = <span class="literal">false</span>)
+  extends <span class="type">RDD</span>[U](prev) {
+
+  override val partitioner = <span class="keyword">if</span> (preservesPartitioning) firstParent[T].partitioner <span class="keyword">else</span> <span class="type">None</span>
+
+  override def getPartitions: <span class="type">Array</span>[<span class="type">Partition</span>] = firstParent[T].partitions
+
+  override def compute(split: <span class="type">Partition</span>, context: <span class="type">TaskContext</span>) =
+    f(context, split.index, firstParent[T].<span class="keyword">iterator</span>(split, context))
+}
+</code></pre><p>而只有collect和reduce这类函数是例外的，</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">collect</span><span class="params">()</span>:</span> Array[T] = {
+    val results = sc.runJob(this, (iter: Iterator[T]) =&gt; iter.toArray)
+    Array.concat(results: _*)
+  }
+
+<span class="function"><span class="keyword">def</span> <span class="title">reduce</span><span class="params">(f: <span class="params">(T, T)</span> =&gt; T)</span>:</span> T = {
+    val cleanF = sc.clean(f)
+    val reducePartition: Iterator[T] =&gt; Option[T] = iter =&gt; {
+      <span class="keyword">if</span> (iter.hasNext) {
+        Some(iter.reduceLeft(cleanF))
+      } <span class="keyword">else</span> {
+        <span class="keyword">None</span>
+      }
+    }
+    var jobResult: Option[T] = <span class="keyword">None</span>
+    val mergeResult = (index: Int, taskResult: Option[T]) =&gt; {
+      <span class="keyword">if</span> (taskResult.isDefined) {
+        jobResult = jobResult match {
+          case Some(value) =&gt; Some(f(value, taskResult.get))
+          case <span class="keyword">None</span> =&gt; taskResult
+        }
+      }
+    }
+    sc.runJob(this, reducePartition, mergeResult)
+    // Get the final result out of our Option, <span class="keyword">or</span> throw an exception <span class="keyword">if</span> the RDD was empty
+    jobResult.getOrElse(throw new UnsupportedOperationException(<span class="string">"empty collection"</span>))
+  }
+</code></pre><p>看代码可以知道collect这个动作做的时候其实是调用sc.runJob了，不再累积RDD类。而从SparkContext里的runJob里可以看到，scala shell其实是通过调用DAGScheduler.runjob让spark干活的</p>
+<pre><code>def runJob[T, U: ClassTag](
+      rdd: RDD[T],
+      func: (TaskContext, Iterator[T]) =&gt; U,
+      partitions: Seq[<span class="typename">Int</span>],
+      allowLocal: <span class="typename">Boolean</span>,
+      resultHandler: (<span class="typename">Int</span>, U) =&gt; <span class="typename">Unit</span>) {
+    <span class="keyword">if</span> (stopped) {
+      <span class="keyword">throw</span> new IllegalStateException(<span class="string">"SparkContext has been shutdown"</span>)
+    }
+    <span class="variable"><span class="keyword">val</span> callSite</span> = getCallSite
+    <span class="variable"><span class="keyword">val</span> cleanedFunc</span> = clean(func)
+    logInfo(<span class="string">"Starting job: "</span> + callSite.shortForm)
+    <span class="keyword">if</span> (conf.getBoolean(<span class="string">"spark.logLineage"</span>, <span class="literal">false</span>)) {
+      logInfo(<span class="string">"RDD's recursive dependencies:\n"</span> + rdd.toDebugString)
+    }
+    dagScheduler.runJob(rdd, cleanedFunc, partitions, callSite, allowLocal,
+      resultHandler, localProperties.<span class="keyword">get</span>)
+    progressBar.foreach(_.finishAll())
+    rdd.doCheckpoint()
+  }
+</code></pre><p>对于dag调度器，他的runJob是用submitJob来提交的</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">runJob</span>[</span><span class="type">T</span>, <span class="type">U</span>: <span class="type">ClassTag</span>](
+      rdd: <span class="type">RDD</span>[<span class="type">T</span>],
+      func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,
+      partitions: <span class="type">Seq</span>[<span class="type">Int</span>],
+      callSite: <span class="type">CallSite</span>,
+      allowLocal: <span class="type">Boolean</span>,
+      resultHandler: (<span class="type">Int</span>, <span class="type">U</span>) =&gt; <span class="type">Unit</span>,
+      properties: <span class="type">Properties</span>): <span class="type">Unit</span> = {
+    <span class="function"><span class="keyword">val</span> <span class="title">start</span> =</span> <span class="type">System</span>.nanoTime
+    <span class="function"><span class="keyword">val</span> <span class="title">waiter</span> =</span> submitJob(rdd, func, partitions, callSite, allowLocal, resultHandler, properties)
+    waiter.awaitResult() <span class="keyword">match</span> {
+      <span class="keyword">case</span> <span class="type">JobSucceeded</span> =&gt; {
+        logInfo(<span class="string">"Job %d finished: %s, took %f s"</span>.format
+          (waiter.jobId, callSite.shortForm, (<span class="type">System</span>.nanoTime - start) / <span class="number">1e9</span>))
+      }
+      <span class="keyword">case</span> <span class="type">JobFailed</span>(exception: <span class="type">Exception</span>) =&gt;
+        logInfo(<span class="string">"Job %d failed: %s, took %f s"</span>.format
+          (waiter.jobId, callSite.shortForm, (<span class="type">System</span>.nanoTime - start) / <span class="number">1e9</span>))
+        <span class="keyword">throw</span> exception
+    }
+  }
+
+  <span class="function"><span class="keyword">def</span> <span class="title">submitJob</span>[</span><span class="type">T</span>, <span class="type">U</span>](
+      rdd: <span class="type">RDD</span>[<span class="type">T</span>],
+      func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,
+      partitions: <span class="type">Seq</span>[<span class="type">Int</span>],
+      callSite: <span class="type">CallSite</span>,
+      allowLocal: <span class="type">Boolean</span>,
+      resultHandler: (<span class="type">Int</span>, <span class="type">U</span>) =&gt; <span class="type">Unit</span>,
+      properties: <span class="type">Properties</span>): <span class="type">JobWaiter</span>[<span class="type">U</span>] = {
+    <span class="comment">// Check to make sure we are not launching a task on a partition that does not exist.</span>
+    <span class="function"><span class="keyword">val</span> <span class="title">maxPartitions</span> =</span> rdd.partitions.length
+    partitions.find(p =&gt; p &gt;= maxPartitions || p &lt; <span class="number">0</span>).foreach { p =&gt;
+      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(
+        <span class="string">"Attempting to access a non-existent partition: "</span> + p + <span class="string">". "</span> +
+          <span class="string">"Total number of partitions: "</span> + maxPartitions)
+    }
+
+    <span class="function"><span class="keyword">val</span> <span class="title">jobId</span> =</span> nextJobId.getAndIncrement()
+    <span class="keyword">if</span> (partitions.size == <span class="number">0</span>) {
+      <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">JobWaiter</span>[<span class="type">U</span>](<span class="keyword">this</span>, jobId, <span class="number">0</span>, resultHandler)
+    }
+
+    assert(partitions.size &gt; <span class="number">0</span>)
+    <span class="function"><span class="keyword">val</span> <span class="title">func2</span> =</span> func.asInstanceOf[(<span class="type">TaskContext</span>, <span class="type">Iterator</span>[_]) =&gt; _]
+    <span class="function"><span class="keyword">val</span> <span class="title">waiter</span> =</span> <span class="keyword">new</span> <span class="type">JobWaiter</span>(<span class="keyword">this</span>, jobId, partitions.size, resultHandler)
+    eventProcessLoop.post(<span class="type">JobSubmitted</span>(
+      jobId, rdd, func2, partitions.toArray, allowLocal, callSite, waiter, properties))
+    waiter
+  }
+</code></pre><p>做了一系列安全性检查，起了一个jobwaiter等结果，然后继续调用JobSubmitted比把它提交到DAGSchedulerEventProcessLoop类里去，</p>
+<pre><code><span class="keyword">private</span>[scheduler] <span class="class"><span class="keyword">class</span> <span class="title">DAGSchedulerEventProcessLoop</span>(</span>dagScheduler: <span class="type">DAGScheduler</span>)
+  <span class="keyword">extends</span> <span class="type">EventLoop</span>[<span class="type">DAGSchedulerEvent</span>](<span class="string">"dag-scheduler-event-loop"</span>) <span class="keyword">with</span> <span class="type">Logging</span> {
+
+  <span class="comment">/**
+   * The main event loop of the DAG scheduler.
+   */</span>
+  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onReceive</span>(</span>event: <span class="type">DAGSchedulerEvent</span>): <span class="type">Unit</span> = event <span class="keyword">match</span> {
+    <span class="keyword">case</span> <span class="type">JobSubmitted</span>(jobId, rdd, func, partitions, allowLocal, callSite, listener, properties) =&gt;
+      dagScheduler.handleJobSubmitted(jobId, rdd, func, partitions, allowLocal, callSite,
+        listener, properties)
+
+...
+
+  <span class="keyword">private</span>[scheduler] <span class="function"><span class="keyword">def</span> <span class="title">handleJobSubmitted</span>(</span>jobId: <span class="type">Int</span>,
+      finalRDD: <span class="type">RDD</span>[_],
+      func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[_]) =&gt; _,
+      partitions: <span class="type">Array</span>[<span class="type">Int</span>],
+      allowLocal: <span class="type">Boolean</span>,
+      callSite: <span class="type">CallSite</span>,
+      listener: <span class="type">JobListener</span>,
+      properties: <span class="type">Properties</span>) {
+    <span class="keyword">var</span> finalStage: <span class="type">Stage</span> = <span class="literal">null</span>
+    <span class="keyword">try</span> {
+      <span class="comment">// New stage creation may throw an exception if, for example, jobs are run on a</span>
+      <span class="comment">// HadoopRDD whose underlying HDFS files have been deleted.</span>
+      finalStage = newStage(finalRDD, partitions.size, <span class="type">None</span>, jobId, callSite)
+    } <span class="keyword">catch</span> {
+      <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;
+        logWarning(<span class="string">"Creating new stage failed due to exception - job: "</span> + jobId, e)
+        listener.jobFailed(e)
+        <span class="keyword">return</span>
+    }
+    <span class="keyword">if</span> (finalStage != <span class="literal">null</span>) {
+      <span class="function"><span class="keyword">val</span> <span class="title">job</span> =</span> <span class="keyword">new</span> <span class="type">ActiveJob</span>(jobId, finalStage, func, partitions, callSite, listener, properties)
+      clearCacheLocs()
+      logInfo(<span class="string">"Got job %s (%s) with %d output partitions (allowLocal=%s)"</span>.format(
+        job.jobId, callSite.shortForm, partitions.length, allowLocal))
+      logInfo(<span class="string">"Final stage: "</span> + finalStage + <span class="string">"("</span> + finalStage.name + <span class="string">")"</span>)
+      logInfo(<span class="string">"Parents of final stage: "</span> + finalStage.parents)
+      logInfo(<span class="string">"Missing parents: "</span> + getMissingParentStages(finalStage))
+      <span class="function"><span class="keyword">val</span> <span class="title">shouldRunLocally</span> =</span>
+        localExecutionEnabled &amp;&amp; allowLocal &amp;&amp; finalStage.parents.isEmpty &amp;&amp; partitions.length == <span class="number">1</span>
+      <span class="function"><span class="keyword">val</span> <span class="title">jobSubmissionTime</span> =</span> clock.getTimeMillis()
+      <span class="keyword">if</span> (shouldRunLocally) {
+        <span class="comment">// Compute very short actions like first() or take() with no parent stages locally.</span>
+        listenerBus.post(
+          <span class="type">SparkListenerJobStart</span>(job.jobId, jobSubmissionTime, <span class="type">Seq</span>.empty, properties))
+        runLocally(job)
+      } <span class="keyword">else</span> {
+        jobIdToActiveJob(jobId) = job
+        activeJobs += job
+        finalStage.resultOfJob = <span class="type">Some</span>(job)
+        <span class="function"><span class="keyword">val</span> <span class="title">stageIds</span> =</span> jobIdToStageIds(jobId).toArray
+        <span class="function"><span class="keyword">val</span> <span class="title">stageInfos</span> =</span> stageIds.flatMap(id =&gt; stageIdToStage.get(id).map(_.latestInfo))
+        listenerBus.post(
+          <span class="type">SparkListenerJobStart</span>(job.jobId, jobSubmissionTime, stageInfos, properties))
+        submitStage(finalStage)
+      }
+    }
+    submitWaitingStages()
+  }
+</code></pre><p>包装了一大堆东西，然后扔到listenerBus里准备运行（这次是真的要运行了吧？）</p>
+<pre><code><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">LiveListenerBus</span>
+</span>  <span class="keyword">extends</span> <span class="type">AsynchronousListenerBus</span>[<span class="type">SparkListener</span>, <span class="type">SparkListenerEvent</span>](<span class="string">"SparkListenerBus"</span>)
+  <span class="keyword">with</span> <span class="type">SparkListenerBus</span> {
+
+  <span class="keyword">private</span> <span class="function"><span class="keyword">val</span> <span class="title">logDroppedEvent</span> =</span> <span class="keyword">new</span> <span class="type">AtomicBoolean</span>(<span class="literal">false</span>)
+
+  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onDropEvent</span>(</span>event: <span class="type">SparkListenerEvent</span>): <span class="type">Unit</span> = {
+    <span class="keyword">if</span> (logDroppedEvent.compareAndSet(<span class="literal">false</span>, <span class="literal">true</span>)) {
+      <span class="comment">// Only log the following message once to avoid duplicated annoying logs.</span>
+      logError(<span class="string">"Dropping SparkListenerEvent because no remaining room in event queue. "</span> +
+        <span class="string">"This likely means one of the SparkListeners is too slow and cannot keep up with "</span> +
+        <span class="string">"the rate at which tasks are being started by the scheduler."</span>)
+    }
+  }
+
+}
+
+<span class="keyword">private</span>[spark] <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AsynchronousListenerBus</span>[</span><span class="type">L</span> &lt;: <span class="type">AnyRef</span>, <span class="type">E</span>](name: <span class="type">String</span>)
+  <span class="keyword">extends</span> <span class="type">ListenerBus</span>[<span class="type">L</span>, <span class="type">E</span>] {
+  <span class="function"><span class="keyword">def</span> <span class="title">post</span>(</span>event: <span class="type">E</span>) {
+    <span class="keyword">if</span> (stopped.get) {
+      <span class="comment">// Drop further events to make `listenerThread` exit ASAP</span>
+      logError(s<span class="string">"$name has already stopped! Dropping event $event"</span>)
+      <span class="keyword">return</span>
+    }
+    <span class="function"><span class="keyword">val</span> <span class="title">eventAdded</span> =</span> eventQueue.offer(event)
+    <span class="keyword">if</span> (eventAdded) {
+      eventLock.release()
+    } <span class="keyword">else</span> {
+      onDropEvent(event)
+    }
+  }
+</code></pre><p>扔完以后开始submitStage把最后状态提交开始运行<br>所以跳到最后就是把作业提交完事，胸闷，还是没有看到RDD是怎么在不同节点间交互的代码。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/05/15/explore-spark-RDD-source-code/" data-id="cicfw51r6001wqtv457f0rdht" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RDD/">RDD</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-spark-machine-learning-lib-for-python" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/15/spark-machine-learning-lib-for-python/" class="article-date">
+  <time datetime="2015-05-15T05:29:26.000Z" itemprop="datePublished">2015-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/15/spark-machine-learning-lib-for-python/">spark machine learning lib for python</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>今天看了一下pyspark的mllib这个库。作为一个大数据计算平台，spark这点比hadoop向前走了一大步。提供了种类繁多的数据计算的模型，从随机数生成到线性代数到回归聚类。<br>粗粗的看了一下，pyspark在做这个mllib的时候实现有两种，一种是spark原生型的api调用，比如刚才提到的回归聚类，都是直接输入rdd然后不断迭代返回结果，比如</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">LogisticRegressionWithSGD</span><span class="params">(object)</span>:</span>
+
+    <span class="decorator">@classmethod</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">train</span><span class="params">(cls, data, iterations=<span class="number">100</span>, step=<span class="number">1.0</span>, miniBatchFraction=<span class="number">1.0</span>,
+              initialWeights=None, regParam=<span class="number">0.01</span>, regType=<span class="string">"l2"</span>, intercept=False)</span>:</span>
+        <span class="string">"""
+        Train a logistic regression model on the given data.
+
+        :param data:              The training data, an RDD of LabeledPoint.
+        :param iterations:        The number of iterations (default: 100).
+        :param step:              The step parameter used in SGD
+                                  (default: 1.0).
+        :param miniBatchFraction: Fraction of data to be used for each SGD
+                                  iteration.
+        :param initialWeights:    The initial weights (default: None).
+        :param regParam:          The regularizer parameter (default: 0.01).
+        :param regType:           The type of regularizer used for training
+                                  our model.
+
+                                  :Allowed values:
+                                     - "l1" for using L1 regularization
+                                     - "l2" for using L2 regularization
+                                     - None for no regularization
+
+                                     (default: "l2")
+
+        :param intercept:         Boolean parameter which indicates the use
+                                  or not of the augmented representation for
+                                  training data (i.e. whether bias features
+                                  are activated or not).
+        """</span>
+        <span class="function"><span class="keyword">def</span> <span class="title">train</span><span class="params">(rdd, i)</span>:</span>
+            <span class="keyword">return</span> callMLlibFunc(<span class="string">"trainLogisticRegressionModelWithSGD"</span>, rdd, int(iterations),
+                                 float(step), float(miniBatchFraction), i, float(regParam), regType,
+                                 bool(intercept))
+
+        <span class="keyword">return</span> _regression_train_wrapper(train, LogisticRegressionModel, data, initialWeights)
+
+
+<span class="function"><span class="keyword">def</span> <span class="title">callMLlibFunc</span><span class="params">(name, *args)</span>:</span>
+    <span class="string">""" Call API in PythonMLLibAPI """</span>
+    sc = SparkContext._active_spark_context
+    api = getattr(sc._jvm.PythonMLLibAPI(), name)
+    <span class="keyword">return</span> callJavaFunc(sc, api, *args)
+</code></pre><p>第一类api全都把工作丢给了spark去做，也就是其实是跨节点并行计算。<br>第二类api就比较奇怪了，linalg里面全是这类函数，如</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">DenseVector</span><span class="params">(Vector)</span>:</span>
+    <span class="string">"""
+    A dense vector represented by a value array. We use numpy array for
+    storage and arithmetics will be delegated to the underlying numpy
+    array.
+
+    def dot(self, other):
+        """</span>
+        Compute the dot product of two Vectors. We support
+        (Numpy array, list, SparseVector, <span class="keyword">or</span> SciPy sparse)
+        <span class="keyword">and</span> a target NumPy array that <span class="keyword">is</span> either <span class="number">1</span>- <span class="keyword">or</span> <span class="number">2</span>-dimensional.
+        Equivalent to calling numpy.dot of the two vectors.
+        <span class="keyword">if</span> type(other) == np.ndarray:
+            <span class="keyword">if</span> other.ndim &gt; <span class="number">1</span>:
+                <span class="keyword">assert</span> len(self) == other.shape[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
+            <span class="keyword">return</span> np.dot(self.array, other)
+        <span class="keyword">elif</span> _have_scipy <span class="keyword">and</span> scipy.sparse.issparse(other):
+            <span class="keyword">assert</span> len(self) == other.shape[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
+            <span class="keyword">return</span> other.transpose().dot(self.toArray())
+        <span class="keyword">else</span>:
+            <span class="keyword">assert</span> len(self) == _vector_size(other), <span class="string">"dimension mismatch"</span>
+            <span class="keyword">if</span> isinstance(other, SparseVector):
+                <span class="keyword">return</span> other.dot(self)
+            <span class="keyword">elif</span> isinstance(other, Vector):
+                <span class="keyword">return</span> np.dot(self.toArray(), other.toArray())
+            <span class="keyword">else</span>:
+                <span class="keyword">return</span> np.dot(self.toArray(), other)
+</code></pre><p>居然全部都是丢给numpy去做，虽然numpy做这类计算的效率很高不假但这样就没有spark的跨节点并行的优势了，在计算的时候要注意。另外听说spark的运行效率首先于带宽，根据我有限的hpc经验来看，网络的延迟影响可能也会很大。而spark所在的网络最多也就是万兆网络，在做矩阵并行计算这类对网络延迟依赖很大的计算的时候可能会很慢，开发人员会不会因此考虑将不少矩阵计算本地化呢？不得而知，我很好奇下一个版本如果他们给出矩阵求逆以及对焦化或者svd是不是依然也使用本地计算。如果这个问题不解决可能对spark要称霸大数据平台有点影响。</p>
+<p>好了，pyspark的代码看的差不多了，接下去就是用scala写的spark了，cross fingers</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/05/15/spark-machine-learning-lib-for-python/" data-id="cicfw51pk000qqtv455zibo9x" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-explore-the-source-of-pyspark-dataframe" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/" class="article-date">
+  <time datetime="2015-05-14T07:24:15.000Z" itemprop="datePublished">2015-05-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/14/explore-the-source-of-pyspark-dataframe/">pyspark dataframe的实现</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>dataframe是spark 1.3今年新推出的东西，但其实早期叫做SchemaRDD，这还可以在源代码里看到。不过按照SPARK east summit 2015上的说法，dataframe速度很快，这得益于全部用内核实现计算。<br>随便摘一段出来就能发现，Dataframe这个类里的大多数计算都是交由self._jdf实现的。</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">count</span><span class="params">(self)</span>:</span>
+    <span class="string">"""Returns the number of rows in this :class:`DataFrame`.
+
+    &gt;&gt;&gt; df.count()
+    2L
+    """</span>
+    <span class="keyword">return</span> self._jdf.count()
+
+<span class="function"><span class="keyword">def</span> <span class="title">collect</span><span class="params">(self)</span>:</span>
+    <span class="string">"""Returns all the records as a list of :class:`Row`.
+
+    &gt;&gt;&gt; df.collect()
+    [Row(age=2, name=u'Alice'), Row(age=5, name=u'Bob')]
+    """</span>
+    <span class="keyword">with</span> SCCallSiteSync(self._sc) <span class="keyword">as</span> css:
+        port = self._sc._jvm.PythonRDD.collectAndServe(self._jdf.javaToPython().rdd())
+    rs = list(_load_from_socket(port, BatchedSerializer(PickleSerializer())))
+    cls = _create_cls(self.schema)
+    <span class="keyword">return</span> [cls(r) <span class="keyword">for</span> r <span class="keyword">in</span> rs]
+
+<span class="function"><span class="keyword">def</span> <span class="title">limit</span><span class="params">(self, num)</span>:</span>
+    <span class="string">"""Limits the result count to the number specified.
+
+    &gt;&gt;&gt; df.limit(1).collect()
+    [Row(age=2, name=u'Alice')]
+    &gt;&gt;&gt; df.limit(0).collect()
+    []
+    """</span>
+    jdf = self._jdf.limit(num)
+    <span class="keyword">return</span> DataFrame(jdf, self.sql_ctx)
+</code></pre><p>而self._jdf来自类初始化传入的值，通常如果用SQLContext创建DataFrame的话都来自这段代码</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">createDataFrame</span><span class="params">(self, data, schema=None, samplingRatio=None)</span>:</span>
+   ...
+   <span class="keyword">if</span> isinstance(schema, (list, tuple)):
+       first = rdd.first()
+       <span class="keyword">if</span> <span class="keyword">not</span> isinstance(first, (list, tuple)):
+           <span class="keyword">raise</span> ValueError(<span class="string">"each row in `rdd` should be list or tuple, "</span>
+                            <span class="string">"but got %r"</span> % type(first))
+       row_cls = Row(*schema)
+       schema = self._inferSchema(rdd.map(<span class="keyword">lambda</span> r: row_cls(*r)), samplingRatio)
+
+   <span class="comment"># take the first few rows to verify schema</span>
+   rows = rdd.take(<span class="number">10</span>)
+   <span class="comment"># Row() cannot been deserialized by Pyrolite</span>
+   <span class="keyword">if</span> rows <span class="keyword">and</span> isinstance(rows[<span class="number">0</span>], tuple) <span class="keyword">and</span> rows[<span class="number">0</span>].__class__.__name__ == <span class="string">'Row'</span>:
+       rdd = rdd.map(tuple)
+       rows = rdd.take(<span class="number">10</span>)
+
+   <span class="keyword">for</span> row <span class="keyword">in</span> rows:
+       _verify_type(row, schema)
+
+   <span class="comment"># convert python objects to sql data</span>
+   converter = _python_to_sql_converter(schema)
+   rdd = rdd.map(converter)
+
+   jrdd = self._jvm.SerDeUtil.toJavaArray(rdd._to_java_object_rdd())
+   df = self._ssql_ctx.applySchemaToPythonRDD(jrdd.rdd(), schema.json())
+   <span class="keyword">return</span> DataFrame(df, self)
+</code></pre><p>而这里的self._ssql_ctx来自于同一个类里的</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">_ssql_ctx</span><span class="params">(self)</span>:</span>
+    <span class="string">"""Accessor for the JVM Spark SQL context.
+
+    Subclasses can override this property to provide their own
+    JVM Contexts.
+    """</span>
+    <span class="keyword">if</span> self._scala_SQLContext <span class="keyword">is</span> <span class="keyword">None</span>:
+        self._scala_SQLContext = self._jvm.SQLContext(self._jsc.sc())
+    <span class="keyword">return</span> self._scala_SQLContext
+</code></pre><p>是对scala_SQLContext的一个封装。包括sql语句的执行也是直接调用_ssql_ctx</p>
+<pre><code><span class="function"><span class="keyword">def</span> <span class="title">sql</span><span class="params">(self, sqlQuery)</span>:</span>
+    <span class="string">"""Returns a :class:`DataFrame` representing the result of the given query.
+
+    &gt;&gt;&gt; sqlContext.registerDataFrameAsTable(df, "table1")
+    &gt;&gt;&gt; df2 = sqlContext.sql("SELECT field1 AS f1, field2 as f2 from table1")
+    &gt;&gt;&gt; df2.collect()
+    [Row(f1=1, f2=u'row1'), Row(f1=2, f2=u'row2'), Row(f1=3, f2=u'row3')]
+    """</span>
+    <span class="keyword">return</span> DataFrame(self._ssql_ctx.sql(sqlQuery), self)
+</code></pre><p>而原先的SchemaRDD则不用了，不过看1.2.2的代码似乎也是调用_ssql_ctx来实现计算的，不能明白为什么1.3和1.2能性能差那么多。这还有待于阅读spark的代码来解答。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/" data-id="cicfw51r1001nqtv4qdcpl0rx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dataframe/">dataframe</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-spark-rdd-pipeline-lazyevaluation" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/05/14/spark-rdd-pipeline-lazyevaluation/" class="article-date">
@@ -247,7 +872,7 @@ def _jrdd(self):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/" data-id="cicczjs51000iwhv4crfv9k39" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/14/spark-rdd-pipeline-lazyevaluation/" data-id="cicfw51ph000iqtv4kmce7z67" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pyspark/">pyspark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rdd/">rdd</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
@@ -407,7 +1032,7 @@ def sum2djit(arr):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/" data-id="cicczjs68001rwhv4sl7emp7g" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/12/comparison-between-high-performance-packages-for-python/" data-id="cicfw51r80021qtv4pkt1pm25" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/benchmark/">benchmark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cython/">cython</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/f2py/">f2py</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numba/">numba</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/numpy/">numpy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
@@ -446,7 +1071,7 @@ def sum2djit(arr):
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="cicczjs4u0002whv4digstznj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/12/把博客迁到github上来了/" data-id="cicfw51p40002qtv4gigeucar" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cnblogs/">cnblogs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/migrate/">migrate</a></li></ul>
@@ -528,7 +1153,7 @@ hexo <span class="keyword">server</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="cicczjs5j0014whv4zhfg6s8t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="cicfw51qu001eqtv433qnjqo1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/github/">github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
@@ -575,7 +1200,7 @@ hexo <span class="keyword">server</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="cicczjs5p001awhv4txb88zrr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="cicfw51qx001kqtv4g9a7a6e5" class="article-share-link">Share</a>
       
       
     </footer>
@@ -634,193 +1259,11 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="cicczjs5r001bwhv4dae5kh0k" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="cicfw51qz001lqtv4n8h0c8g4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li></ul>
 
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-4488876" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/08/4488876/" class="article-date">
-  <time datetime="2015-05-08T13:17:00.000Z" itemprop="datePublished">2015-05-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/08/4488876/">在docker里部署网络服务</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>之前试着玩玩docker有一阵子了，今天算是头一回正式在docker里部署网络服务。</p>
-<p>本来想和lxc差不多的东西那自然是手到擒来，没想到还是改了很多。</p>
-<p>第一个遇到的问题是，远程连到docker宿主机干活的时候突然断网了。一下傻掉了，以前都是连内网，从来不断的。这次连了一个反向隧道，居然断了，傻眼了。</p>
-<p>再连回去，发现docker ps里还有进程，好办，docker attach这个进程，就又进去了。</p>
-<p>如果没有找到进程，就只要docker commit存一下，然后再docker run拉起来继续<br>
-        
-          <p class="article-more-link">
-            <a href="/2015/05/08/4488876/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/08/4488876/" data-id="cicczjs6e0023whv4y3z8p5bs" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-4439945" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/04/19/4439945/" class="article-date">
-  <time datetime="2015-04-19T13:09:00.000Z" itemprop="datePublished">2015-04-19</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/04/19/4439945/">初学python里的yield send next</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>今天看书的时候突然看到这个想起来一直没有怎么使用过send和next试了一下</p>
-<p>发现了一个诡异的问题</p>
-<div class="cnblogs_code"><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_primes</span><span class="params">(start)</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="number">1</span> :</span><br><span class="line">        <span class="keyword">if</span> is_prime(start) :</span><br><span class="line">            start = <span class="keyword">yield</span> start</span><br><span class="line">        start += <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">is_prime</span><span class="params">(number)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> number &gt; <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">if</span> number == <span class="number">2</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">        <span class="keyword">if</span> number % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">        <span class="keyword">for</span> current <span class="keyword">in</span> range(<span class="number">3</span>, int(math.sqrt(number) + <span class="number">1</span>), <span class="number">2</span>):</span><br><span class="line">            <span class="keyword">if</span> number % current == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span> :</span></span><br><span class="line">    genet = get_primes(<span class="number">100</span>)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> genet : </span><br><span class="line">        send(i)</span><br><span class="line">        <span class="keyword">print</span> i</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span> :</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure><br><br></div>
-
-<p>告诉我start的值为None</p>
-<p>然后跑去翻资料，发现自己理解错误的地方，send和next其实有一个类似的功能，就是拿一个yield的值，不同的是send是传一个进去，而next传一个None</p>
-<p>所以第一次跑的时候，start=100不是质数，直接过，101是质数，get_primes执行到yield停住，等带main的循环执行next，101拿出来，再用send传101进get_primes，start赋值为101，然后start加1为102，发现不是质数再加1。yield停住。而这时候main里的循环又执行到了next（倒数第一步是send），所以next传递进去的是None，这时候start就被赋值为None了。<br>
-        
-          <p class="article-more-link">
-            <a href="/2015/04/19/4439945/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/19/4439945/" data-id="cicczjs6f0024whv4wgw6yex8" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-4415746" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/04/10/4415746/" class="article-date">
-  <time datetime="2015-04-10T13:46:00.000Z" itemprop="datePublished">2015-04-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/04/10/4415746/">opencl初体验</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>总结一下，opencl的步骤差不多是这些</p>
-<p>先要获取平台的id clGetPlatformIDs(nPlatforms, platform_id, &amp;num_of_platforms)</p>
-<p>然后获取设备id clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_GPU, 1, %device_id &amp;num_of_devices)</p>
-<p>////这里要注意的是，如果有多个设备（如cpu和gpu）platform_id必须使用数组形式传入</p>
-<p>然后是创建上下文clCreateContext（properties, 1, &amp;device_id, NULL, NULL, &amp;err)<br>
-        
-          <p class="article-more-link">
-            <a href="/2015/04/10/4415746/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/10/4415746/" data-id="cicczjs6h0025whv4wqzgglko" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-4390056" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/04/03/4390056/" class="article-date">
-  <time datetime="2015-04-03T06:50:00.000Z" itemprop="datePublished">2015-04-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/04/03/4390056/">cuda计算的分块</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>gpu的架构分为streaming multiprocessors</p>
-<p>每个streaming&nbsp;multiprocessors（SM）又能分步骤执行很多threads，单个SM内部能同时执行的threads叫做warp。一个warp能同时操作16个单精度浮点数/8个双精度（tesla），或者32个单精度浮点数/16个双精度浮点数（feimi）。</p>
-<p>单个SM内部有local&nbsp;memory和16kb大小的share&nbsp;memory，后者是在做计算的时候要尽量利用好的东西。</p>
-<p>&nbsp;</p>
-<p>根据gpu的架构，做cuda计算的时候基本上是这么一个流程<br>
-        
-          <p class="article-more-link">
-            <a href="/2015/04/03/4390056/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/03/4390056/" data-id="cicczjs6j0026whv4aknueg1o" class="article-share-link">Share</a>
-      
-      
     </footer>
   </div>
   
@@ -843,7 +1286,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -852,7 +1295,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 16px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 18px;">rust</a><a href="/tags/scala/" style="font-size: 14px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 16px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 20px;">rust</a><a href="/tags/scala/" style="font-size: 14px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 18px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
     </div>
   </div>
 
@@ -861,7 +1304,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -873,23 +1316,23 @@ markdown-<span class="literal">mode</span>
       <ul>
         
           <li>
-            <a href="/2015/07/20/learning-rust-part-V/">(no title)</a>
+            <a href="/2015/07/23/learning-rust-part-IX/">rust学习笔记(九)</a>
           </li>
         
           <li>
-            <a href="/2015/07/20/learning-rust-part-IV/">rust学习笔记(四)</a>
+            <a href="/2015/07/21/learning-rust-part-VIII/">rust学习笔记(八)</a>
           </li>
         
           <li>
-            <a href="/2015/07/17/learning-rust-part-III/">rust学习笔记(三)</a>
+            <a href="/2015/07/21/learning-rust-part-VII/">rust学习笔记(七)</a>
           </li>
         
           <li>
-            <a href="/2015/07/17/learning-rust-part-II/">rust学习笔记(二)</a>
+            <a href="/2015/07/21/learning-rust-part-VI/">rust学习笔记(六)</a>
           </li>
         
           <li>
-            <a href="/2015/07/16/learning-rust-part-I/">rust学习笔记(一)</a>
+            <a href="/2015/07/20/learning-rust-part-V/">rust学习笔记(五)</a>
           </li>
         
       </ul>

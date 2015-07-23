@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>rust学习笔记(八) | 彼格海德的笔记空间</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Vector这个应该翻译成向量，因为教程自己都说了A ‘vector’ is a dynamic or ‘growable’ array定义和遍历向量的方法之前的笔记里已经提到过，相当简单
+let mut v = vec![1, 2, 3, 4, 5];
+
+for i in &amp;amp;v {
+    println!(&quot;A reference to {}&quot;, i);
+}
+
+for i in &amp;am">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rust学习笔记(八)">
+<meta property="og:url" content="http://yoursite.com/2015/07/21/learning-rust-part-VIII/index.html">
+<meta property="og:site_name" content="彼格海德的笔记空间">
+<meta property="og:description" content="Vector这个应该翻译成向量，因为教程自己都说了A ‘vector’ is a dynamic or ‘growable’ array定义和遍历向量的方法之前的笔记里已经提到过，相当简单
+let mut v = vec![1, 2, 3, 4, 5];
+
+for i in &amp;amp;v {
+    println!(&quot;A reference to {}&quot;, i);
+}
+
+for i in &amp;am">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rust学习笔记(八)">
+<meta name="twitter:description" content="Vector这个应该翻译成向量，因为教程自己都说了A ‘vector’ is a dynamic or ‘growable’ array定义和遍历向量的方法之前的笔记里已经提到过，相当简单
+let mut v = vec![1, 2, 3, 4, 5];
+
+for i in &amp;amp;v {
+    println!(&quot;A reference to {}&quot;, i);
+}
+
+for i in &amp;am">
+  
+    <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-62861406-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+<!-- Baidu Statistics -->
+<script type="text/javascript">
+    var _hmt = _hmt || [];
+(function() {
+ var hm = document.createElement("script");
+ hm.src = "//hm.baidu.com/hm.js?77faa6f8da10ec42fb1c01f2947de873";
+ var s = document.getElementsByTagName("script")[0]; 
+ s.parentNode.insertBefore(hm, s);
+ })();
+</script>
+<!-- End Baidu Statistics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">彼格海德的笔记空间</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">a notebook for python</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about/index.html">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-learning-rust-part-VIII" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/21/learning-rust-part-VIII/" class="article-date">
+  <time datetime="2015-07-21T08:09:47.000Z" itemprop="datePublished">2015-07-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      rust学习笔记(八)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Vector">Vector</h2><p>这个应该翻译成向量，因为教程自己都说了<br>A ‘vector’ is a dynamic or ‘growable’ array<br>定义和遍历向量的方法之前的笔记里已经提到过，相当简单</p>
+<pre><code><span class="keyword">let</span> <span class="keyword">mut</span> v = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
+
+<span class="keyword">for</span> i <span class="keyword">in</span> &amp;v {
+    <span class="built_in">println!</span>(<span class="string">"A reference to {}"</span>, i);
+}
+
+<span class="keyword">for</span> i <span class="keyword">in</span> &amp;<span class="keyword">mut</span> v {
+    <span class="built_in">println!</span>(<span class="string">"A mutable reference to {}"</span>, i);
+}
+
+<span class="keyword">for</span> i <span class="keyword">in</span> v {
+    <span class="built_in">println!</span>(<span class="string">"Take ownership of the vector and its element {}"</span>, i);
+}
+</code></pre><h2 id="字符串">字符串</h2><p>有意思的是，在rust里字符串有两种类型，一种叫做&amp;str(注意那个&amp;，说明是个指针？)一种叫做String。对于&amp;str，其实他的默认生命周期是’static的，所以会永久保存直到程序结束。并且&amp;str的长度固定，不能被改变。<br>而String的长度是可变的，保证是UTF8，String通常是通过&amp;str的to_string()方法创造的。String能通过加一个&amp;强制转换成&amp;str。</p>
+<pre><code><span class="keyword">let</span> <span class="keyword">mut</span> s = <span class="string">"Hello"</span>.to_string(); 
+<span class="built_in">println!</span>(<span class="string">"{}"</span>, s);
+
+s.push_str(<span class="string">", world."</span>);
+<span class="built_in">println!</span>(<span class="string">"{}"</span>, s);
+
+<span class="function"><span class="keyword">fn</span> <span class="title">takes_slice</span></span>(slice: &amp;<span class="keyword">str</span>) {
+    <span class="built_in">println!</span>(<span class="string">"Got: {}"</span>, slice);
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> s = <span class="string">"Hello"</span>.to_string();
+    takes_slice(&amp;s);
+}
+</code></pre><h2 id="索引">索引</h2><p>通常，应为字符串是utf-8的，所以字符串不支持索引(&amp;str也不支持)</p>
+<pre><code><span class="keyword">let</span> s = <span class="string">"hello"</span>;
+
+<span class="built_in">println!</span>(<span class="string">"The first letter of s is {}"</span>, s[<span class="number">0</span>]);<span class="comment">//报错</span>
+</code></pre><p>但是可以通过别的方法遍历</p>
+<pre><code><span class="keyword">let</span> s = <span class="string">"关关雎鸠，在河之洲。窈窕淑女，君子好逑。"</span>;
+<span class="keyword">for</span> b <span class="keyword">in</span> s.as_bytes(){
+    <span class="built_in">print</span>!(<span class="string">"{}, "</span>,b);
+}
+
+<span class="built_in">println</span>!(<span class="string">""</span>);
+
+<span class="keyword">for</span> <span class="built_in">c</span> <span class="keyword">in</span> s.chars(){
+    <span class="built_in">print</span>!(<span class="string">"{}, "</span>,<span class="built_in">c</span>);
+}
+<span class="built_in">println</span>!(<span class="string">""</span>);
+</code></pre><p>以及索引</p>
+<pre><code><span class="keyword">let</span> <span class="variable">guan =</span> s.chars().nth(<span class="number">1</span>);
+</code></pre><h2 id="字符连接">字符连接</h2><p>rust的字符连接稍微复杂点，String后可以加&amp;str来连接，但是如果两个String，第二个String必须用&amp;强制转换为&amp;str，如果是两个&amp;str，第一个必须用.to_string()转化为String</p>
+<h2 id="通用类型">通用类型</h2><p>rust支持T作为通用类型来支持多种类型的函数，枚举等等。</p>
+<pre><code><span class="keyword">fn</span> takes_anything&lt;<span class="constant">T&gt;</span>(<span class="symbol">x:</span> <span class="constant">T)</span> {
+    <span class="regexp">//</span> <span class="keyword">do</span> something with x
+}
+</code></pre><p>也可以多个通用类型，这点和Haskell很像</p>
+<pre><code>fn takes_two_things&lt;T, U&gt;(<span class="string">x:</span> T, <span class="string">y:</span> U) {
+    <span class="comment">// ...</span>
+}
+</code></pre><h2 id="Trait">Trait</h2><p>Rust里的trait类似于scala里的trait，有点像java里的抽象类，规定了这个结构必须有的方法，然后impl去实现就行。trait的好处是可以给不同类型规定必须实现的方法，例如</p>
+<pre><code><span class="keyword">struct</span> Circle {
+    x: <span class="keyword">f64</span>,
+    y: <span class="keyword">f64</span>,
+    radius: <span class="keyword">f64</span>,
+}
+
+<span class="keyword">trait</span> <span class="title">HasArea</span> {
+    <span class="function"><span class="keyword">fn</span> <span class="title">area</span></span>(&amp;<span class="keyword">self</span>) -&gt; <span class="keyword">f64</span>;
+}
+
+<span class="keyword">impl</span> HasArea <span class="keyword">for</span> Circle {
+    <span class="function"><span class="keyword">fn</span> <span class="title">area</span></span>(&amp;<span class="keyword">self</span>) -&gt; <span class="keyword">f64</span> {
+        std::f64::consts::PI * (<span class="keyword">self</span>.radius * <span class="keyword">self</span>.radius)
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">print_area</span></span>&lt;T&gt;(shape: T) {
+    <span class="built_in">println!</span>(<span class="string">"This shape has an area of {}"</span>, shape.area());
+}
+</code></pre><p>这样是会报错的，因为T这个匿名类型没有实现area这个方法。但是这样指定就没问题：</p>
+<pre><code><span class="tag">fn</span> <span class="tag">print_area</span>&lt;<span class="rule"><span class="attribute">T</span>:<span class="value"> HasArea&gt;(shape: T) {
+    println!(<span class="string">"This shape has an area of {}"</span>, shape.<span class="function">area</span>())</span></span>;
+}
+</code></pre><p>这是因为在函数名后的尖括号里规定了T必须实现HasArea这个trait规定的所有函数(也就是必须有area这个函数)，如果要指定多个trait，需要用加号</p>
+<pre><code><span class="keyword">use</span> std::fmt::Debug;
+
+<span class="function"><span class="keyword">fn</span> <span class="title">foo</span></span>&lt;T: Clone + Debug&gt;(x: T) {
+    x.clone();
+    <span class="built_in">println!</span>(<span class="string">"{:?}"</span>, x);
+}
+</code></pre><h2 id="Where">Where</h2><p>在写Trait的时候，如果变量类型一多，很容易比较乱，rust利用where，将整个trait后置，变得易于阅读。</p>
+<pre><code><span class="keyword">use</span> <span class="title">std</span>::<span class="title">fmt</span>::<span class="title">Debug</span>;
+
+fn bar&lt;T, K&gt;(x: T, y: K)
+    where T: <span class="keyword">Clone</span>,
+          K: <span class="keyword">Clone</span> + Debug {
+
+    x.<span class="keyword">clone</span>();
+    y.<span class="keyword">clone</span>();
+    println!(<span class="string">"{:?}"</span>, y);
+}
+</code></pre><p>默认方法</p>
+<p>在trait中，同样可以实现某个方法，这样所有指定了该trait的类型都会自动拥有这个方法。</p>
+<pre><code><span class="keyword">trait</span> <span class="title">Foo</span> {
+    <span class="function"><span class="keyword">fn</span> <span class="title">bar</span></span>(&amp;<span class="keyword">self</span>);
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">baz</span></span>(&amp;<span class="keyword">self</span>) { <span class="built_in">println!</span>(<span class="string">"We called baz."</span>); }
+}
+</code></pre><p>继承</p>
+<p>trait也可以继承，也就是说实现trait a必须实现trait b。</p>
+<pre><code><span class="class"><span class="keyword">trait</span> <span class="title">Foo</span> </span>{
+    fn foo(&amp;self);
+}
+
+<span class="class"><span class="keyword">trait</span> <span class="title">FooBar</span> : <span class="typename">Foo {</span></span>
+    fn foobar(&amp;self);
+}
+</code></pre><h2 id="Drop">Drop</h2><p>drop是rust里得一个特殊的trait，他的作用居然是在变量离开作用域的时候执行。通常这是用来做一些清理工作的。</p>
+<pre><code><span class="keyword">struct</span> Firework {
+    strength: <span class="keyword">i32</span>,
+}
+
+<span class="keyword">impl</span> Drop <span class="keyword">for</span> Firework {
+    <span class="function"><span class="keyword">fn</span> <span class="title">drop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) {
+        <span class="built_in">println!</span>(<span class="string">"BOOM times {}!!!"</span>, <span class="keyword">self</span>.strength);
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> firecracker = Firework { strength: <span class="number">1</span> };
+    <span class="keyword">let</span> tnt = Firework { strength: <span class="number">100</span> };
+    <span class="built_in">println!</span>(<span class="string">"test"</span>);
+}
+</code></pre><p>这段代码的执行结果是</p>
+<pre><code><span class="function_or_atom">test</span>
+<span class="variable">BOOM</span> <span class="function_or_atom">times</span> <span class="number">100</span><span class="exclamation_mark">!</span><span class="exclamation_mark">!</span><span class="exclamation_mark">!</span>
+<span class="variable">BOOM</span> <span class="function_or_atom">times</span> <span class="number">1</span><span class="exclamation_mark">!</span><span class="exclamation_mark">!</span><span class="exclamation_mark">!</span>
+</code></pre><p>也就是说先执行了println!(“test”)，然后才执行了每个变量的drop方法。并且这是一个先进后出的栈。</p>
+<h2 id="if_let">if let</h2><p>if let 主要是用来做一些模式匹配的工作，例如</p>
+<pre><code>match option <span class="list">{
+    Some(x) =&gt; { foo(x) }</span>,
+    <span class="keyword">None</span> =&gt; <span class="list">{}</span>,
+}
+</code></pre><p>这么一个模式匹配，如果用if语句来做可以这么做。</p>
+<pre><code><span class="keyword">if</span> <span class="built_in">option</span>.is_some<span class="literal">()</span> {
+    <span class="keyword">let</span> x = <span class="built_in">option</span>.unwrap<span class="literal">()</span>;
+    foo(x);
+}
+</code></pre><p>但是用if let可以更加简介</p>
+<pre><code><span class="function"><span class="keyword">if</span> <span class="keyword">let</span> <span class="title">Some</span><span class="params">(x)</span> </span>= option {
+    foo(x);
+}
+</code></pre><p>当模式不匹配的时候还可以用else</p>
+<pre><code><span class="keyword">if</span> <span class="keyword">let</span> <span class="type">Some</span>(x) = <span class="built_in">option</span> {
+    foo(x);
+} <span class="keyword">else</span> {
+    bar<span class="literal">()</span>;
+}
+</code></pre><h2 id="while_let">while let</h2><p>和if let一样，不同的是不断重复匹配</p>
+<pre><code><span class="function"><span class="keyword">while</span> <span class="keyword">let</span> <span class="title">Some</span><span class="params">(x)</span> </span>= option {
+    println!(<span class="string">"{}"</span>, x);
+}
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VIII/" data-id="cicfw51po000vqtv4nlluwdbc" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/07/23/learning-rust-part-IX/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          rust学习笔记(九)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/07/21/learning-rust-part-VII/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rust学习笔记(七)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 16px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 20px;">rust</a><a href="/tags/scala/" style="font-size: 14px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 18px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/07/23/learning-rust-part-IX/">rust学习笔记(九)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/21/learning-rust-part-VIII/">rust学习笔记(八)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/21/learning-rust-part-VII/">rust学习笔记(七)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/21/learning-rust-part-VI/">rust学习笔记(六)</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/20/learning-rust-part-V/">rust学习笔记(五)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Yuankun Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about/index.html" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

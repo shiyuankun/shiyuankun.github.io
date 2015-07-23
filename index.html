@@ -95,6 +95,709 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-learning-rust-part-IX" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/23/learning-rust-part-IX/" class="article-date">
+  <time datetime="2015-07-23T06:21:13.000Z" itemprop="datePublished">2015-07-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/23/learning-rust-part-IX/">rust学习笔记(九)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>感觉好累，休息了一天，连椭圆机都没练，感觉今天终于缓过来了，继续学习。</p>
+<h2 id="Trait_对象">Trait 对象</h2><p>当代码处理多态(polymorphism)的时候，需要有一个机制来决定到底执行哪个版本的代码。这通常叫做调度(dispatch)。调度的方式一般有两种，静态和动态。rust倾向于静态调度，但也支持动态调度。</p>
+<p>例如，我们定义一个trait，并对u8和string实现一个方法</p>
+<pre><code>trait <span class="type">Foo</span> {
+    fn <span class="keyword">method</span>(&amp;self) -&gt; <span class="type">String</span>;
+}
+
+impl <span class="type">Foo</span> <span class="keyword">for</span> u8 {
+    fn <span class="keyword">method</span>(&amp;self) -&gt; <span class="type">String</span> { format!(<span class="string">"u8: {}"</span>, *self) }
+}
+
+impl <span class="type">Foo</span> <span class="keyword">for</span> <span class="type">String</span> {
+    fn <span class="keyword">method</span>(&amp;self) -&gt; <span class="type">String</span> { format!(<span class="string">"string: {}"</span>, *self) }
+}
+</code></pre><p>这时候静态的调度就可以通过trait bounds实现</p>
+<pre><code>fn do_something&lt;T: <span class="type">Foo</span>&gt;(x: T) {
+    x.<span class="keyword">method</span>();
+}
+
+fn main() {
+    <span class="keyword">let</span> x = <span class="number">5u8</span>;
+    <span class="keyword">let</span> y = <span class="string">"Hello"</span>.to_string();
+
+    do_something(x);
+    do_something(y);
+}
+</code></pre><p>rust是通过单态(monomorphization)来实现静态调度的。也就是说，编译之后为每一个T类型产生一个do_something_T这样的函数，并且替换掉每一个do_something的调用为相应类型的调用。<br>这样做的好处是可以将函数内联(inline)，这样可以让程序跑得更快，但也有坏处，会产生过多的函数。另外没有充分优化过得的编译器也会让某些inline函数跑得更慢。</p>
+<h2 id="dynamic_dispatch">dynamic dispatch</h2><p>rust通过特点对象(trait objects)来实现动态调度(dynamic dispatch)。trait objects的使用很简单，就是&amp;Foo 或者 Box<foo>。在调用时使用(&amp;x as &amp;Foo)转换，或者(&amp;x作为函数参数)强制转换就可以使用trait objects来实现动态调度了。例如：<br>普通转换</foo></p>
+<pre><code>fn do_something(x: &amp;<span class="type">Foo</span>) {
+    x.<span class="keyword">method</span>();
+}
+
+fn main() {
+    <span class="keyword">let</span> x = <span class="number">5u8</span>;
+    do_something(&amp;x <span class="keyword">as</span> &amp;<span class="type">Foo</span>);
+}
+</code></pre><p>强制转换</p>
+<pre><code>fn do_something(x: &amp;<span class="type">Foo</span>) {
+    x.<span class="keyword">method</span>();
+}
+
+fn main() {
+    <span class="keyword">let</span> x = <span class="string">"Hello"</span>.to_string();
+    do_something(&amp;x);
+}
+</code></pre><p>这种转换会使编译器失去原始类型的信息，所以也可以认为是”type erasure”</p>
+<h2 id="closures">closures</h2><p>rust支持闭包(closures)，也就是有函数环境的匿名函数。rust闭包这样子实现</p>
+<p>let plus_one = |x: i32| x + 1;</p>
+<p>这样子就创建了一个闭包，闭包的参数在管道符中间，然后跟着表达式就是闭包的函数体。由于{}可以视为一个表达式，所以也可以用大括号将多行代码扩起来组成一个复杂点的闭包，这点比python好太多。</p>
+<p>let plus_two = |x| {<br>    let mut result: i32 = x;</p>
+<pre><code><span class="literal">result</span> += <span class="number">1</span>;
+<span class="literal">result</span> += <span class="number">1</span>;
+
+<span class="literal">result</span>
+</code></pre><p>};</p>
+<p>闭包也可以用类型指定返回值，</p>
+<pre><code><span class="keyword">let</span> plus_one = |x: <span class="keyword">i32</span>| -&gt; <span class="keyword">i32</span> { x + <span class="number">1</span> };
+</code></pre><p>但一般为了简洁不这么做</p>
+<p>在python中，闭包的内部环境处理的并不好，如果引用了外部变量，那匿名函数的内部引用会随这外部变量的改变而改变，这点很坑。<br>rust部分解决了这个问题。</p>
+<pre><code><span class="keyword">let</span> mut <span class="variable">num =</span> <span class="number">5</span>;
+<span class="keyword">let</span> <span class="variable">plus_num =</span> |x: i32| x + num;
+
+<span class="keyword">let</span> <span class="variable">y =</span> &amp;mut num;
+</code></pre><p>这样是错误的，编译器会告诉你在定义plus_num的时候num被immutable引用了，所以y=&amp;mut num就报错了。<br>要这么做只能让闭包在他自己的作用域中，执行完以后消失</p>
+<pre><code><span class="keyword">let</span> <span class="keyword">mut</span> num = <span class="number">5</span>;
+{
+    <span class="keyword">let</span> plus_num = |x: <span class="keyword">i32</span>| x + num;
+
+} <span class="comment">// plus_num 离开作用域就消失了。</span>
+
+<span class="keyword">let</span> y = &amp;<span class="keyword">mut</span> num;
+</code></pre><h2 id="move闭包">move闭包</h2><pre><code><span class="keyword">let</span> <span class="keyword">mut</span> num = <span class="number">5</span>;
+
+{ 
+    <span class="keyword">let</span> <span class="keyword">mut</span> add_num = |x: <span class="keyword">i32</span>| num += x;
+
+    add_num(<span class="number">5</span>);
+}
+
+<span class="built_in">assert_eq!</span>(<span class="number">10</span>, num);<span class="comment">//结果是10</span>
+
+
+<span class="keyword">let</span> <span class="keyword">mut</span> num = <span class="number">5</span>;
+
+{ 
+    <span class="keyword">let</span> <span class="keyword">mut</span> add_num = move |x: <span class="keyword">i32</span>| num += x;
+
+    add_num(<span class="number">5</span>);
+}
+
+<span class="built_in">assert_eq!</span>(<span class="number">5</span>, num);<span class="comment">//结果是5</span>
+</code></pre><p>所以在定义闭包时使用move就是对所使用的外部变量做了一个copy，即使改变了，离开了作用域还是原来的值。</p>
+<h2 id="closure_实现方法">closure 实现方法</h2><p>同其他语言不一样，rust里闭包的实现其是靠的就是trait objects。</p>
+<pre><code>pub <span class="keyword">trait</span> Fn<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> : FnMut<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> {
+    extern <span class="string">"rust-call"</span> fn call(<span class="subst">&amp;</span><span class="built_in">self</span>, args: Args) <span class="subst">-&gt; </span><span class="built_in">Self</span><span class="tag">::Output</span>;
+}
+
+pub <span class="keyword">trait</span> FnMut<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> : FnOnce<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> {
+    extern <span class="string">"rust-call"</span> fn call_mut(<span class="subst">&amp;</span>mut <span class="built_in">self</span>, args: Args) <span class="subst">-&gt; </span><span class="built_in">Self</span><span class="tag">::Output</span>;
+}
+
+pub <span class="keyword">trait</span> FnOnce<span class="subst">&lt;</span>Args<span class="subst">&gt;</span> {
+    <span class="keyword">type</span> Output;
+
+    extern <span class="string">"rust-call"</span> fn call_once(<span class="built_in">self</span>, args: Args) <span class="subst">-&gt; </span><span class="built_in">Self</span><span class="tag">::Output</span>;
+}
+</code></pre><p>在rust内部，所有的闭包都是以上这三个trait objects的重载</p>
+<h2 id="将闭包作为参数">将闭包作为参数</h2><p>看懂了闭包的实现本质是trait objects，我们就可以看看怎么把闭包作为参数传递进别的函数中。</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">call_with_one</span></span>&lt;F&gt;(some_closure: F) -&gt; <span class="keyword">i32</span>
+    where F : Fn(<span class="keyword">i32</span>) -&gt; <span class="keyword">i32</span> {
+
+    some_closure(<span class="number">1</span>)
+}
+
+<span class="keyword">let</span> answer = call_with_one(|x| x + <span class="number">2</span>);
+
+<span class="built_in">assert_eq!</span>(<span class="number">3</span>, answer);
+</code></pre><p>这里是一个例子，在call_with_one的调用时定义了一个匿名函数，然后在定义call_with_one里，将参数定义为类型F，返回值为i32，然后接着一行where F: Fn(i32)-&gt;i32)的意思就是F这个类型其实是Fn(i32)-&gt;i32，Fn就是上一节第一个闭包。</p>
+<h2 id="返回闭包">返回闭包</h2><p>能传入闭包，那能返回闭包吗？</p>
+<p>能！但不能像传入闭包一样那样定义一个传出的函数，然后类型是Fn。1.是生命周期的缘故，所有内部定义的函数他的生命都不会长过函数本身，这个可以用’static定义返回值类型来避开。2.这个就比较麻烦，应为在rust编译器里，闭包直接有一个类型叫闭包，并不是Fn….3.由于在函数中定义闭包很容易以来函数内部的变量，这些变量的寿命都很短，所以rust为了避免问题就将所有的闭包定义为一个新的闭包并且没有static生命。当然这也不难解决</p>
+<pre><code><span class="function"><span class="keyword">fn</span> <span class="title">factory</span></span>() -&gt; Box&lt;Fn(<span class="keyword">i32</span>) -&gt; <span class="keyword">i32</span>&gt; {<span class="comment">//Fn就是为了定义闭包，Box为了将闭包类型转换</span>
+    <span class="keyword">let</span> num = <span class="number">5</span>;
+
+    Box::new(move |x| x + num)<span class="comment">//move 为了将num做一份复制到闭包中，避免num本身的生命周期过短的问题</span>
+}
+<span class="keyword">let</span> f = factory();
+
+<span class="keyword">let</span> answer = f(<span class="number">1</span>);
+<span class="built_in">assert_eq!</span>(<span class="number">6</span>, answer);
+</code></pre><p>内心不住的咆哮(我要休假！去海边！)</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/23/learning-rust-part-IX/" data-id="cicfw51qj0014qtv4p5zndkpf" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-learning-rust-part-VIII" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/21/learning-rust-part-VIII/" class="article-date">
+  <time datetime="2015-07-21T08:09:47.000Z" itemprop="datePublished">2015-07-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/21/learning-rust-part-VIII/">rust学习笔记(八)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Vector">Vector</h2><p>这个应该翻译成向量，因为教程自己都说了<br>A ‘vector’ is a dynamic or ‘growable’ array<br>定义和遍历向量的方法之前的笔记里已经提到过，相当简单</p>
+<pre><code><span class="keyword">let</span> <span class="keyword">mut</span> v = <span class="built_in">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
+
+<span class="keyword">for</span> i <span class="keyword">in</span> &amp;v {
+    <span class="built_in">println!</span>(<span class="string">"A reference to {}"</span>, i);
+}
+
+<span class="keyword">for</span> i <span class="keyword">in</span> &amp;<span class="keyword">mut</span> v {
+    <span class="built_in">println!</span>(<span class="string">"A mutable reference to {}"</span>, i);
+}
+
+<span class="keyword">for</span> i <span class="keyword">in</span> v {
+    <span class="built_in">println!</span>(<span class="string">"Take ownership of the vector and its element {}"</span>, i);
+}
+</code></pre><h2 id="字符串">字符串</h2><p>有意思的是，在rust里字符串有两种类型，一种叫做&amp;str(注意那个&amp;，说明是个指针？)一种叫做String。对于&amp;str，其实他的默认生命周期是’static的，所以会永久保存直到程序结束。并且&amp;str的长度固定，不能被改变。<br>而String的长度是可变的，保证是UTF8，String通常是通过&amp;str的to_string()方法创造的。String能通过加一个&amp;强制转换成&amp;str。</p>
+<pre><code><span class="keyword">let</span> <span class="keyword">mut</span> s = <span class="string">"Hello"</span>.to_string(); 
+<span class="built_in">println!</span>(<span class="string">"{}"</span>, s);
+
+s.push_str(<span class="string">", world."</span>);
+<span class="built_in">println!</span>(<span class="string">"{}"</span>, s);
+
+<span class="function"><span class="keyword">fn</span> <span class="title">takes_slice</span></span>(slice: &amp;<span class="keyword">str</span>) {
+    <span class="built_in">println!</span>(<span class="string">"Got: {}"</span>, slice);
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> s = <span class="string">"Hello"</span>.to_string();
+    takes_slice(&amp;s);
+}
+</code></pre><h2 id="索引">索引</h2><p>通常，应为字符串是utf-8的，所以字符串不支持索引(&amp;str也不支持)</p>
+<pre><code><span class="keyword">let</span> s = <span class="string">"hello"</span>;
+
+<span class="built_in">println!</span>(<span class="string">"The first letter of s is {}"</span>, s[<span class="number">0</span>]);<span class="comment">//报错</span>
+</code></pre><p>但是可以通过别的方法遍历</p>
+<pre><code><span class="keyword">let</span> s = <span class="string">"关关雎鸠，在河之洲。窈窕淑女，君子好逑。"</span>;
+<span class="keyword">for</span> b <span class="keyword">in</span> s.as_bytes(){
+    <span class="built_in">print</span>!(<span class="string">"{}, "</span>,b);
+}
+
+<span class="built_in">println</span>!(<span class="string">""</span>);
+
+<span class="keyword">for</span> <span class="built_in">c</span> <span class="keyword">in</span> s.chars(){
+    <span class="built_in">print</span>!(<span class="string">"{}, "</span>,<span class="built_in">c</span>);
+}
+<span class="built_in">println</span>!(<span class="string">""</span>);
+</code></pre><p>以及索引</p>
+<pre><code><span class="keyword">let</span> <span class="variable">guan =</span> s.chars().nth(<span class="number">1</span>);
+</code></pre><h2 id="字符连接">字符连接</h2><p>rust的字符连接稍微复杂点，String后可以加&amp;str来连接，但是如果两个String，第二个String必须用&amp;强制转换为&amp;str，如果是两个&amp;str，第一个必须用.to_string()转化为String</p>
+<h2 id="通用类型">通用类型</h2><p>rust支持T作为通用类型来支持多种类型的函数，枚举等等。</p>
+<pre><code><span class="keyword">fn</span> takes_anything&lt;<span class="constant">T&gt;</span>(<span class="symbol">x:</span> <span class="constant">T)</span> {
+    <span class="regexp">//</span> <span class="keyword">do</span> something with x
+}
+</code></pre><p>也可以多个通用类型，这点和Haskell很像</p>
+<pre><code>fn takes_two_things&lt;T, U&gt;(<span class="string">x:</span> T, <span class="string">y:</span> U) {
+    <span class="comment">// ...</span>
+}
+</code></pre><h2 id="Trait">Trait</h2><p>Rust里的trait类似于scala里的trait，有点像java里的抽象类，规定了这个结构必须有的方法，然后impl去实现就行。trait的好处是可以给不同类型规定必须实现的方法，例如</p>
+<pre><code><span class="keyword">struct</span> Circle {
+    x: <span class="keyword">f64</span>,
+    y: <span class="keyword">f64</span>,
+    radius: <span class="keyword">f64</span>,
+}
+
+<span class="keyword">trait</span> <span class="title">HasArea</span> {
+    <span class="function"><span class="keyword">fn</span> <span class="title">area</span></span>(&amp;<span class="keyword">self</span>) -&gt; <span class="keyword">f64</span>;
+}
+
+<span class="keyword">impl</span> HasArea <span class="keyword">for</span> Circle {
+    <span class="function"><span class="keyword">fn</span> <span class="title">area</span></span>(&amp;<span class="keyword">self</span>) -&gt; <span class="keyword">f64</span> {
+        std::f64::consts::PI * (<span class="keyword">self</span>.radius * <span class="keyword">self</span>.radius)
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">print_area</span></span>&lt;T&gt;(shape: T) {
+    <span class="built_in">println!</span>(<span class="string">"This shape has an area of {}"</span>, shape.area());
+}
+</code></pre><p>这样是会报错的，因为T这个匿名类型没有实现area这个方法。但是这样指定就没问题：</p>
+<pre><code><span class="tag">fn</span> <span class="tag">print_area</span>&lt;<span class="rule"><span class="attribute">T</span>:<span class="value"> HasArea&gt;(shape: T) {
+    println!(<span class="string">"This shape has an area of {}"</span>, shape.<span class="function">area</span>())</span></span>;
+}
+</code></pre><p>这是因为在函数名后的尖括号里规定了T必须实现HasArea这个trait规定的所有函数(也就是必须有area这个函数)，如果要指定多个trait，需要用加号</p>
+<pre><code><span class="keyword">use</span> std::fmt::Debug;
+
+<span class="function"><span class="keyword">fn</span> <span class="title">foo</span></span>&lt;T: Clone + Debug&gt;(x: T) {
+    x.clone();
+    <span class="built_in">println!</span>(<span class="string">"{:?}"</span>, x);
+}
+</code></pre><h2 id="Where">Where</h2><p>在写Trait的时候，如果变量类型一多，很容易比较乱，rust利用where，将整个trait后置，变得易于阅读。</p>
+<pre><code><span class="keyword">use</span> <span class="title">std</span>::<span class="title">fmt</span>::<span class="title">Debug</span>;
+
+fn bar&lt;T, K&gt;(x: T, y: K)
+    where T: <span class="keyword">Clone</span>,
+          K: <span class="keyword">Clone</span> + Debug {
+
+    x.<span class="keyword">clone</span>();
+    y.<span class="keyword">clone</span>();
+    println!(<span class="string">"{:?}"</span>, y);
+}
+</code></pre><p>默认方法</p>
+<p>在trait中，同样可以实现某个方法，这样所有指定了该trait的类型都会自动拥有这个方法。</p>
+<pre><code><span class="keyword">trait</span> <span class="title">Foo</span> {
+    <span class="function"><span class="keyword">fn</span> <span class="title">bar</span></span>(&amp;<span class="keyword">self</span>);
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">baz</span></span>(&amp;<span class="keyword">self</span>) { <span class="built_in">println!</span>(<span class="string">"We called baz."</span>); }
+}
+</code></pre><p>继承</p>
+<p>trait也可以继承，也就是说实现trait a必须实现trait b。</p>
+<pre><code><span class="class"><span class="keyword">trait</span> <span class="title">Foo</span> </span>{
+    fn foo(&amp;self);
+}
+
+<span class="class"><span class="keyword">trait</span> <span class="title">FooBar</span> : <span class="typename">Foo {</span></span>
+    fn foobar(&amp;self);
+}
+</code></pre><h2 id="Drop">Drop</h2><p>drop是rust里得一个特殊的trait，他的作用居然是在变量离开作用域的时候执行。通常这是用来做一些清理工作的。</p>
+<pre><code><span class="keyword">struct</span> Firework {
+    strength: <span class="keyword">i32</span>,
+}
+
+<span class="keyword">impl</span> Drop <span class="keyword">for</span> Firework {
+    <span class="function"><span class="keyword">fn</span> <span class="title">drop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) {
+        <span class="built_in">println!</span>(<span class="string">"BOOM times {}!!!"</span>, <span class="keyword">self</span>.strength);
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> firecracker = Firework { strength: <span class="number">1</span> };
+    <span class="keyword">let</span> tnt = Firework { strength: <span class="number">100</span> };
+    <span class="built_in">println!</span>(<span class="string">"test"</span>);
+}
+</code></pre><p>这段代码的执行结果是</p>
+<pre><code><span class="function_or_atom">test</span>
+<span class="variable">BOOM</span> <span class="function_or_atom">times</span> <span class="number">100</span><span class="exclamation_mark">!</span><span class="exclamation_mark">!</span><span class="exclamation_mark">!</span>
+<span class="variable">BOOM</span> <span class="function_or_atom">times</span> <span class="number">1</span><span class="exclamation_mark">!</span><span class="exclamation_mark">!</span><span class="exclamation_mark">!</span>
+</code></pre><p>也就是说先执行了println!(“test”)，然后才执行了每个变量的drop方法。并且这是一个先进后出的栈。</p>
+<h2 id="if_let">if let</h2><p>if let 主要是用来做一些模式匹配的工作，例如</p>
+<pre><code>match option <span class="list">{
+    Some(x) =&gt; { foo(x) }</span>,
+    <span class="keyword">None</span> =&gt; <span class="list">{}</span>,
+}
+</code></pre><p>这么一个模式匹配，如果用if语句来做可以这么做。</p>
+<pre><code><span class="keyword">if</span> <span class="built_in">option</span>.is_some<span class="literal">()</span> {
+    <span class="keyword">let</span> x = <span class="built_in">option</span>.unwrap<span class="literal">()</span>;
+    foo(x);
+}
+</code></pre><p>但是用if let可以更加简介</p>
+<pre><code><span class="function"><span class="keyword">if</span> <span class="keyword">let</span> <span class="title">Some</span><span class="params">(x)</span> </span>= option {
+    foo(x);
+}
+</code></pre><p>当模式不匹配的时候还可以用else</p>
+<pre><code><span class="keyword">if</span> <span class="keyword">let</span> <span class="type">Some</span>(x) = <span class="built_in">option</span> {
+    foo(x);
+} <span class="keyword">else</span> {
+    bar<span class="literal">()</span>;
+}
+</code></pre><h2 id="while_let">while let</h2><p>和if let一样，不同的是不断重复匹配</p>
+<pre><code><span class="function"><span class="keyword">while</span> <span class="keyword">let</span> <span class="title">Some</span><span class="params">(x)</span> </span>= option {
+    println!(<span class="string">"{}"</span>, x);
+}
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VIII/" data-id="cicfw51po000vqtv4nlluwdbc" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-learning-rust-part-VII" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/21/learning-rust-part-VII/" class="article-date">
+  <time datetime="2015-07-21T07:33:12.000Z" itemprop="datePublished">2015-07-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/21/learning-rust-part-VII/">rust学习笔记(七)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="match">match</h2><p>匹配是一个很好用的东西，在haskell中非常常见，要注意，匹配的时候必须全覆盖，加一个默认条件就能全覆盖，例如：</p>
+<pre><code><span class="keyword">let</span> x = <span class="number">5</span>;
+
+<span class="keyword">let</span> number = <span class="keyword">match</span> x {
+    <span class="number">1</span> =&gt; <span class="string">"one"</span>,
+    <span class="number">2</span> =&gt; <span class="string">"two"</span>,
+    <span class="number">3</span> =&gt; <span class="string">"three"</span>,
+    <span class="number">4</span> =&gt; <span class="string">"four"</span>,
+    <span class="number">5</span> =&gt; <span class="string">"five"</span>,
+    _ =&gt; <span class="string">"something else"</span>,
+};
+</code></pre><p>这个_就是默认条件。但匹配并不是用在这里，更多的用在枚举类型上，例如</p>
+<pre><code><span class="keyword">enum</span> <span class="title">Message</span> {
+    Quit,
+    ChangeColor(<span class="keyword">i32</span>, <span class="keyword">i32</span>, <span class="keyword">i32</span>),
+    Move { x: <span class="keyword">i32</span>, y: <span class="keyword">i32</span> },
+    Write(String),
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">quit</span></span>() { <span class="comment">/* ... */</span> }
+<span class="function"><span class="keyword">fn</span> <span class="title">change_color</span></span>(r: <span class="keyword">i32</span>, g: <span class="keyword">i32</span>, b: <span class="keyword">i32</span>) { <span class="comment">/* ... */</span> }
+<span class="function"><span class="keyword">fn</span> <span class="title">move_cursor</span></span>(x: <span class="keyword">i32</span>, y: <span class="keyword">i32</span>) { <span class="comment">/* ... */</span> }
+
+<span class="function"><span class="keyword">fn</span> <span class="title">process_message</span></span>(msg: Message) {
+    <span class="keyword">match</span> msg {
+        Message::Quit =&gt; quit(),
+        Message::ChangeColor(r, g, b) =&gt; change_color(r, g, b),
+        Message::Move { x: x, y: y } =&gt; move_cursor(x, y),
+        Message::Write(s) =&gt; <span class="built_in">println!</span>(<span class="string">"{}"</span>, s),
+    };
+}
+</code></pre><p>这里就可以根据枚举类型里不同的各种类型做各种匹配。</p>
+<p>也可以做多模式匹配和区域匹配</p>
+<pre><code><span class="keyword">let</span> x = <span class="number">1</span>;
+
+<span class="keyword">match</span> x {
+    <span class="number">1</span> | <span class="number">2</span> =&gt; println!(<span class="string">"one or two"</span>),
+    <span class="number">3</span> ... <span class="number">5</span> =&gt; println!(<span class="string">"three"</span>),
+    _ =&gt; println!(<span class="string">"anything"</span>),
+}
+</code></pre><p>在匹配模式比较复杂的时候还可以使用绑定</p>
+<pre><code><span class="comment">#[derive(Debug)]</span>
+struct <span class="type">Person</span> {
+    name: <span class="type">Option</span>&lt;<span class="type">String</span>&gt;,
+}
+
+<span class="keyword">let</span> name = <span class="string">"Steve"</span>.to_string();
+<span class="keyword">let</span> mut x: <span class="type">Option</span>&lt;<span class="type">Person</span>&gt; = <span class="type">Some</span>(<span class="type">Person</span> { name: <span class="type">Some</span>(name) });
+match x {
+    <span class="type">Some</span>(<span class="type">Person</span> { name: <span class="keyword">ref</span> a @ <span class="type">Some</span>(_), .. }) =&gt; println!(<span class="string">"{:?}"</span>, a),
+    _ =&gt; {}
+}
+</code></pre><p>得到相应值，在多模式匹配的时候必须确保每个部分都有绑定</p>
+<pre><code><span class="keyword">let</span> x = <span class="number">5</span>;
+
+match x {
+    <span class="literal">e</span> @ <span class="number">1</span> ... <span class="number">5</span> | <span class="literal">e</span> @ <span class="number">8</span> ... <span class="number">10</span> =&gt; println!(<span class="string">"got a range element {}"</span>, <span class="literal">e</span>),
+    _ =&gt; println!(<span class="string">"anything"</span>),
+}
+</code></pre><p>还可以忽略掉具体值</p>
+<pre><code><span class="keyword">enum</span> <span class="title">OptionalInt</span> {
+    Value(<span class="keyword">i32</span>),
+    Missing,
+}
+
+<span class="keyword">let</span> x = OptionalInt::Value(<span class="number">5</span>);
+
+<span class="keyword">match</span> x {
+    OptionalInt::Value(..) =&gt; <span class="built_in">println!</span>(<span class="string">"Got an int!"</span>),
+    OptionalInt::Missing =&gt; <span class="built_in">println!</span>(<span class="string">"No such luck."</span>),
+}
+</code></pre><p>或者使用if来匹配</p>
+<pre><code><span class="keyword">enum</span> <span class="title">OptionalInt</span> {
+    Value(<span class="keyword">i32</span>),
+    Missing,
+}
+
+<span class="keyword">let</span> x = OptionalInt::Value(<span class="number">5</span>);
+
+<span class="keyword">match</span> x {
+    OptionalInt::Value(i) <span class="keyword">if</span> i &gt; <span class="number">5</span> =&gt; <span class="built_in">println!</span>(<span class="string">"Got an int bigger than five!"</span>),
+    OptionalInt::Value(..) =&gt; <span class="built_in">println!</span>(<span class="string">"Got an int!"</span>),
+    OptionalInt::Missing =&gt; <span class="built_in">println!</span>(<span class="string">"No such luck."</span>),
+}
+</code></pre><p>匹配的时候与haskell一样，也可以解包具体值</p>
+<pre><code><span class="keyword">struct</span> Point {
+    x: <span class="keyword">i32</span>,
+    y: <span class="keyword">i32</span>,
+}
+
+<span class="keyword">let</span> origin = Point { x: <span class="number">0</span>, y: <span class="number">0</span> };
+
+<span class="keyword">match</span> origin {
+    Point { x: x, .. } =&gt; <span class="built_in">println!</span>(<span class="string">"x is {}"</span>, x),
+}
+</code></pre><h2 id="方法">方法</h2><p>对于rust里的结构体，可以通过impl来实现这个结构体的方法，例如</p>
+<pre><code><span class="keyword">struct</span> Circle {
+    x: <span class="keyword">f64</span>,
+    y: <span class="keyword">f64</span>,
+    radius: <span class="keyword">f64</span>,
+}
+
+<span class="keyword">impl</span> Circle {
+    <span class="function"><span class="keyword">fn</span> <span class="title">area</span></span>(&amp;<span class="keyword">self</span>) -&gt; <span class="keyword">f64</span> {
+        std::f64::consts::PI * (<span class="keyword">self</span>.radius * <span class="keyword">self</span>.radius)
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> c = Circle { x: <span class="number">0.0</span>, y: <span class="number">0.0</span>, radius: <span class="number">2.0</span> };
+    <span class="built_in">println!</span>(<span class="string">"{}"</span>, c.area());
+}
+</code></pre><p>如果要做到foo.bar().baz()这样的调用方式，bar()的返回类型必须有baz这个函数</p>
+<p>在指定impl函数的时候如果不加self参数，就成为了联合函数</p>
+<pre><code><span class="keyword">struct</span> Circle {
+    x: <span class="keyword">f64</span>,
+    y: <span class="keyword">f64</span>,
+    radius: <span class="keyword">f64</span>,
+}
+
+<span class="keyword">impl</span> Circle {
+    <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>(x: <span class="keyword">f64</span>, y: <span class="keyword">f64</span>, radius: <span class="keyword">f64</span>) -&gt; Circle {
+        Circle {
+            x: x,
+            y: y,
+            radius: radius,
+        }
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> c = Circle::new(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">2.0</span>);
+}
+</code></pre><p>rust没有python那样的默认参数，所以在定义类似函数时稍微麻烦点，例如</p>
+<pre><code><span class="keyword">struct</span> Circle {
+    x: <span class="keyword">f64</span>,
+    y: <span class="keyword">f64</span>,
+    radius: <span class="keyword">f64</span>,
+}
+
+<span class="keyword">impl</span> Circle {
+    <span class="function"><span class="keyword">fn</span> <span class="title">area</span></span>(&amp;<span class="keyword">self</span>) -&gt; <span class="keyword">f64</span> {
+        std::f64::consts::PI * (<span class="keyword">self</span>.radius * <span class="keyword">self</span>.radius)
+    }
+}
+
+<span class="keyword">struct</span> CircleBuilder {
+    x: <span class="keyword">f64</span>,
+    y: <span class="keyword">f64</span>,
+    radius: <span class="keyword">f64</span>,
+}
+
+<span class="keyword">impl</span> CircleBuilder {
+    <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>() -&gt; CircleBuilder {
+        CircleBuilder { x: <span class="number">0.0</span>, y: <span class="number">0.0</span>, radius: <span class="number">1.0</span>, }
+    }
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">x</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, coordinate: <span class="keyword">f64</span>) -&gt; &amp;<span class="keyword">mut</span> CircleBuilder {
+        <span class="keyword">self</span>.x = coordinate;
+        <span class="keyword">self</span>
+    }
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">y</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, coordinate: <span class="keyword">f64</span>) -&gt; &amp;<span class="keyword">mut</span> CircleBuilder {
+        <span class="keyword">self</span>.y = coordinate;
+        <span class="keyword">self</span>
+    }
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">radius</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, radius: <span class="keyword">f64</span>) -&gt; &amp;<span class="keyword">mut</span> CircleBuilder {
+        <span class="keyword">self</span>.radius = radius;
+        <span class="keyword">self</span>
+    }
+
+    <span class="function"><span class="keyword">fn</span> <span class="title">finalize</span></span>(&amp;<span class="keyword">self</span>) -&gt; Circle {
+        Circle { x: <span class="keyword">self</span>.x, y: <span class="keyword">self</span>.y, radius: <span class="keyword">self</span>.radius }
+    }
+}
+
+<span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {
+    <span class="keyword">let</span> c = CircleBuilder::new()
+                .x(<span class="number">1.0</span>)
+                .y(<span class="number">2.0</span>)
+                .radius(<span class="number">2.0</span>)
+                .finalize();
+
+    <span class="built_in">println!</span>(<span class="string">"area: {}"</span>, c.area());
+    <span class="built_in">println!</span>(<span class="string">"x: {}"</span>, c.x);
+    <span class="built_in">println!</span>(<span class="string">"y: {}"</span>, c.y);
+}
+</code></pre><p>在这个例子里，首先是定义了一个CircleBuilder，然后不断将需要改变的参数累积，最后形成一个circle类</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VII/" data-id="cicfw51pq000yqtv4dt284a2f" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-learning-rust-part-VI" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/21/learning-rust-part-VI/" class="article-date">
+  <time datetime="2015-07-21T06:56:38.000Z" itemprop="datePublished">2015-07-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/21/learning-rust-part-VI/">rust学习笔记(六)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="可变性(Mutability)">可变性(Mutability)</h2><p>rust的可变性已经提到过很多了，差不多就是这样子</p>
+<pre><code><span class="keyword">let</span> mut <span class="variable">x =</span> <span class="number">5</span>;
+<span class="keyword">let</span> <span class="variable">y =</span> &amp;mut x;
+</code></pre><p>但这次要多一个概念，即内部和外部可变性。</p>
+<p>我们在讨论可变性的时候，其实是在讨论外部可变性，比如</p>
+<pre><code><span class="keyword">use</span> std::sync::Arc;
+
+<span class="keyword">let</span> x = Arc::new(<span class="number">5</span>);
+<span class="keyword">let</span> y = x.clone();
+</code></pre><p>这样是可以的。因为符合了以下原则</p>
+<ol>
+<li>对一个资源的一个或者多个引用(&amp;T)</li>
+<li>同时只能有一个可变引用(&amp;mut T)</li>
+</ol>
+<p>这就是为什么上面那段代码可行，因为任何时候T.clone()给出的都是T的不可变引用(&amp;T)</p>
+<p>但下面这段就不行了</p>
+<pre><code><span class="keyword">use</span> std::cell::RefCell;
+<span class="keyword">let</span> x = RefCell::new(<span class="number">42</span>);
+<span class="keyword">let</span> y = x.borrow_mut();
+<span class="keyword">let</span> z = x.borrow_mut();
+</code></pre><p>这里，y已经借出了一个&amp;mut T，所以z再借出就报错panic了。</p>
+<p>由于可变性是借(&amp;mut)或者绑定(let mut)的一个属性，所以对于结构体不存在某些属性可变某些属性不可变。</p>
+<pre><code><span class="class"><span class="keyword">struct</span> <span class="title">Point</span></span>{
+    x: <span class="built_in">i32</span>,
+    mut y: <span class="built_in">i32</span>,
+}
+</code></pre><p>这是错的，只能这么操作</p>
+<pre><code><span class="keyword">struct</span> Point {
+    x: <span class="keyword">i32</span>,
+    y: <span class="keyword">i32</span>,
+}
+<span class="keyword">let</span> <span class="keyword">mut</span> a = Point { x: <span class="number">5</span>, y: <span class="number">6</span> };
+a.x = <span class="number">10</span>;
+<span class="keyword">let</span> b = Point { x: <span class="number">5</span>, y: <span class="number">6</span>};
+b.x = <span class="number">10</span>;<span class="comment">//这里也错了，因为b的绑定是不可变的</span>
+</code></pre><p>当然，可以利用Cell<t>特性模拟可变</t></p>
+<pre><code><span class="keyword">use</span> std::cell::Cell;
+
+<span class="keyword">struct</span> Point {
+    x: <span class="keyword">i32</span>,
+    y: Cell&lt;<span class="keyword">i32</span>&gt;,
+}
+
+<span class="keyword">let</span> point = Point { x: <span class="number">5</span>, y: Cell::new(<span class="number">6</span>) };
+
+point.y.set(<span class="number">7</span>);
+
+<span class="built_in">println!</span>(<span class="string">"y: {:?}"</span>, point.y);
+</code></pre><h2 id="结构体">结构体</h2><p>结构体的定义和c差不多。</p>
+<pre><code><span class="class"><span class="keyword">struct</span> <span class="title">Point</span> </span>{
+    x: <span class="built_in">i32</span>,
+    y: <span class="built_in">i32</span>,
+}
+</code></pre><p>当你要更新一个结构体的时候，多了一种方法..</p>
+<pre><code><span class="keyword">struct</span> Point3d {
+    x: <span class="keyword">i32</span>,
+    y: <span class="keyword">i32</span>,
+    z: <span class="keyword">i32</span>,
+}
+
+<span class="keyword">let</span> <span class="keyword">mut</span> point = Point3d { x: <span class="number">0</span>, y: <span class="number">0</span>, z: <span class="number">0</span> };
+point = Point3d { y: <span class="number">1</span>, .. point };
+</code></pre><p>这样point中除y以外的数值都会从另一个复制过来</p>
+<p>Tuple structs<br>这个定义类似于tuple和struct结合体</p>
+<p>struct Color(i32, i32, i32);<br>struct Point(i32, i32, i32);</p>
+<p>let black = Color(0, 0, 0);<br>let origin = Point(0, 0, 0);</p>
+<p>但不推荐这么写，因为没有变量名字。</p>
+<p>但有的时候有奇效，比如</p>
+<p>struct Inches(i32);</p>
+<p>let length = Inches(10);</p>
+<p>let Inches(integer_length) = length;<br>println!(“length is {} inches”, integer_length);</p>
+<p>这样可以从tuple struct解包出一个数值，有点像python的unpack。</p>
+<h2 id="Enums">Enums</h2><p>枚举是一个常见的东西，就不细说了<br>差不多就是把不同种类的变量类型打包成一个类型，这个类型的数据有各种变量类型的可能。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/21/learning-rust-part-VI/" data-id="cicfw51ps0010qtv40zib179d" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-learning-rust-part-V" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/07/20/learning-rust-part-V/" class="article-date">
@@ -104,6 +807,16 @@ ga('send', 'pageview');
   </div>
   <div class="article-inner">
     
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/20/learning-rust-part-V/">rust学习笔记(五)</a>
+    </h1>
+  
+
+      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
@@ -187,11 +900,12 @@ println!(<span class="string">"{}"</span>, y);
 <li>如果有多个输入的lifetime，但其中一个是&amp;self或者&amp;mut self，那么这个self的lifetime将会被指派给所有省略lifetime的返回值</li>
 </ol>
 <p>其他所有情况，省略一个返回值的lifetime都会报错</p>
+<p>ps<br>这里要稍微吐槽一下rust，为了防止数据被多线程更改所以搞了一个所有权概念，为了有利于更改搞了一个borrow，为了保证更改完了不会被data race又搞了一个lifetime，真是越来越复杂呢。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/20/learning-rust-part-V/" data-id="cicczkppd0000wwv4amxevxe0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/20/learning-rust-part-V/" data-id="cicfw51qh0012qtv42dardwm5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -295,7 +1009,7 @@ println!(<span class="string">"{}"</span>, y);
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/20/learning-rust-part-IV/" data-id="cicczjs5b000vwhv4boa1iv54" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/20/learning-rust-part-IV/" data-id="cicfw51qn0016qtv4s2nkzie2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -440,7 +1154,7 @@ let one_to_one_hundred = (<span class="number">1</span>..<span class="number">10
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-III/" data-id="cicczjs5d000ywhv4adypyoux" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-III/" data-id="cicfw51qo0018qtv4igca32u5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -636,7 +1350,7 @@ lib.<span class="function"><span class="title">process</span><span class="params
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-II/" data-id="cicczjs5e0010whv4qn169om5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/17/learning-rust-part-II/" data-id="cicfw51qq001aqtv4npe9e8g2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -776,7 +1490,7 @@ src/main.<span class="string">rs:</span><span class="number">7</span> }
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/07/16/learning-rust-part-I/" data-id="cicczjs5h0012whv4nw12x8sj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/07/16/learning-rust-part-I/" data-id="cicfw51qs001cqtv40y1dgerv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rust/">rust</a></li></ul>
@@ -1073,635 +1787,10 @@ mllib/src/<span class="keyword">main</span>/scala/org/apache/spark/mllib/linalg/
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/06/21/explore-spark-distributed-mllib/" data-id="cicczjs5y001iwhv4fyhh4wj2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/06/21/explore-spark-distributed-mllib/" data-id="cicfw51r3001sqtv42wa93d5d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-spark-task-and-scheduler" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/06/09/spark-task-and-scheduler/" class="article-date">
-  <time datetime="2015-06-09T13:27:45.000Z" itemprop="datePublished">2015-06-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/06/09/spark-task-and-scheduler/">spark 的调度和任务</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>一晃快一个月过去了，这个月有点小忙做了很多项目一直都没空闲重新研究spark的代码。今天晚上下决心看完。花了一点时间追了一下代码。基本算是搞清楚了spark的调度。<br>上次说到，spark会把记录了操作的rdd提交交给调度器等待运行。那调度器具体是怎么执行计算的呢？随手提交了一个作业，有如下日志</p>
-<pre><code><span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">DAGScheduler:</span> Submitting <span class="number">1</span> missing tasks from Stage <span class="number">1</span> (MapPartitionsRDD[<span class="number">2</span>] at map at Task2a.<span class="string">scala:</span><span class="number">8</span>)
-<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">TaskSchedulerImpl:</span> Adding task set <span class="number">1.0</span> with <span class="number">1</span> tasks
-<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">TaskSetManager:</span> Starting task <span class="number">0.0</span> <span class="keyword">in</span> stage <span class="number">1.0</span> (TID <span class="number">1</span>, localhost, PROCESS_LOCAL, <span class="number">1348</span> bytes)
-<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">Executor:</span> Running task <span class="number">0.0</span> <span class="keyword">in</span> stage <span class="number">1.0</span> (TID <span class="number">1</span>)
-<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">09</span> INFO <span class="string">HadoopRDD:</span> Input <span class="string">split:</span> <span class="string">file:</span><span class="regexp">/home/</span>cloudera/<span class="number">1</span>millionTweets.<span class="string">tsv:</span><span class="number">0</span>+<span class="number">28775886</span>
-<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">10</span> INFO <span class="string">BlockManager:</span> Removing broadcast <span class="number">1</span>
-<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">10</span> INFO <span class="string">BlockManager:</span> Removing block broadcast_1_piece0
-<span class="number">15</span><span class="regexp">/06/</span><span class="number">10</span> <span class="number">03</span>:<span class="number">05</span>:<span class="number">10</span> INFO <span class="string">MemoryStore:</span> Block broadcast_1_piece0 of size <span class="number">2039</span> dropped from memory (free <span class="number">280032800</span>)
-</code></pre><p>我们可以看到，DAGScheduler将任务提交了以后其实是TaskSetManager执行任务的</p>
-<pre><code>logInfo(<span class="string">"Starting <span class="variable">%s</span> (TID <span class="variable">%d</span>, <span class="variable">%s</span>, <span class="variable">%s</span>, <span class="variable">%d</span> bytes)"</span>.<span class="keyword">format</span>(
-taskName, taskId, host, taskLocality, serializedTask.limit))
-sched.dagScheduler.taskStarted(task, info)
-<span class="keyword">return</span> Some(new TaskDescription(taskId = taskId, attemptNumber = attemptNum, execId,
-taskName, <span class="keyword">index</span>, serializedTask))
-</code></pre><p>这里调用了dagScheduler的taskstarted开始任务的而最后到了Executor执行，也就是这一段</p>
-<pre><code><span class="comment">// Run the actual task and measure its runtime.</span>
-taskStart = System.<span class="function"><span class="title">currentTimeMillis</span><span class="params">()</span></span>
-val value = task.<span class="function"><span class="title">run</span><span class="params">(taskAttemptId = taskId, attemptNumber = attemptNumber)</span></span>
-val taskFinish = System.<span class="function"><span class="title">currentTimeMillis</span><span class="params">()</span></span>
-</code></pre><p>这里调用的是task.run来执行</p>
-<pre><code>final <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(taskAttemptId: Long, attemptNumber: Int)</span>:</span> T = {
-  context = new TaskContextImpl(stageId = stageId, partitionId = partitionId,
-    taskAttemptId = taskAttemptId, attemptNumber = attemptNumber, runningLocally = false)
-  TaskContextHelper.setTaskContext(context)
-  context.taskMetrics.setHostname(Utils.localHostName())
-  taskThread = Thread.currentThread()
-  <span class="keyword">if</span> (_killed) {
-    kill(interruptThread = false)
-  }
-  <span class="keyword">try</span> {
-    runTask(context)
-  } <span class="keyword">finally</span> {
-    context.markTaskCompleted()
-    TaskContextHelper.unset()
-  }
- }
-</code></pre><p>这是一个抽象类的final方法，基本可以看出大致的逻辑，调用自己的runTask执行任务完事。<br>例如，对于shuffle任务有一个</p>
-<pre><code><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">ShuffleMapTask</span>(</span>
-  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">runTask</span>(</span>context: <span class="type">TaskContext</span>): <span class="type">MapStatus</span> = {
-    <span class="comment">// Deserialize the RDD using the broadcast variable.</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">ser</span> =</span> <span class="type">SparkEnv</span>.get.closureSerializer.newInstance()
-    <span class="function"><span class="keyword">val</span> (</span>rdd, dep) = ser.deserialize[(<span class="type">RDD</span>[_], <span class="type">ShuffleDependency</span>[_, _, _])](
-      <span class="type">ByteBuffer</span>.wrap(taskBinary.value), <span class="type">Thread</span>.currentThread.getContextClassLoader)
-
-    metrics = <span class="type">Some</span>(context.taskMetrics)
-    <span class="keyword">var</span> writer: <span class="type">ShuffleWriter</span>[<span class="type">Any</span>, <span class="type">Any</span>] = <span class="literal">null</span>
-    <span class="keyword">try</span> {
-      <span class="function"><span class="keyword">val</span> <span class="title">manager</span> =</span> <span class="type">SparkEnv</span>.get.shuffleManager
-      writer = manager.getWriter[<span class="type">Any</span>, <span class="type">Any</span>](dep.shuffleHandle, partitionId, context)
-      writer.write(rdd.iterator(partition, context).asInstanceOf[<span class="type">Iterator</span>[_ &lt;: <span class="type">Product2</span>[<span class="type">Any</span>, <span class="type">Any</span>]]])
-      <span class="keyword">return</span> writer.stop(success = <span class="literal">true</span>).get
-    } <span class="keyword">catch</span> {
-      <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;
-        <span class="keyword">try</span> {
-          <span class="keyword">if</span> (writer != <span class="literal">null</span>) {
-            writer.stop(success = <span class="literal">false</span>)
-          }
-        } <span class="keyword">catch</span> {
-          <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;
-            log.debug(<span class="string">"Could not stop writer"</span>, e)
-        }
-        <span class="keyword">throw</span> e
-    }
-  }
-</code></pre><p>每一个Task子类都有自己的衍生的Runtask方法，取决于各自的目的。<br>终于算是找到了核心运算单元了，继续看mllib和dataframe的代码</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/06/09/spark-task-and-scheduler/" data-id="cicczjs4y0009whv44mn8fpkd" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scheduler/">scheduler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/task/">task</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-explore-spark-RDD-source-code" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/15/explore-spark-RDD-source-code/" class="article-date">
-  <time datetime="2015-05-15T08:14:17.000Z" itemprop="datePublished">2015-05-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/15/explore-spark-RDD-source-code/">expore spark RDD source code</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>一鼓作气再而衰三而竭。<br>开始阅读spark部分的代码，好在之前在coursera上看过一点scala虽然习题没做完但是不至于全忘。在spark里面，RDD的lazy evaluation也是通过和pyspark差不多的方法实现的，定义一个RDD类，每次操作都返回一个MapParitionsRDD，在这个MapParitionsRDD里记下前一个RDD和对应的函数。</p>
-<pre><code>abstract <span class="class"><span class="keyword">class</span> <span class="title">RDD</span>[<span class="title">T</span>:</span> ClassTag](
-    <span class="decorator">@transient private var _sc: SparkContext,</span>
-    <span class="decorator">@transient private var deps: Seq[Dependency[_]]</span>
-  ) extends Serializable <span class="keyword">with</span> Logging {
-
-  <span class="keyword">if</span> (classOf[RDD[_]].isAssignableFrom(elementClassTag.runtimeClass)) {
-    // This <span class="keyword">is</span> a warning instead of an exception <span class="keyword">in</span> order to avoid breaking user programs that
-    // might have defined nested RDDs without running jobs <span class="keyword">with</span> them.
-    logWarning(<span class="string">"Spark does not support nested RDDs (see SPARK-5063)"</span>)
-  }
-
-  private <span class="function"><span class="keyword">def</span> <span class="title">sc</span>:</span> SparkContext = {
-    <span class="keyword">if</span> (_sc == null) {
-      throw new SparkException(
-        <span class="string">"RDD transformations and actions can only be invoked by the driver, not inside of other "</span> +
-        <span class="string">"transformations; for example, rdd1.map(x =&gt; rdd2.values.count() * x) is invalid because "</span> +
-        <span class="string">"the values transformation and count action cannot be performed inside of the rdd1.map "</span> +
-        <span class="string">"transformation. For more information, see SPARK-5063."</span>)
-    }
-    _sc
-  }
-
-
-  <span class="function"><span class="keyword">def</span> <span class="title">map</span>[<span class="title">U</span>:</span> ClassTag](f: T =&gt; U): RDD[U] = {
-    val cleanF = sc.clean(f)
-    new MapPartitionsRDD[U, T](this, (context, pid, iter) =&gt; iter.map(cleanF))
-  }
-
-  <span class="function"><span class="keyword">def</span> <span class="title">filter</span><span class="params">(f: T =&gt; Boolean)</span>:</span> RDD[T] = {
-    val cleanF = sc.clean(f)
-    new MapPartitionsRDD[T, T](
-      this,
-      (context, pid, iter) =&gt; iter.filter(cleanF),
-      preservesPartitioning = true)
-  }
-
-  <span class="function"><span class="keyword">def</span> <span class="title">mapPartitionsWithIndex</span>[<span class="title">U</span>:</span> ClassTag](
-      f: (Int, Iterator[T]) =&gt; Iterator[U], preservesPartitioning: Boolean = false): RDD[U] = {
-    val func = (context: TaskContext, index: Int, iter: Iterator[T]) =&gt; f(index, iter)
-    new MapPartitionsRDD(this, sc.clean(func), preservesPartitioning)
-  }
-</code></pre><p>而MapPartitionsRDD仅仅记录下了动作和父RDD</p>
-<pre><code>private[spark] class <span class="type">MapPartitionsRDD</span>[U: <span class="type">ClassTag</span>, T: <span class="type">ClassTag</span>](
-    prev: <span class="type">RDD</span>[T],
-    f: (<span class="type">TaskContext</span>, <span class="type">Int</span>, <span class="type">Iterator</span>[T]) =&gt; <span class="type">Iterator</span>[U],  // (<span class="type">TaskContext</span>, partition index, <span class="keyword">iterator</span>)
-    preservesPartitioning: <span class="type">Boolean</span> = <span class="literal">false</span>)
-  extends <span class="type">RDD</span>[U](prev) {
-
-  override val partitioner = <span class="keyword">if</span> (preservesPartitioning) firstParent[T].partitioner <span class="keyword">else</span> <span class="type">None</span>
-
-  override def getPartitions: <span class="type">Array</span>[<span class="type">Partition</span>] = firstParent[T].partitions
-
-  override def compute(split: <span class="type">Partition</span>, context: <span class="type">TaskContext</span>) =
-    f(context, split.index, firstParent[T].<span class="keyword">iterator</span>(split, context))
-}
-</code></pre><p>而只有collect和reduce这类函数是例外的，</p>
-<pre><code><span class="function"><span class="keyword">def</span> <span class="title">collect</span><span class="params">()</span>:</span> Array[T] = {
-    val results = sc.runJob(this, (iter: Iterator[T]) =&gt; iter.toArray)
-    Array.concat(results: _*)
-  }
-
-<span class="function"><span class="keyword">def</span> <span class="title">reduce</span><span class="params">(f: <span class="params">(T, T)</span> =&gt; T)</span>:</span> T = {
-    val cleanF = sc.clean(f)
-    val reducePartition: Iterator[T] =&gt; Option[T] = iter =&gt; {
-      <span class="keyword">if</span> (iter.hasNext) {
-        Some(iter.reduceLeft(cleanF))
-      } <span class="keyword">else</span> {
-        <span class="keyword">None</span>
-      }
-    }
-    var jobResult: Option[T] = <span class="keyword">None</span>
-    val mergeResult = (index: Int, taskResult: Option[T]) =&gt; {
-      <span class="keyword">if</span> (taskResult.isDefined) {
-        jobResult = jobResult match {
-          case Some(value) =&gt; Some(f(value, taskResult.get))
-          case <span class="keyword">None</span> =&gt; taskResult
-        }
-      }
-    }
-    sc.runJob(this, reducePartition, mergeResult)
-    // Get the final result out of our Option, <span class="keyword">or</span> throw an exception <span class="keyword">if</span> the RDD was empty
-    jobResult.getOrElse(throw new UnsupportedOperationException(<span class="string">"empty collection"</span>))
-  }
-</code></pre><p>看代码可以知道collect这个动作做的时候其实是调用sc.runJob了，不再累积RDD类。而从SparkContext里的runJob里可以看到，scala shell其实是通过调用DAGScheduler.runjob让spark干活的</p>
-<pre><code>def runJob[T, U: ClassTag](
-      rdd: RDD[T],
-      func: (TaskContext, Iterator[T]) =&gt; U,
-      partitions: Seq[<span class="typename">Int</span>],
-      allowLocal: <span class="typename">Boolean</span>,
-      resultHandler: (<span class="typename">Int</span>, U) =&gt; <span class="typename">Unit</span>) {
-    <span class="keyword">if</span> (stopped) {
-      <span class="keyword">throw</span> new IllegalStateException(<span class="string">"SparkContext has been shutdown"</span>)
-    }
-    <span class="variable"><span class="keyword">val</span> callSite</span> = getCallSite
-    <span class="variable"><span class="keyword">val</span> cleanedFunc</span> = clean(func)
-    logInfo(<span class="string">"Starting job: "</span> + callSite.shortForm)
-    <span class="keyword">if</span> (conf.getBoolean(<span class="string">"spark.logLineage"</span>, <span class="literal">false</span>)) {
-      logInfo(<span class="string">"RDD's recursive dependencies:\n"</span> + rdd.toDebugString)
-    }
-    dagScheduler.runJob(rdd, cleanedFunc, partitions, callSite, allowLocal,
-      resultHandler, localProperties.<span class="keyword">get</span>)
-    progressBar.foreach(_.finishAll())
-    rdd.doCheckpoint()
-  }
-</code></pre><p>对于dag调度器，他的runJob是用submitJob来提交的</p>
-<pre><code><span class="function"><span class="keyword">def</span> <span class="title">runJob</span>[</span><span class="type">T</span>, <span class="type">U</span>: <span class="type">ClassTag</span>](
-      rdd: <span class="type">RDD</span>[<span class="type">T</span>],
-      func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,
-      partitions: <span class="type">Seq</span>[<span class="type">Int</span>],
-      callSite: <span class="type">CallSite</span>,
-      allowLocal: <span class="type">Boolean</span>,
-      resultHandler: (<span class="type">Int</span>, <span class="type">U</span>) =&gt; <span class="type">Unit</span>,
-      properties: <span class="type">Properties</span>): <span class="type">Unit</span> = {
-    <span class="function"><span class="keyword">val</span> <span class="title">start</span> =</span> <span class="type">System</span>.nanoTime
-    <span class="function"><span class="keyword">val</span> <span class="title">waiter</span> =</span> submitJob(rdd, func, partitions, callSite, allowLocal, resultHandler, properties)
-    waiter.awaitResult() <span class="keyword">match</span> {
-      <span class="keyword">case</span> <span class="type">JobSucceeded</span> =&gt; {
-        logInfo(<span class="string">"Job %d finished: %s, took %f s"</span>.format
-          (waiter.jobId, callSite.shortForm, (<span class="type">System</span>.nanoTime - start) / <span class="number">1e9</span>))
-      }
-      <span class="keyword">case</span> <span class="type">JobFailed</span>(exception: <span class="type">Exception</span>) =&gt;
-        logInfo(<span class="string">"Job %d failed: %s, took %f s"</span>.format
-          (waiter.jobId, callSite.shortForm, (<span class="type">System</span>.nanoTime - start) / <span class="number">1e9</span>))
-        <span class="keyword">throw</span> exception
-    }
-  }
-
-  <span class="function"><span class="keyword">def</span> <span class="title">submitJob</span>[</span><span class="type">T</span>, <span class="type">U</span>](
-      rdd: <span class="type">RDD</span>[<span class="type">T</span>],
-      func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,
-      partitions: <span class="type">Seq</span>[<span class="type">Int</span>],
-      callSite: <span class="type">CallSite</span>,
-      allowLocal: <span class="type">Boolean</span>,
-      resultHandler: (<span class="type">Int</span>, <span class="type">U</span>) =&gt; <span class="type">Unit</span>,
-      properties: <span class="type">Properties</span>): <span class="type">JobWaiter</span>[<span class="type">U</span>] = {
-    <span class="comment">// Check to make sure we are not launching a task on a partition that does not exist.</span>
-    <span class="function"><span class="keyword">val</span> <span class="title">maxPartitions</span> =</span> rdd.partitions.length
-    partitions.find(p =&gt; p &gt;= maxPartitions || p &lt; <span class="number">0</span>).foreach { p =&gt;
-      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(
-        <span class="string">"Attempting to access a non-existent partition: "</span> + p + <span class="string">". "</span> +
-          <span class="string">"Total number of partitions: "</span> + maxPartitions)
-    }
-
-    <span class="function"><span class="keyword">val</span> <span class="title">jobId</span> =</span> nextJobId.getAndIncrement()
-    <span class="keyword">if</span> (partitions.size == <span class="number">0</span>) {
-      <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">JobWaiter</span>[<span class="type">U</span>](<span class="keyword">this</span>, jobId, <span class="number">0</span>, resultHandler)
-    }
-
-    assert(partitions.size &gt; <span class="number">0</span>)
-    <span class="function"><span class="keyword">val</span> <span class="title">func2</span> =</span> func.asInstanceOf[(<span class="type">TaskContext</span>, <span class="type">Iterator</span>[_]) =&gt; _]
-    <span class="function"><span class="keyword">val</span> <span class="title">waiter</span> =</span> <span class="keyword">new</span> <span class="type">JobWaiter</span>(<span class="keyword">this</span>, jobId, partitions.size, resultHandler)
-    eventProcessLoop.post(<span class="type">JobSubmitted</span>(
-      jobId, rdd, func2, partitions.toArray, allowLocal, callSite, waiter, properties))
-    waiter
-  }
-</code></pre><p>做了一系列安全性检查，起了一个jobwaiter等结果，然后继续调用JobSubmitted比把它提交到DAGSchedulerEventProcessLoop类里去，</p>
-<pre><code><span class="keyword">private</span>[scheduler] <span class="class"><span class="keyword">class</span> <span class="title">DAGSchedulerEventProcessLoop</span>(</span>dagScheduler: <span class="type">DAGScheduler</span>)
-  <span class="keyword">extends</span> <span class="type">EventLoop</span>[<span class="type">DAGSchedulerEvent</span>](<span class="string">"dag-scheduler-event-loop"</span>) <span class="keyword">with</span> <span class="type">Logging</span> {
-
-  <span class="comment">/**
-   * The main event loop of the DAG scheduler.
-   */</span>
-  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onReceive</span>(</span>event: <span class="type">DAGSchedulerEvent</span>): <span class="type">Unit</span> = event <span class="keyword">match</span> {
-    <span class="keyword">case</span> <span class="type">JobSubmitted</span>(jobId, rdd, func, partitions, allowLocal, callSite, listener, properties) =&gt;
-      dagScheduler.handleJobSubmitted(jobId, rdd, func, partitions, allowLocal, callSite,
-        listener, properties)
-
-...
-
-  <span class="keyword">private</span>[scheduler] <span class="function"><span class="keyword">def</span> <span class="title">handleJobSubmitted</span>(</span>jobId: <span class="type">Int</span>,
-      finalRDD: <span class="type">RDD</span>[_],
-      func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[_]) =&gt; _,
-      partitions: <span class="type">Array</span>[<span class="type">Int</span>],
-      allowLocal: <span class="type">Boolean</span>,
-      callSite: <span class="type">CallSite</span>,
-      listener: <span class="type">JobListener</span>,
-      properties: <span class="type">Properties</span>) {
-    <span class="keyword">var</span> finalStage: <span class="type">Stage</span> = <span class="literal">null</span>
-    <span class="keyword">try</span> {
-      <span class="comment">// New stage creation may throw an exception if, for example, jobs are run on a</span>
-      <span class="comment">// HadoopRDD whose underlying HDFS files have been deleted.</span>
-      finalStage = newStage(finalRDD, partitions.size, <span class="type">None</span>, jobId, callSite)
-    } <span class="keyword">catch</span> {
-      <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt;
-        logWarning(<span class="string">"Creating new stage failed due to exception - job: "</span> + jobId, e)
-        listener.jobFailed(e)
-        <span class="keyword">return</span>
-    }
-    <span class="keyword">if</span> (finalStage != <span class="literal">null</span>) {
-      <span class="function"><span class="keyword">val</span> <span class="title">job</span> =</span> <span class="keyword">new</span> <span class="type">ActiveJob</span>(jobId, finalStage, func, partitions, callSite, listener, properties)
-      clearCacheLocs()
-      logInfo(<span class="string">"Got job %s (%s) with %d output partitions (allowLocal=%s)"</span>.format(
-        job.jobId, callSite.shortForm, partitions.length, allowLocal))
-      logInfo(<span class="string">"Final stage: "</span> + finalStage + <span class="string">"("</span> + finalStage.name + <span class="string">")"</span>)
-      logInfo(<span class="string">"Parents of final stage: "</span> + finalStage.parents)
-      logInfo(<span class="string">"Missing parents: "</span> + getMissingParentStages(finalStage))
-      <span class="function"><span class="keyword">val</span> <span class="title">shouldRunLocally</span> =</span>
-        localExecutionEnabled &amp;&amp; allowLocal &amp;&amp; finalStage.parents.isEmpty &amp;&amp; partitions.length == <span class="number">1</span>
-      <span class="function"><span class="keyword">val</span> <span class="title">jobSubmissionTime</span> =</span> clock.getTimeMillis()
-      <span class="keyword">if</span> (shouldRunLocally) {
-        <span class="comment">// Compute very short actions like first() or take() with no parent stages locally.</span>
-        listenerBus.post(
-          <span class="type">SparkListenerJobStart</span>(job.jobId, jobSubmissionTime, <span class="type">Seq</span>.empty, properties))
-        runLocally(job)
-      } <span class="keyword">else</span> {
-        jobIdToActiveJob(jobId) = job
-        activeJobs += job
-        finalStage.resultOfJob = <span class="type">Some</span>(job)
-        <span class="function"><span class="keyword">val</span> <span class="title">stageIds</span> =</span> jobIdToStageIds(jobId).toArray
-        <span class="function"><span class="keyword">val</span> <span class="title">stageInfos</span> =</span> stageIds.flatMap(id =&gt; stageIdToStage.get(id).map(_.latestInfo))
-        listenerBus.post(
-          <span class="type">SparkListenerJobStart</span>(job.jobId, jobSubmissionTime, stageInfos, properties))
-        submitStage(finalStage)
-      }
-    }
-    submitWaitingStages()
-  }
-</code></pre><p>包装了一大堆东西，然后扔到listenerBus里准备运行（这次是真的要运行了吧？）</p>
-<pre><code><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">LiveListenerBus</span>
-</span>  <span class="keyword">extends</span> <span class="type">AsynchronousListenerBus</span>[<span class="type">SparkListener</span>, <span class="type">SparkListenerEvent</span>](<span class="string">"SparkListenerBus"</span>)
-  <span class="keyword">with</span> <span class="type">SparkListenerBus</span> {
-
-  <span class="keyword">private</span> <span class="function"><span class="keyword">val</span> <span class="title">logDroppedEvent</span> =</span> <span class="keyword">new</span> <span class="type">AtomicBoolean</span>(<span class="literal">false</span>)
-
-  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onDropEvent</span>(</span>event: <span class="type">SparkListenerEvent</span>): <span class="type">Unit</span> = {
-    <span class="keyword">if</span> (logDroppedEvent.compareAndSet(<span class="literal">false</span>, <span class="literal">true</span>)) {
-      <span class="comment">// Only log the following message once to avoid duplicated annoying logs.</span>
-      logError(<span class="string">"Dropping SparkListenerEvent because no remaining room in event queue. "</span> +
-        <span class="string">"This likely means one of the SparkListeners is too slow and cannot keep up with "</span> +
-        <span class="string">"the rate at which tasks are being started by the scheduler."</span>)
-    }
-  }
-
-}
-
-<span class="keyword">private</span>[spark] <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AsynchronousListenerBus</span>[</span><span class="type">L</span> &lt;: <span class="type">AnyRef</span>, <span class="type">E</span>](name: <span class="type">String</span>)
-  <span class="keyword">extends</span> <span class="type">ListenerBus</span>[<span class="type">L</span>, <span class="type">E</span>] {
-  <span class="function"><span class="keyword">def</span> <span class="title">post</span>(</span>event: <span class="type">E</span>) {
-    <span class="keyword">if</span> (stopped.get) {
-      <span class="comment">// Drop further events to make `listenerThread` exit ASAP</span>
-      logError(s<span class="string">"$name has already stopped! Dropping event $event"</span>)
-      <span class="keyword">return</span>
-    }
-    <span class="function"><span class="keyword">val</span> <span class="title">eventAdded</span> =</span> eventQueue.offer(event)
-    <span class="keyword">if</span> (eventAdded) {
-      eventLock.release()
-    } <span class="keyword">else</span> {
-      onDropEvent(event)
-    }
-  }
-</code></pre><p>扔完以后开始submitStage把最后状态提交开始运行<br>所以跳到最后就是把作业提交完事，胸闷，还是没有看到RDD是怎么在不同节点间交互的代码。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/15/explore-spark-RDD-source-code/" data-id="cicczjs5z001mwhv420l1k7ij" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RDD/">RDD</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-spark-machine-learning-lib-for-python" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/15/spark-machine-learning-lib-for-python/" class="article-date">
-  <time datetime="2015-05-15T05:29:26.000Z" itemprop="datePublished">2015-05-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/15/spark-machine-learning-lib-for-python/">spark machine learning lib for python</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>今天看了一下pyspark的mllib这个库。作为一个大数据计算平台，spark这点比hadoop向前走了一大步。提供了种类繁多的数据计算的模型，从随机数生成到线性代数到回归聚类。<br>粗粗的看了一下，pyspark在做这个mllib的时候实现有两种，一种是spark原生型的api调用，比如刚才提到的回归聚类，都是直接输入rdd然后不断迭代返回结果，比如</p>
-<pre><code><span class="class"><span class="keyword">class</span> <span class="title">LogisticRegressionWithSGD</span><span class="params">(object)</span>:</span>
-
-    <span class="decorator">@classmethod</span>
-    <span class="function"><span class="keyword">def</span> <span class="title">train</span><span class="params">(cls, data, iterations=<span class="number">100</span>, step=<span class="number">1.0</span>, miniBatchFraction=<span class="number">1.0</span>,
-              initialWeights=None, regParam=<span class="number">0.01</span>, regType=<span class="string">"l2"</span>, intercept=False)</span>:</span>
-        <span class="string">"""
-        Train a logistic regression model on the given data.
-
-        :param data:              The training data, an RDD of LabeledPoint.
-        :param iterations:        The number of iterations (default: 100).
-        :param step:              The step parameter used in SGD
-                                  (default: 1.0).
-        :param miniBatchFraction: Fraction of data to be used for each SGD
-                                  iteration.
-        :param initialWeights:    The initial weights (default: None).
-        :param regParam:          The regularizer parameter (default: 0.01).
-        :param regType:           The type of regularizer used for training
-                                  our model.
-
-                                  :Allowed values:
-                                     - "l1" for using L1 regularization
-                                     - "l2" for using L2 regularization
-                                     - None for no regularization
-
-                                     (default: "l2")
-
-        :param intercept:         Boolean parameter which indicates the use
-                                  or not of the augmented representation for
-                                  training data (i.e. whether bias features
-                                  are activated or not).
-        """</span>
-        <span class="function"><span class="keyword">def</span> <span class="title">train</span><span class="params">(rdd, i)</span>:</span>
-            <span class="keyword">return</span> callMLlibFunc(<span class="string">"trainLogisticRegressionModelWithSGD"</span>, rdd, int(iterations),
-                                 float(step), float(miniBatchFraction), i, float(regParam), regType,
-                                 bool(intercept))
-
-        <span class="keyword">return</span> _regression_train_wrapper(train, LogisticRegressionModel, data, initialWeights)
-
-
-<span class="function"><span class="keyword">def</span> <span class="title">callMLlibFunc</span><span class="params">(name, *args)</span>:</span>
-    <span class="string">""" Call API in PythonMLLibAPI """</span>
-    sc = SparkContext._active_spark_context
-    api = getattr(sc._jvm.PythonMLLibAPI(), name)
-    <span class="keyword">return</span> callJavaFunc(sc, api, *args)
-</code></pre><p>第一类api全都把工作丢给了spark去做，也就是其实是跨节点并行计算。<br>第二类api就比较奇怪了，linalg里面全是这类函数，如</p>
-<pre><code><span class="class"><span class="keyword">class</span> <span class="title">DenseVector</span><span class="params">(Vector)</span>:</span>
-    <span class="string">"""
-    A dense vector represented by a value array. We use numpy array for
-    storage and arithmetics will be delegated to the underlying numpy
-    array.
-
-    def dot(self, other):
-        """</span>
-        Compute the dot product of two Vectors. We support
-        (Numpy array, list, SparseVector, <span class="keyword">or</span> SciPy sparse)
-        <span class="keyword">and</span> a target NumPy array that <span class="keyword">is</span> either <span class="number">1</span>- <span class="keyword">or</span> <span class="number">2</span>-dimensional.
-        Equivalent to calling numpy.dot of the two vectors.
-        <span class="keyword">if</span> type(other) == np.ndarray:
-            <span class="keyword">if</span> other.ndim &gt; <span class="number">1</span>:
-                <span class="keyword">assert</span> len(self) == other.shape[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
-            <span class="keyword">return</span> np.dot(self.array, other)
-        <span class="keyword">elif</span> _have_scipy <span class="keyword">and</span> scipy.sparse.issparse(other):
-            <span class="keyword">assert</span> len(self) == other.shape[<span class="number">0</span>], <span class="string">"dimension mismatch"</span>
-            <span class="keyword">return</span> other.transpose().dot(self.toArray())
-        <span class="keyword">else</span>:
-            <span class="keyword">assert</span> len(self) == _vector_size(other), <span class="string">"dimension mismatch"</span>
-            <span class="keyword">if</span> isinstance(other, SparseVector):
-                <span class="keyword">return</span> other.dot(self)
-            <span class="keyword">elif</span> isinstance(other, Vector):
-                <span class="keyword">return</span> np.dot(self.toArray(), other.toArray())
-            <span class="keyword">else</span>:
-                <span class="keyword">return</span> np.dot(self.toArray(), other)
-</code></pre><p>居然全部都是丢给numpy去做，虽然numpy做这类计算的效率很高不假但这样就没有spark的跨节点并行的优势了，在计算的时候要注意。另外听说spark的运行效率首先于带宽，根据我有限的hpc经验来看，网络的延迟影响可能也会很大。而spark所在的网络最多也就是万兆网络，在做矩阵并行计算这类对网络延迟依赖很大的计算的时候可能会很慢，开发人员会不会因此考虑将不少矩阵计算本地化呢？不得而知，我很好奇下一个版本如果他们给出矩阵求逆以及对焦化或者svd是不是依然也使用本地计算。如果这个问题不解决可能对spark要称霸大数据平台有点影响。</p>
-<p>好了，pyspark的代码看的差不多了，接下去就是用scala写的spark了，cross fingers</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/15/spark-machine-learning-lib-for-python/" data-id="cicczjs54000qwhv4uik6dv5p" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mllib/">mllib</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-explore-the-source-of-pyspark-dataframe" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/14/explore-the-source-of-pyspark-dataframe/" class="article-date">
-  <time datetime="2015-05-14T07:24:15.000Z" itemprop="datePublished">2015-05-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/14/explore-the-source-of-pyspark-dataframe/">pyspark dataframe的实现</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>dataframe是spark 1.3今年新推出的东西，但其实早期叫做SchemaRDD，这还可以在源代码里看到。不过按照SPARK east summit 2015上的说法，dataframe速度很快，这得益于全部用内核实现计算。<br>随便摘一段出来就能发现，Dataframe这个类里的大多数计算都是交由self._jdf实现的。</p>
-<pre><code><span class="function"><span class="keyword">def</span> <span class="title">count</span><span class="params">(self)</span>:</span>
-    <span class="string">"""Returns the number of rows in this :class:`DataFrame`.
-
-    &gt;&gt;&gt; df.count()
-    2L
-    """</span>
-    <span class="keyword">return</span> self._jdf.count()
-
-<span class="function"><span class="keyword">def</span> <span class="title">collect</span><span class="params">(self)</span>:</span>
-    <span class="string">"""Returns all the records as a list of :class:`Row`.
-
-    &gt;&gt;&gt; df.collect()
-    [Row(age=2, name=u'Alice'), Row(age=5, name=u'Bob')]
-    """</span>
-    <span class="keyword">with</span> SCCallSiteSync(self._sc) <span class="keyword">as</span> css:
-        port = self._sc._jvm.PythonRDD.collectAndServe(self._jdf.javaToPython().rdd())
-    rs = list(_load_from_socket(port, BatchedSerializer(PickleSerializer())))
-    cls = _create_cls(self.schema)
-    <span class="keyword">return</span> [cls(r) <span class="keyword">for</span> r <span class="keyword">in</span> rs]
-
-<span class="function"><span class="keyword">def</span> <span class="title">limit</span><span class="params">(self, num)</span>:</span>
-    <span class="string">"""Limits the result count to the number specified.
-
-    &gt;&gt;&gt; df.limit(1).collect()
-    [Row(age=2, name=u'Alice')]
-    &gt;&gt;&gt; df.limit(0).collect()
-    []
-    """</span>
-    jdf = self._jdf.limit(num)
-    <span class="keyword">return</span> DataFrame(jdf, self.sql_ctx)
-</code></pre><p>而self._jdf来自类初始化传入的值，通常如果用SQLContext创建DataFrame的话都来自这段代码</p>
-<pre><code><span class="function"><span class="keyword">def</span> <span class="title">createDataFrame</span><span class="params">(self, data, schema=None, samplingRatio=None)</span>:</span>
-   ...
-   <span class="keyword">if</span> isinstance(schema, (list, tuple)):
-       first = rdd.first()
-       <span class="keyword">if</span> <span class="keyword">not</span> isinstance(first, (list, tuple)):
-           <span class="keyword">raise</span> ValueError(<span class="string">"each row in `rdd` should be list or tuple, "</span>
-                            <span class="string">"but got %r"</span> % type(first))
-       row_cls = Row(*schema)
-       schema = self._inferSchema(rdd.map(<span class="keyword">lambda</span> r: row_cls(*r)), samplingRatio)
-
-   <span class="comment"># take the first few rows to verify schema</span>
-   rows = rdd.take(<span class="number">10</span>)
-   <span class="comment"># Row() cannot been deserialized by Pyrolite</span>
-   <span class="keyword">if</span> rows <span class="keyword">and</span> isinstance(rows[<span class="number">0</span>], tuple) <span class="keyword">and</span> rows[<span class="number">0</span>].__class__.__name__ == <span class="string">'Row'</span>:
-       rdd = rdd.map(tuple)
-       rows = rdd.take(<span class="number">10</span>)
-
-   <span class="keyword">for</span> row <span class="keyword">in</span> rows:
-       _verify_type(row, schema)
-
-   <span class="comment"># convert python objects to sql data</span>
-   converter = _python_to_sql_converter(schema)
-   rdd = rdd.map(converter)
-
-   jrdd = self._jvm.SerDeUtil.toJavaArray(rdd._to_java_object_rdd())
-   df = self._ssql_ctx.applySchemaToPythonRDD(jrdd.rdd(), schema.json())
-   <span class="keyword">return</span> DataFrame(df, self)
-</code></pre><p>而这里的self._ssql_ctx来自于同一个类里的</p>
-<pre><code><span class="function"><span class="keyword">def</span> <span class="title">_ssql_ctx</span><span class="params">(self)</span>:</span>
-    <span class="string">"""Accessor for the JVM Spark SQL context.
-
-    Subclasses can override this property to provide their own
-    JVM Contexts.
-    """</span>
-    <span class="keyword">if</span> self._scala_SQLContext <span class="keyword">is</span> <span class="keyword">None</span>:
-        self._scala_SQLContext = self._jvm.SQLContext(self._jsc.sc())
-    <span class="keyword">return</span> self._scala_SQLContext
-</code></pre><p>是对scala_SQLContext的一个封装。包括sql语句的执行也是直接调用_ssql_ctx</p>
-<pre><code><span class="function"><span class="keyword">def</span> <span class="title">sql</span><span class="params">(self, sqlQuery)</span>:</span>
-    <span class="string">"""Returns a :class:`DataFrame` representing the result of the given query.
-
-    &gt;&gt;&gt; sqlContext.registerDataFrameAsTable(df, "table1")
-    &gt;&gt;&gt; df2 = sqlContext.sql("SELECT field1 AS f1, field2 as f2 from table1")
-    &gt;&gt;&gt; df2.collect()
-    [Row(f1=1, f2=u'row1'), Row(f1=2, f2=u'row2'), Row(f1=3, f2=u'row3')]
-    """</span>
-    <span class="keyword">return</span> DataFrame(self._ssql_ctx.sql(sqlQuery), self)
-</code></pre><p>而原先的SchemaRDD则不用了，不过看1.2.2的代码似乎也是调用_ssql_ctx来实现计算的，不能明白为什么1.3和1.2能性能差那么多。这还有待于阅读spark的代码来解答。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/14/explore-the-source-of-pyspark-dataframe/" data-id="cicczjs5t001dwhv4mp5fod5j" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dataframe/">dataframe</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
 
     </footer>
   </div>
@@ -1725,7 +1814,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -1734,7 +1823,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 16px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 18px;">rust</a><a href="/tags/scala/" style="font-size: 14px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 20px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 16px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 20px;">rust</a><a href="/tags/scala/" style="font-size: 14px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 18px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
     </div>
   </div>
 
@@ -1743,7 +1832,7 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1755,23 +1844,23 @@ val taskFinish = System.<span class="function"><span class="title">currentTimeMi
       <ul>
         
           <li>
-            <a href="/2015/07/20/learning-rust-part-V/">(no title)</a>
+            <a href="/2015/07/23/learning-rust-part-IX/">rust学习笔记(九)</a>
           </li>
         
           <li>
-            <a href="/2015/07/20/learning-rust-part-IV/">rust学习笔记(四)</a>
+            <a href="/2015/07/21/learning-rust-part-VIII/">rust学习笔记(八)</a>
           </li>
         
           <li>
-            <a href="/2015/07/17/learning-rust-part-III/">rust学习笔记(三)</a>
+            <a href="/2015/07/21/learning-rust-part-VII/">rust学习笔记(七)</a>
           </li>
         
           <li>
-            <a href="/2015/07/17/learning-rust-part-II/">rust学习笔记(二)</a>
+            <a href="/2015/07/21/learning-rust-part-VI/">rust学习笔记(六)</a>
           </li>
         
           <li>
-            <a href="/2015/07/16/learning-rust-part-I/">rust学习笔记(一)</a>
+            <a href="/2015/07/20/learning-rust-part-V/">rust学习笔记(五)</a>
           </li>
         
       </ul>
