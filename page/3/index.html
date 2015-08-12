@@ -95,6 +95,88 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-hexoblog" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/11/hexoblog/" class="article-date">
+  <time datetime="2015-05-11T08:45:35.000Z" itemprop="datePublished">2015-05-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/11/hexoblog/">hexoblog</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="安装hexo3-0的一些勘误">安装hexo3.0的一些勘误</h2><p>心血来潮在github上搞了一个blog，但是注册完了做完了github推荐的步骤以后发现还离博客很远。正好看到一个知乎的<a href="http://www.zhihu.com/question/20962496" target="_blank" rel="external">帖子</a><br>推荐hexo就下来试试看。没想到还不是一般好用。但是由于hexo已经从2.0升级到3.0的，而网络上的教程基本都是针对2.0的，所以很多步骤都有改变。  </p>
+<p>首先要有一个github帐号，并且建立一个同名repository，如帐号是testuser那么repository就是testuser.github.io. 当然实际做的过程中要把testuser换成自己的帐号名<br>可以看<a href="http://blog.csdn.net/renfufei/article/details/37725057" target="_blank" rel="external">教程</a>  </p>
+<p>申请完了以后要在本机上安装git nodejs npm</p>
+<pre><code>aptitude <span class="keyword">install</span> git nodejs nodejs-legacy npm
+</code></pre><p>国内有墙，所以npm特别慢还容易断，推荐用taobao的npm镜像</p>
+<pre><code>npm install -g cnpm --<span class="keyword">registry</span>=<span class="keyword">http</span>://<span class="keyword">registry</span>.npm.taobao.org
+</code></pre><p>然后就是安装hexo<br>root</p>
+<pre><code>cnpm install hexo-cli -g
+
+git clone testuser<span class="class">.github</span><span class="class">.io</span>
+cd testuser<span class="class">.github</span><span class="class">.io</span>
+</code></pre><p>安装hexo</p>
+<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo <span class="comment">--save</span></span>
+</code></pre><p>安装hexo的生成器</p>
+<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo-generator-<span class="keyword">index</span> <span class="comment">--save</span>
+cnpm <span class="keyword">install</span> hexo-generator-archive <span class="comment">--save</span>
+cnpm <span class="keyword">install</span> hexo-generator-category <span class="comment">--save</span>
+cnpm <span class="keyword">install</span> hexo-generator-tag <span class="comment">--save</span></span>
+</code></pre><p>安装hexo的server</p>
+<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo-<span class="keyword">server</span> <span class="comment">--save</span></span>
+</code></pre><p>安装hexo的git部署工具</p>
+<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo-deployer-git <span class="comment">--save</span></span>
+</code></pre><p>安装hexo的渲染工具和feed sitemap生成器</p>
+<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo-renderer-marked@<span class="number">0.2</span> <span class="comment">--save</span>
+cnpm <span class="keyword">install</span> hexo-renderer-stylus@<span class="number">0.2</span> <span class="comment">--save</span>
+cnpm <span class="keyword">install</span> hexo-generator-feed@<span class="number">1</span> <span class="comment">--save</span>
+cnpm <span class="keyword">install</span> hexo-generator-sitemap@<span class="number">1</span> <span class="comment">--save</span></span>
+</code></pre><p>装完这一切以后<br>就可以</p>
+<pre><code>hexo init
+cnpm <span class="keyword">install</span>
+</code></pre><p>安装依赖包<br>注意报错，有缺的就补上<br>我这里就缺hexo-renderer-ejs</p>
+<p>然后</p>
+<pre><code>hexo generate
+hexo <span class="keyword">server</span>
+</code></pre><p>本地服务已经开好了。可以访问localhost:4000查看</p>
+<p>将github帐号信息放到_config.yml</p>
+<pre><code><span class="attribute">deploy</span>:
+  <span class="attribute">type</span>: git
+  <span class="attribute">repository</span>: git<span class="variable">@github</span>.<span class="attribute">com</span>:testuser/testuser.github.io.git
+  <span class="attribute">branch</span>: master
+</code></pre><p>生成网页并部署</p>
+<pre><code>hexo <span class="keyword">g</span> -<span class="literal">d</span>
+</code></pre><p>其他的都可以看参考网页，基本没有改动过</p>
+<h2 id="参考">参考</h2><p><a href="http://zipperary.com/2013/05/28/hexo-guide-1/" target="_blank" rel="external">http://zipperary.com/2013/05/28/hexo-guide-1/</a><br><a href="http://zipperary.com/2013/05/28/hexo-guide-2/" target="_blank" rel="external">http://zipperary.com/2013/05/28/hexo-guide-2/</a><br><a href="http://zipperary.com/2013/05/29/hexo-guide-3/" target="_blank" rel="external">http://zipperary.com/2013/05/29/hexo-guide-3/</a><br><a href="http://zipperary.com/2013/05/30/hexo-guide-4/" target="_blank" rel="external">http://zipperary.com/2013/05/30/hexo-guide-4/</a><br><a href="http://zipperary.com/2013/06/02/hexo-guide-5/" target="_blank" rel="external">http://zipperary.com/2013/06/02/hexo-guide-5/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/05/11/hexoblog/" data-id="cid8l1lry001iuav4gk9pv7l7" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/github/">github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/05/11/hello-world/" class="article-date">
@@ -130,7 +212,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="cicfzby7h001o4zv4qgebnuy0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/hello-world/" data-id="cid8l1ls1001ouav411ah05iv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -189,7 +271,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="cicfzby7i001p4zv4kyvgt52u" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/11/first-blog/" data-id="cid8l1ls2001puav4w69wm605" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/blog/">blog</a></li></ul>
@@ -236,7 +318,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/05/08/4488876/" data-id="cicfzby80002h4zv4zf842i39" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/05/08/4488876/" data-id="cid8l1ltl002muav4dxo3f5cd" class="article-share-link">Share</a>
       
       
     </footer>
@@ -283,7 +365,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/19/4439945/" data-id="cicfzby81002i4zv4mbhdn7eo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/04/19/4439945/" data-id="cid8l1ltn002nuav4v90dby4x" class="article-share-link">Share</a>
       
       
     </footer>
@@ -328,7 +410,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/10/4415746/" data-id="cicfzby82002j4zv4jh15mx9g" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/04/10/4415746/" data-id="cid8l1lto002ouav4zqfami1t" class="article-share-link">Share</a>
       
       
     </footer>
@@ -373,7 +455,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/04/03/4390056/" data-id="cicfzby83002k4zv41fraybo1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/04/03/4390056/" data-id="cid8l1lts002puav4jhdz8ckt" class="article-share-link">Share</a>
       
       
     </footer>
@@ -418,7 +500,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/01/27/4253426/" data-id="cicfzby86002l4zv4iv3bt60x" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/01/27/4253426/" data-id="cid8l1ltv002quav4n9e9ldqx" class="article-share-link">Share</a>
       
       
     </footer>
@@ -463,7 +545,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/01/09/4212796/" data-id="cicfzby87002m4zv49plhbrq4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/01/09/4212796/" data-id="cid8l1ltw002ruav4es8ptymb" class="article-share-link">Share</a>
       
       
     </footer>
@@ -508,52 +590,7 @@ markdown-<span class="literal">mode</span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2015/01/08/4211267/" data-id="cicfzby88002n4zv44z9b7lp3" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-3958082" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/09/05/3958082/" class="article-date">
-  <time datetime="2014-09-05T06:51:00.000Z" itemprop="datePublished">2014-09-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/09/05/3958082/">spark on centos6.5 安装</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>第一步在centos 6.5上安装java&nbsp;运行环境</p>
-<p><a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html">http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html</a></p>
-<p>第二步安装hadoop，去</p>
-<p><a href="http://hadoop.apache.org/上下一个">http://hadoop.apache.org/上下一个</a></p>
-<p><a href="http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz">http://mirrors.hust.edu.cn/apache/hadoop/common/hadoop-2.5.0/hadoop-2.5.0.tar.gz</a><br>
-        
-          <p class="article-more-link">
-            <a href="/2014/09/05/3958082/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2014/09/05/3958082/" data-id="cicfzby8a002o4zv41ypey4kb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2015/01/08/4211267/" data-id="cid8l1ltx002suav4rko9gotc" class="article-share-link">Share</a>
       
       
     </footer>
@@ -578,7 +615,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RDD/">RDD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/blog/">blog</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cnblogs/">cnblogs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/">cuda</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cython/">cython</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dataframe/">dataframe</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/f2py/">f2py</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/">github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/malloc/">malloc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/migrate/">migrate</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mllib/">mllib</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numba/">numba</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/numpy/">numpy</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pyspark/">pyspark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rdd/">rdd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rust/">rust</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scala/">scala</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/scheduler/">scheduler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spark/">spark</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task/">task</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -587,7 +624,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12px;">hexo</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 16px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 20px;">rust</a><a href="/tags/scala/" style="font-size: 14px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 18px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
+      <a href="/tags/RDD/" style="font-size: 10px;">RDD</a><a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a><a href="/tags/blog/" style="font-size: 12px;">blog</a><a href="/tags/cnblogs/" style="font-size: 10px;">cnblogs</a><a href="/tags/cuda/" style="font-size: 10px;">cuda</a><a href="/tags/cython/" style="font-size: 10px;">cython</a><a href="/tags/dataframe/" style="font-size: 10px;">dataframe</a><a href="/tags/f2py/" style="font-size: 10px;">f2py</a><a href="/tags/github/" style="font-size: 10px;">github</a><a href="/tags/hexo/" style="font-size: 12px;">hexo</a><a href="/tags/malloc/" style="font-size: 10px;">malloc</a><a href="/tags/migrate/" style="font-size: 10px;">migrate</a><a href="/tags/mllib/" style="font-size: 12px;">mllib</a><a href="/tags/numba/" style="font-size: 10px;">numba</a><a href="/tags/numpy/" style="font-size: 10px;">numpy</a><a href="/tags/pyspark/" style="font-size: 10px;">pyspark</a><a href="/tags/python/" style="font-size: 16px;">python</a><a href="/tags/rdd/" style="font-size: 10px;">rdd</a><a href="/tags/rust/" style="font-size: 20px;">rust</a><a href="/tags/scala/" style="font-size: 14px;">scala</a><a href="/tags/scheduler/" style="font-size: 10px;">scheduler</a><a href="/tags/spark/" style="font-size: 18px;">spark</a><a href="/tags/task/" style="font-size: 10px;">task</a>
     </div>
   </div>
 
@@ -596,7 +633,7 @@ markdown-<span class="literal">mode</span>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">June 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">September 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">June 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/12/">December 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">November 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">October 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">September 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">August 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/06/">June 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/04/">April 2012</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">March 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">January 2012</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -606,6 +643,10 @@ markdown-<span class="literal">mode</span>
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/08/12/cuda-malloc-and-thread/">cuda的malloc函数以及线程限制</a>
+          </li>
         
           <li>
             <a href="/2015/07/23/learning-rust-part-XI/">rust学习笔记(十一)</a>
@@ -621,10 +662,6 @@ markdown-<span class="literal">mode</span>
         
           <li>
             <a href="/2015/07/21/learning-rust-part-VIII/">rust学习笔记(八)</a>
-          </li>
-        
-          <li>
-            <a href="/2015/07/21/learning-rust-part-VII/">rust学习笔记(七)</a>
           </li>
         
       </ul>

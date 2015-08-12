@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-07-23T09:11:11.000Z</updated>
+  <updated>2015-08-12T09:36:28.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,86 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[cuda的malloc函数以及线程限制]]></title>
+    <link href="http://yoursite.com/2015/08/12/cuda-malloc-and-thread/"/>
+    <id>http://yoursite.com/2015/08/12/cuda-malloc-and-thread/</id>
+    <published>2015-08-12T09:21:56.000Z</published>
+    <updated>2015-08-12T09:36:28.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个原始函数，Matrix直接就是一个结构体（非指针）</p>
+<pre><code>typedef struct{
+    <span class="built_in">int</span> <span class="variable">width</span>;
+    <span class="built_in">int</span> <span class="variable">height</span>;
+    <span class="built_in">int</span> pitch;
+    <span class="built_in">float</span> * elements;
+} Matrix;
+
+__global__ <span class="keyword">void</span> MatrixMulOnDevice(<span class="keyword">const</span> Matrix M, <span class="keyword">const</span> Matrix N, Matrix P)
+{
+
+    <span class="built_in">int</span> tx = threadIdx.x;
+    <span class="built_in">int</span> ty = threadIdx.y;
+    <span class="built_in">float</span> Pvalue = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="built_in">int</span> k = <span class="number">0</span>;k&lt;M.<span class="variable">width</span>; ++ k)
+    {
+        <span class="built_in">float</span> Melement = M.elements[ty * M.<span class="variable">width</span> + k];
+        <span class="built_in">float</span> Nelement = N.elements[k * N.<span class="variable">width</span> + tx];
+        Pvalue += Melement * Nelement;
+    }
+    P.elements[ty * P.pitch + tx] = Pvalue;
+}
+</code></pre><p>这个函数在运行的时候没有一点问题，但我改成另一种传参方式以后，P的结果总是0，找了很久原因都没有找到为什么</p>
+<pre><code>typedef <span class="keyword">struct</span> MatrixStruct *Matrix;
+<span class="keyword">struct</span> MatrixStruct{
+    <span class="keyword">int</span> width;
+    <span class="keyword">int</span> height;
+    <span class="keyword">int</span> pitch;
+    <span class="keyword">float</span> * elements;
+};
+
+__global__ void
+MatrixMulOnDevice(<span class="keyword">const</span> Matrix M, <span class="keyword">const</span> Matrix N, Matrix P)
+{
+    <span class="keyword">int</span> tx = threadIdx.x;
+    <span class="keyword">int</span> ty = threadIdx.y;
+    <span class="keyword">float</span> Pvalue = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>;k &lt; M-&gt;width;k++)
+    {
+        Pvalue += M-&gt;elements[ty * M-&gt;width + k] * N-&gt;elements[k * N-&gt;width + tx];
+    }
+    P-&gt;elements[ty * P-&gt;pitch + tx] = Pvalue;
+}
+</code></pre><p>2.0版本的代码还不支持printf，所以也是做了很多无用功。后来突然意识到，第一种写法是复制结构体的，所以整个结构体都在gpu内存上，而第二种方式是直接传结构体的指针，所以整个结构体都在cpu内存上。是不是因为这个原因不能放问到width以及height这些属性呢？然后想办法把整个结构体用cudamalloc放到gpu上，然后再分配element数组，也不行。后来查cuda的api，发现有这么一个函数，cudaMallocHost：</p>
+<pre><code>cudaError_t cudaMallocHost (<span class="literal">void</span> **ptr, size_t size)
+Allocates size bytes <span class="keyword">of</span> host memory <span class="literal">that</span> <span class="keyword">is</span> page-locked <span class="keyword">and</span> accessible <span class="keyword">to</span> the device.
+</code></pre><p>api说得很清楚了，所以用这个函数分配结构体就没问题了。</p>
+<pre><code>Matrix
+InitializeDevice(Matrix Mhost)
+{
+    Matrix Mdevice;
+    cudaMallocHost((void **)&amp;Mdevice, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> MatrixStruct));
+    Mdevice-&gt;width = Mhost-&gt;width;
+    Mdevice-&gt;height = Mhost-&gt;height;
+    Mdevice-&gt;pitch = Mhost-&gt;pitch;
+    <span class="keyword">int</span> size = Mhost-&gt;width * Mhost-&gt;height * <span class="keyword">sizeof</span>(<span class="keyword">float</span>);
+    cudaMalloc((void **)&amp;Mdevice-&gt;elements, size);
+    <span class="keyword">return</span> Mdevice;
+}
+</code></pre><p>第一个问题解决。接下来是第二个问题。</p>
+<h2 id="线程数限制">线程数限制</h2><p>在测试这个简单乘法的时候，我发现矩阵小的时候答案是对的，但矩阵一大就报错。后来发现原来我的gtx580只支持1024个线程，所以最大能做到31×32,32×33大小的矩阵相乘。这时候这个函数所需要的线程数刚好是1023。一旦需要的线程大于这个数，那就会得到错误的结果（程序不报错）</p>
+<h2 id="参考">参考</h2><p><a href="http://www.cs.cmu.edu/afs/cs/academic/class/15668-s11/www/cuda-doc/html/group__CUDART__MEMORY_g9f93d9600f4504e0d637ceb43c91ebad.html#g9f93d9600f4504e0d637ceb43c91ebad" target="_blank" rel="external">http://www.cs.cmu.edu/afs/cs/academic/class/15668-s11/www/cuda-doc/html/group<strong>CUDART</strong>MEMORY_g9f93d9600f4504e0d637ceb43c91ebad.html#g9f93d9600f4504e0d637ceb43c91ebad</a></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个原始函数，Matrix直接就是一个结构体（非指针）</p>
+<pre><code>ty]]>
+    </summary>
+    
+      <category term="cuda" scheme="http://yoursite.com/tags/cuda/"/>
+    
+      <category term="malloc" scheme="http://yoursite.com/tags/malloc/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[rust学习笔记(十一)]]></title>
@@ -2587,69 +2667,6 @@ def sum2djit(arr):
       <category term="hexo" scheme="http://yoursite.com/tags/hexo/"/>
     
       <category term="migrate" scheme="http://yoursite.com/tags/migrate/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[hexoblog]]></title>
-    <link href="http://yoursite.com/2015/05/11/hexoblog/"/>
-    <id>http://yoursite.com/2015/05/11/hexoblog/</id>
-    <published>2015-05-11T08:45:35.000Z</published>
-    <updated>2015-05-11T09:17:12.000Z</updated>
-    <content type="html"><![CDATA[<h2 id="安装hexo3-0的一些勘误">安装hexo3.0的一些勘误</h2><p>心血来潮在github上搞了一个blog，但是注册完了做完了github推荐的步骤以后发现还离博客很远。正好看到一个知乎的<a href="http://www.zhihu.com/question/20962496" target="_blank" rel="external">帖子</a><br>推荐hexo就下来试试看。没想到还不是一般好用。但是由于hexo已经从2.0升级到3.0的，而网络上的教程基本都是针对2.0的，所以很多步骤都有改变。  </p>
-<p>首先要有一个github帐号，并且建立一个同名repository，如帐号是testuser那么repository就是testuser.github.io. 当然实际做的过程中要把testuser换成自己的帐号名<br>可以看<a href="http://blog.csdn.net/renfufei/article/details/37725057" target="_blank" rel="external">教程</a>  </p>
-<p>申请完了以后要在本机上安装git nodejs npm</p>
-<pre><code>aptitude <span class="keyword">install</span> git nodejs nodejs-legacy npm
-</code></pre><p>国内有墙，所以npm特别慢还容易断，推荐用taobao的npm镜像</p>
-<pre><code>npm install -g cnpm --<span class="keyword">registry</span>=<span class="keyword">http</span>://<span class="keyword">registry</span>.npm.taobao.org
-</code></pre><p>然后就是安装hexo<br>root</p>
-<pre><code>cnpm install hexo-cli -g
-
-git clone testuser<span class="class">.github</span><span class="class">.io</span>
-cd testuser<span class="class">.github</span><span class="class">.io</span>
-</code></pre><p>安装hexo</p>
-<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo <span class="comment">--save</span></span>
-</code></pre><p>安装hexo的生成器</p>
-<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo-generator-<span class="keyword">index</span> <span class="comment">--save</span>
-cnpm <span class="keyword">install</span> hexo-generator-archive <span class="comment">--save</span>
-cnpm <span class="keyword">install</span> hexo-generator-category <span class="comment">--save</span>
-cnpm <span class="keyword">install</span> hexo-generator-tag <span class="comment">--save</span></span>
-</code></pre><p>安装hexo的server</p>
-<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo-<span class="keyword">server</span> <span class="comment">--save</span></span>
-</code></pre><p>安装hexo的git部署工具</p>
-<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo-deployer-git <span class="comment">--save</span></span>
-</code></pre><p>安装hexo的渲染工具和feed sitemap生成器</p>
-<pre><code>cnpm <span class="operator"><span class="keyword">install</span> hexo-renderer-marked@<span class="number">0.2</span> <span class="comment">--save</span>
-cnpm <span class="keyword">install</span> hexo-renderer-stylus@<span class="number">0.2</span> <span class="comment">--save</span>
-cnpm <span class="keyword">install</span> hexo-generator-feed@<span class="number">1</span> <span class="comment">--save</span>
-cnpm <span class="keyword">install</span> hexo-generator-sitemap@<span class="number">1</span> <span class="comment">--save</span></span>
-</code></pre><p>装完这一切以后<br>就可以</p>
-<pre><code>hexo init
-cnpm <span class="keyword">install</span>
-</code></pre><p>安装依赖包<br>注意报错，有缺的就补上<br>我这里就缺hexo-renderer-ejs</p>
-<p>然后</p>
-<pre><code>hexo generate
-hexo <span class="keyword">server</span>
-</code></pre><p>本地服务已经开好了。可以访问localhost:4000查看</p>
-<p>将github帐号信息放到_config.yml</p>
-<pre><code><span class="attribute">deploy</span>:
-  <span class="attribute">type</span>: git
-  <span class="attribute">repository</span>: git<span class="variable">@github</span>.<span class="attribute">com</span>:testuser/testuser.github.io.git
-  <span class="attribute">branch</span>: master
-</code></pre><p>生成网页并部署</p>
-<pre><code>hexo <span class="keyword">g</span> -<span class="literal">d</span>
-</code></pre><p>其他的都可以看参考网页，基本没有改动过</p>
-<h2 id="参考">参考</h2><p><a href="http://zipperary.com/2013/05/28/hexo-guide-1/" target="_blank" rel="external">http://zipperary.com/2013/05/28/hexo-guide-1/</a><br><a href="http://zipperary.com/2013/05/28/hexo-guide-2/" target="_blank" rel="external">http://zipperary.com/2013/05/28/hexo-guide-2/</a><br><a href="http://zipperary.com/2013/05/29/hexo-guide-3/" target="_blank" rel="external">http://zipperary.com/2013/05/29/hexo-guide-3/</a><br><a href="http://zipperary.com/2013/05/30/hexo-guide-4/" target="_blank" rel="external">http://zipperary.com/2013/05/30/hexo-guide-4/</a><br><a href="http://zipperary.com/2013/06/02/hexo-guide-5/" target="_blank" rel="external">http://zipperary.com/2013/06/02/hexo-guide-5/</a></p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<h2 id="安装hexo3-0的一些勘误">安装hexo3.0的一些勘误</h2><p>心血来潮在github上搞了一个blog，但是注册完了做完了github推荐的步骤以后发现还离博客很远。正好看到一个知乎的<a href="http://www.zhihu.com/que]]>
-    </summary>
-    
-      <category term="blog" scheme="http://yoursite.com/tags/blog/"/>
-    
-      <category term="github" scheme="http://yoursite.com/tags/github/"/>
-    
-      <category term="hexo" scheme="http://yoursite.com/tags/hexo/"/>
     
   </entry>
   

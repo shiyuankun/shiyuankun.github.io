@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2015/08/12/cuda-malloc-and-thread/</loc>
+    <lastmod>2015-08-12T09:36:28.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2015/07/23/learning-rust-part-X/</loc>
     <lastmod>2015-07-23T09:17:27.000Z</lastmod>
   </url>
@@ -102,17 +107,17 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2012/01/04/2312532/</loc>
-    <lastmod>2015-05-11T14:27:15.000Z</lastmod>
-  </url>
-  
-  <url>
     <loc>http://yoursite.com/2012/01/08/2316248/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
   <url>
     <loc>http://yoursite.com/2012/01/10/2318175/</loc>
+    <lastmod>2015-05-11T14:27:15.000Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2012/01/03/2311276/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
@@ -152,12 +157,12 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2014/09/05/3958082/</loc>
+    <loc>http://yoursite.com/2012/01/04/2312532/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
   <url>
-    <loc>http://yoursite.com/2012/01/03/2311276/</loc>
+    <loc>http://yoursite.com/2014/06/23/3804254/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
@@ -292,7 +297,7 @@
   </url>
   
   <url>
-    <loc>http://yoursite.com/2014/06/23/3804254/</loc>
+    <loc>http://yoursite.com/2014/09/05/3958082/</loc>
     <lastmod>2015-05-11T14:27:15.000Z</lastmod>
   </url>
   
