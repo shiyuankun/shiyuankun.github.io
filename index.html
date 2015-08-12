@@ -117,7 +117,7 @@ ga('send', 'pageview');
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个原始函数，Matrix直接就是一个结构体（非指针）</p>
+        <h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个最早写的版本，Matrix直接就是一个结构体（非指针）</p>
 <pre><code>typedef struct{
     <span class="built_in">int</span> <span class="variable">width</span>;
     <span class="built_in">int</span> <span class="variable">height</span>;

@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-08-12T09:36:28.000Z</updated>
+  <updated>2015-08-12T09:44:06.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,8 +19,8 @@
     <link href="http://yoursite.com/2015/08/12/cuda-malloc-and-thread/"/>
     <id>http://yoursite.com/2015/08/12/cuda-malloc-and-thread/</id>
     <published>2015-08-12T09:21:56.000Z</published>
-    <updated>2015-08-12T09:36:28.000Z</updated>
-    <content type="html"><![CDATA[<h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个原始函数，Matrix直接就是一个结构体（非指针）</p>
+    <updated>2015-08-12T09:44:06.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个最早写的版本，Matrix直接就是一个结构体（非指针）</p>
 <pre><code>typedef struct{
     <span class="built_in">int</span> <span class="variable">width</span>;
     <span class="built_in">int</span> <span class="variable">height</span>;
@@ -84,8 +84,8 @@ InitializeDevice(Matrix Mhost)
 <h2 id="参考">参考</h2><p><a href="http://www.cs.cmu.edu/afs/cs/academic/class/15668-s11/www/cuda-doc/html/group__CUDART__MEMORY_g9f93d9600f4504e0d637ceb43c91ebad.html#g9f93d9600f4504e0d637ceb43c91ebad" target="_blank" rel="external">http://www.cs.cmu.edu/afs/cs/academic/class/15668-s11/www/cuda-doc/html/group<strong>CUDART</strong>MEMORY_g9f93d9600f4504e0d637ceb43c91ebad.html#g9f93d9600f4504e0d637ceb43c91ebad</a></p>
 ]]></content>
     <summary type="html">
-    <![CDATA[<h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个原始函数，Matrix直接就是一个结构体（非指针）</p>
-<pre><code>ty]]>
+    <![CDATA[<h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个最早写的版本，Matrix直接就是一个结构体（非指针）</p>
+<pre><code>]]>
     </summary>
     
       <category term="cuda" scheme="http://yoursite.com/tags/cuda/"/>

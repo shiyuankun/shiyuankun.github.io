@@ -5,7 +5,7 @@
   
   <title>cuda的malloc函数以及线程限制 | 彼格海德的笔记空间</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="cudaMallocHost这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下以下是一个原始函数，Matrix直接就是一个结构体（非指针）
+  <meta name="description" content="cudaMallocHost这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下以下是一个最早写的版本，Matrix直接就是一个结构体（非指针）
 typedef struct{
     int width;
     int height;
@@ -13,12 +13,12 @@ typedef struct{
     float * elements;
 } Matrix;
 
-__global__ void Ma">
+__global__ void">
 <meta property="og:type" content="article">
 <meta property="og:title" content="cuda的malloc函数以及线程限制">
 <meta property="og:url" content="http://yoursite.com/2015/08/12/cuda-malloc-and-thread/index.html">
 <meta property="og:site_name" content="彼格海德的笔记空间">
-<meta property="og:description" content="cudaMallocHost这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下以下是一个原始函数，Matrix直接就是一个结构体（非指针）
+<meta property="og:description" content="cudaMallocHost这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下以下是一个最早写的版本，Matrix直接就是一个结构体（非指针）
 typedef struct{
     int width;
     int height;
@@ -26,10 +26,10 @@ typedef struct{
     float * elements;
 } Matrix;
 
-__global__ void Ma">
+__global__ void">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="cuda的malloc函数以及线程限制">
-<meta name="twitter:description" content="cudaMallocHost这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下以下是一个原始函数，Matrix直接就是一个结构体（非指针）
+<meta name="twitter:description" content="cudaMallocHost这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下以下是一个最早写的版本，Matrix直接就是一个结构体（非指针）
 typedef struct{
     int width;
     int height;
@@ -37,7 +37,7 @@ typedef struct{
     float * elements;
 } Matrix;
 
-__global__ void Ma">
+__global__ void">
   
     <link rel="alternative" href="/atom.xml" title="彼格海德的笔记空间" type="application/atom+xml">
   
@@ -139,7 +139,7 @@ ga('send', 'pageview');
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个原始函数，Matrix直接就是一个结构体（非指针）</p>
+        <h2 id="cudaMallocHost">cudaMallocHost</h2><p>这两天整理之前写的cuda函数，之前写的比较凌乱，整理的过程中发现一点问题，记录一下<br>以下是一个最早写的版本，Matrix直接就是一个结构体（非指针）</p>
 <pre><code>typedef struct{
     <span class="built_in">int</span> <span class="variable">width</span>;
     <span class="built_in">int</span> <span class="variable">height</span>;
