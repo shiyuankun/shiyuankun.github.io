@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2015/09/26/recover-data-from-xiaomi/</loc>
+    <lastmod>2015-09-26T10:55:41.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2015/08/12/cuda-malloc-and-thread/</loc>
     <lastmod>2015-08-12T09:44:06.000Z</lastmod>
   </url>

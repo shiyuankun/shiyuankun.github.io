@@ -4,7 +4,7 @@
   <subtitle><![CDATA[a notebook for python]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2015-08-12T09:44:06.000Z</updated>
+  <updated>2015-09-26T10:55:41.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,27 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[从小米助手的备份中恢复数据]]></title>
+    <link href="http://yoursite.com/2015/09/26/recover-data-from-xiaomi/"/>
+    <id>http://yoursite.com/2015/09/26/recover-data-from-xiaomi/</id>
+    <published>2015-09-26T10:44:28.000Z</published>
+    <updated>2015-09-26T10:55:41.000Z</updated>
+    <content type="html"><![CDATA[<p>前两天脑残了一下，为了一个root权限去刷了一个小米开发版本。但刷过去以后用了半小时发现用的不好想要刷回来却怎么都不行了。想着就用线刷，刷之前拿小米自带的小米助手备份了一下通讯录短信和照片。结果刷回来以后我发现手机里的资料全没了。于是开始了恢复数据的慢慢征程。</p>
+<p>首先自然是用小米助手恢复，结果恢复到短信的地方怎么都恢复不了了。卡在13%。通讯录有了，我估计可能是我备份第二次的时候短信没有完全备份完就直接拔手机了。试了几次都不行就算了。想找找看小米存档的资料，直接导入到手机里就完事了。</p>
+<p>结果等我找到位于d:\Xiaomi\MiPhoneManager\Data下的某备份目录我就傻眼了。里面居然是一个.git文件。然后再看了看.git/objects下的文件的类型，都是什么VAX COFF文件。解压缩一下可行，但是file类型直接就是data。想了想，要么重建一下git的repo吧。然后新建了一个repo，文件拷进去，git fscku告诉我没有任何记录。这次傻掉了。难道记录破坏那么严重？连pack文件都是空的。</p>
+<p>然后不甘心，看着那一个一个好几兆的文件，明显就是我的图片么，放狗搜。看到有人有类似经历，也是从objects文件恢复出代码来。原来objects里面的文件都是zlib压缩，解压缩以后的头多了一个blob &lt;文件长度&gt;\x00。拿定主意，两个脚本搞定。</p>
+<p>最后居然连视频啥的也回来了，惊喜万分。这次不用被女朋友骂了，嘿嘿</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>前两天脑残了一下，为了一个root权限去刷了一个小米开发版本。但刷过去以后用了半小时发现用的不好想要刷回来却怎么都不行了。想着就用线刷，刷之前拿小米自带的小米助手备份了一下通讯录短信和照片。结果刷回来以后我发现手机里的资料全没了。于是开始了恢复数据的慢慢征程。</p>
+<p]]>
+    </summary>
+    
+      <category term="git" scheme="http://yoursite.com/tags/git/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[cuda的malloc函数以及线程限制]]></title>
@@ -2647,26 +2668,6 @@ def sum2djit(arr):
       <category term="numpy" scheme="http://yoursite.com/tags/numpy/"/>
     
       <category term="python" scheme="http://yoursite.com/tags/python/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[把博客迁到github上来了]]></title>
-    <link href="http://yoursite.com/2015/05/12/%E6%8A%8A%E5%8D%9A%E5%AE%A2%E8%BF%81%E5%88%B0github%E4%B8%8A%E6%9D%A5%E4%BA%86/"/>
-    <id>http://yoursite.com/2015/05/12/把博客迁到github上来了/</id>
-    <published>2015-05-12T01:52:53.000Z</published>
-    <updated>2015-05-12T02:03:08.000Z</updated>
-    <content type="html"><![CDATA[<p>昨天建站搞了一下午，晚上又忙了一会，终于把博客从cnblogs全迁移到github上来了。这里要赞一下hexo的高效。<br>本来没打算迁移的，结果在学习hexo的过程中发现了一篇<a href="http://www.huangyunkun.com/2014/03/17/migrate_from_cnblogs_to_hexo/" target="_blank" rel="external">文章</a>就想试一下。<br>结果很沮丧的发现作者的<a href="https://github.com/htynkn/hexo-migrator-cnblogs/" target="_blank" rel="external">github</a>去年9月份以后就不更新了。<br>没办法，fork一个下来自己改，javascript一点都不懂，只好console.log一个一个点追过来。<br>最后发现cnblogs改版了以后有些标签换掉了，而且hexo从2升级到3以后hexo.util已经没有这个包了。<br>最后下了独立出来的hexo-fs替换了事。<br>没仔细测试过，不过我这里的cnblogs文章都读出来了。<br>最后欢迎大家使用我更新过的<a href="https://github.com/shiyuankun/hexo-migrator-cnblogs" target="_blank" rel="external">hexo-migrate-cnblogs</a></p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>昨天建站搞了一下午，晚上又忙了一会，终于把博客从cnblogs全迁移到github上来了。这里要赞一下hexo的高效。<br>本来没打算迁移的，结果在学习hexo的过程中发现了一篇<a href="http://www.huangyunkun.com/2014/03/17/]]>
-    </summary>
-    
-      <category term="cnblogs" scheme="http://yoursite.com/tags/cnblogs/"/>
-    
-      <category term="hexo" scheme="http://yoursite.com/tags/hexo/"/>
-    
-      <category term="migrate" scheme="http://yoursite.com/tags/migrate/"/>
     
   </entry>
   
